@@ -10,9 +10,9 @@ jobs:
       db:
         image: postgres:15
         env:
-          POSTGRES_DB: autotrips
-          POSTGRES_USER: autotrips
-          POSTGRES_PASSWORD: autotrips
+          POSTGRES_DB: testautotrips
+          POSTGRES_USER: testautotrips
+          POSTGRES_PASSWORD: testautotrips
         ports:
           - "5432:5432"
         options: >-
@@ -33,6 +33,14 @@ jobs:
       - name: Install Poetry
         run: pip install poetry
 
+      - name: Create .env file
+        run: |
+          echo "DATABASE_NAME=testautotrips" > .env
+          echo "DATABASE_USER=testautotrips" >> .env
+          echo "DATABASE_PASSWORD=testautotrips" >> .env
+          echo "DATABASE_HOST=localhost" >> .env
+          echo "DATABASE_PORT=5432" >> .env
+
       - name: Install dependencies
         run: poetry install
 
@@ -42,7 +50,7 @@ jobs:
       - name: Run application
         run: poetry run python src/manage.py runserver 0.0.0.0:8000 &
         env:
-          DATABASE_URL: postgres://autotrips:autotrips@localhost:5432/autotrips
+          DATABASE_URL: postgres://testautotrips:testautotrips@localhost:5432/testautotrips
 
       - name: Wait for application to start
         run: |
