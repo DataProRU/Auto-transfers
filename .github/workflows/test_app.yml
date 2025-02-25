@@ -37,10 +37,10 @@ jobs:
         run: poetry install
 
       - name: Run migrations
-        run: poetry run python manage.py migrate
+        run: poetry run python src/manage.py migrate
 
       - name: Run application
-        run: poetry run python manage.py runserver 0.0.0.0:8000 &
+        run: poetry run python src/manage.py runserver 0.0.0.0:8000 &
         env:
           DATABASE_URL: postgres://autotrips:autotrips@localhost:5432/autotrips
 
