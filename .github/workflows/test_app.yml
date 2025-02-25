@@ -1,0 +1,53 @@
+name: Check Application
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:15
+        env:
+          POSTGRES_DB: autotrips
+          POSTGRES_USER: autotrips
+          POSTGRES_PASSWORD: autotrips
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.5'
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run migrations
+        run: poetry run python manage.py migrate
+
+      - name: Run application
+        run: poetry run python manage.py runserver 0.0.0.0:8000 &
+        env:
+          DATABASE_URL: postgres://autotrips:autotrips@localhost:5432/autotrips
+
+      - name: Wait for application to start
+        run: |
+          timeout 120 bash -c 'until curl -s http://localhost:8000 > /dev/null; do sleep 1; done'
+
+      - name: Check application status
+        run: |
+          curl -I http://localhost:8000
