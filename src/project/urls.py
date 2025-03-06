@@ -20,4 +20,8 @@ from django.urls import path, include
 
 # ЗДЕСЬ БУДУТ ТОЛЬКО ИНКЛЮДЫ и всякие готовые маршруты с библиотек
 
-urlpatterns = [path("", admin.site.urls), path("api/", include("rest_framework.urls"))]
+urlpatterns = [
+    path("", admin.site.urls),
+    path("api/", include("rest_framework.urls")),
+    path('api/auth/', include('accounts.urls'))
+]
