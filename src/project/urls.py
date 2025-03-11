@@ -25,9 +25,8 @@ from django.urls import include, path
 # ЗДЕСЬ БУДУТ ТОЛЬКО ИНКЛЮДЫ и всякие готовые маршруты библиотек
 
 urlpatterns = [
-    path("", admin.site.urls),
-    path("api/", include("rest_framework.urls")),
-    path("api/auth/", include("accounts.urls")),
+    path("admin/", admin.site.urls),
+    path("api/v1/", include("accounts.urls")),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

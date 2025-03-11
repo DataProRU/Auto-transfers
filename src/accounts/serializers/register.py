@@ -1,11 +1,13 @@
+import re
 from typing import Any
 
 from django.conf import settings
 from django.core.validators import FileExtensionValidator, RegexValidator
 from rest_framework import serializers
-from validators import FileMaxSizeValidator
+from rest_framework.validators import UniqueValidator
 
-from accounts.models.user import User, DocumentImage
+from accounts.models.user import DocumentImage, User
+from accounts.validators import FileMaxSizeValidator
 
 
 class DocumentImageSerializer(serializers.ModelSerializer):
@@ -15,14 +17,30 @@ class DocumentImageSerializer(serializers.ModelSerializer):
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(
+        required=True,
+        write_only=True,
+        validators=[
+            RegexValidator(
+                regex=re.compile(
+                    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?[\]{};:\/<>,.'\-_...])[A-Za-z\d!@#$%^&*()"
+                    r"_\-+=<>?[\]{};:\/<>,.'\-_...]{6,20}$"
+                ),
+                message="password must contain at least one uppercase letter, one lowercase letter, one digit,"
+                " and one special character",
+            )
+        ],
+    )
+
     phone = serializers.CharField(
+        required=True,
         validators=[
             RegexValidator(
                 regex=r"^\+?1?\d{9,15}$",
-                message="Номер телефона должен быть в формате: '+79991234567'.",
-            )
-        ]
+                message="Number should be in format: '+79991234567'.",
+            ),
+            UniqueValidator(queryset=User.objects.all(), message=("user with this phone already exists")),
+        ],
     )
     images = DocumentImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
@@ -35,11 +53,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             ],
         ),
         write_only=True,
+        required=True,
     )
 
     class Meta:
         model = User
         fields = (
+            "id",
             "full_name",
             "phone",
             "telegram",
@@ -55,4 +75,5 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         for image in uploaded_images:
             DocumentImage.objects.create(user=user, image=image)
 
+        user.images = DocumentImage.objects.filter(user=user)
         return user
