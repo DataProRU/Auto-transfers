@@ -13,16 +13,83 @@ dependencies = [
     "django-filter (>=25.1,<26.0)",
     "psycopg2 (>=2.9.10,<3.0.0)",
     "python-dotenv (>=1.0.1,<2.0.0)",
-    "djangorestframework-simplejwt (>=5.5.0,<6.0.0)"
+    "djangorestframework-simplejwt (>=5.5.0,<6.0.0)",
+    "pillow (>=11.1.0,<12.0.0)",
+    "ruff (>=0.9.10,<0.10.0)",
+    "mypy (>=1.15.0,<2.0.0)"
 ]
 
 [tool.poetry]
 packages = [{include = "autotrips", from = "src"}]
 
 
-[tool.poetry.group.dev.dependencies]
-black = "^25.1.0"
-
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+exclude = [
+  "**/migrations/**",
+  "**/tests/**",
+  "__pycache__/",
+  "manage.py",
+]
+
+[tool.ruff.lint]
+select = [
+  "ALL"
+]
+ignore = [
+  # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+  "D203",   # One blank line before class docstring
+  "D212",   # Multi-line docstring summary should be on the first line
+  "COM812", # Missing trailing comma
+  "ISC001", # Single line implicit string concatenation
+
+  # Not necessary to type annotate self and cls as it should be obvious
+  "ANN001", # Missing type annotation for self in method
+  "ANN002", # Missing type annotation for *args
+  "ANN003", # Missing type annotation for **kwargs
+  "ANN204", # Missing return type annotation for special method `__init__`"
+  
+  "RUF012",  # Mutable class attributes should be annotated with `typing.ClassVar`
+  "TRY003",  # Avoid specifying long messages outside the exception class
+  "EM101",   # Exception must not use a string literal
+
+  "D100",   # Missing docstring in public module
+  "D101",   # Missing docstring in public class
+  "D102",   # Missing docstring in public method
+  "D104",   # Missing docstring in public package
+  "D105",   # Missing docstring in magic method
+  "D106",   # Missing docstring in public nested class
+  "D107",   # Missing docstring in `__init__`
+  "DTZ011",
+  "D103",  # undocumented-public-function
+
+  # Disabling ARG002 (Unused method argument) globally because Django APIView
+  # methods require 'request' as a parameter even if it's unused.
+  "ARG002",
+
+]
+unfixable = [
+  "F841", # Prevents ruff deleting "unused" variables you're still working on
+]
+
+
+[tool.mypy]
+files = [ "**/*.py" ]
+exclude = [
+  "src/accounts/tests",
+  "src/manage.py",
+]
+ignore_missing_imports = true
+strict = true
+pretty = true
+disallow_untyped_decorators = false
+disallow_subclassing_any = false
+show_error_codes = true
+warn_unreachable = true
+enable_error_code = [ "ignore-without-code", "redundant-expr", "truthy-bool" ]
