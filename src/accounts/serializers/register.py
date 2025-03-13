@@ -55,6 +55,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         write_only=True,
         required=True,
     )
+    telegram = serializers.CharField(required=True)
 
     class Meta:
         model = User
