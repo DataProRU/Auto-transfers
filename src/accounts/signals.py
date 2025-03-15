@@ -11,10 +11,6 @@ def notify_admins_about_registration(sender, instance, created, **kwargs):
     """
     Отправляет уведомление администраторам при создании нового пользователя
     """
-    if created:  # Только при создании нового пользователя
+    if created and instance.role == User.Roles.USER:  # Только при создании нового приёмщика
         # Запускаем асинхронную функцию в синхронном контексте
-        asyncio.run(send_registration_notification(
-            user_id=instance.id,
-            email=instance.email,
-            full_name=f"{instance.first_name} {instance.last_name}".strip() or "Не указано"
-        )) 
+        asyncio.run(send_registration_notification(user_id=instance.id)) 
