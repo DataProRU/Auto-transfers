@@ -27,6 +27,7 @@ from django.urls import include, path
 sub_urls = [
     # apps
     path("accounts/", include("accounts.urls")),
+    path("autotrips/", include("autotrips.urls")),
 ]
 
 
