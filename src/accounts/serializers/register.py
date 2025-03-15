@@ -55,7 +55,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         write_only=True,
         required=True,
     )
-    telegram = serializers.CharField(required=True)
+    telegram = serializers.CharField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all(), message=("user with this telegram already exists"))],
+    )
 
     class Meta:
         model = User
