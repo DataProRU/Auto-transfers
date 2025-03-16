@@ -49,18 +49,7 @@ class CurrentUserViewSet(SingleResourceMixin, mixins.ListModelMixin):
                     ),
                 ],
             ),
-            401: OpenApiResponse(
-                description="Unauthorized",
-                response=OpenApiResponse(
-                    description="Error response",
-                    examples=[
-                        OpenApiExample(
-                            name="Unauthorized",
-                            value={"detail": "Authentication credentials were not provided."},
-                        ),
-                    ],
-                ),
-            ),
+            401: OpenApiResponse(description="Unauthorized"),
         },
     )
     def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
@@ -109,30 +98,8 @@ class DocumentImageViewSet(viewsets.ReadOnlyModelViewSet):
                     ),
                 ],
             ),
-            403: OpenApiResponse(
-                description="Forbidden",
-                response=OpenApiResponse(
-                    description="Error response",
-                    examples=[
-                        OpenApiExample(
-                            name="Forbidden",
-                            value={"detail": "You do not have permission to perform this action."},
-                        ),
-                    ],
-                ),
-            ),
-            404: OpenApiResponse(
-                description="Not Found",
-                response=OpenApiResponse(
-                    description="Error response",
-                    examples=[
-                        OpenApiExample(
-                            name="User not found",
-                            value={"detail": "User not found."},
-                        ),
-                    ],
-                ),
-            ),
+            403: OpenApiResponse(description="Forbidden"),
+            404: OpenApiResponse(description="Not Found"),
         },
     )
     def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:

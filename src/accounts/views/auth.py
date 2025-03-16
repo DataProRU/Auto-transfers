@@ -18,33 +18,22 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             200: OpenApiResponse(
                 description="Token pair obtained successfully",
                 response=CustomTokenSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="Successful authentication",
+                        value={
+                            "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                            "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                            "user_id": "<id>",
+                            "role": "user",
+                            "approved": "true",
+                            "onboarded": "true",
+                        },
+                    ),
+                ],
             ),
-            400: OpenApiResponse(
-                description="Invalid field format",
-                response=OpenApiResponse(
-                    description="Error response",
-                    examples=[
-                        OpenApiExample(
-                            name="Invalid credentials",
-                            value={"phone": ["Number should be in format: '+79991234567'."]},
-                        ),
-                    ],
-                ),
-            ),
+            400: OpenApiResponse(description="Invalid field format"),
         },
-        examples=[
-            OpenApiExample(
-                name="Successful authentication",
-                value={
-                    "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                    "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                    "user_id": "<id>",
-                    "role": "user",
-                    "approved": "true",
-                    "onboarded": "true",
-                },
-            ),
-        ],
     )
     def post(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
         return super().post(request, *args, **kwargs)
