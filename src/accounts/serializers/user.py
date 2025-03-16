@@ -24,4 +24,3 @@ class UserSerializer(serializers.ModelSerializer):
             "is_onboarded",
             "documents",
         ]
-        read_only_fields = ["id", "role", "is_approved", "is_onboarded", "documents"]
