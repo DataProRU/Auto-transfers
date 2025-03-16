@@ -9,7 +9,8 @@ class CustomUserManager(UserManager):
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("full_name", username)
 
-        extra_fields["is_onboarded"] = extra_fields["is_approved"] = True
+        extra_fields["is_approved"] = True
+        extra_fields["is_onboarded"] = True
         extra_fields["role"] = "admin"
 
         if extra_fields.get("is_staff") is not True:
