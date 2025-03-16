@@ -45,27 +45,7 @@ class RegisterView(generics.CreateAPIView):
                     ),
                 ],
             ),
-            400: OpenApiResponse(
-                description="Invalid input",
-                response=OpenApiResponse(
-                    description="Error response",
-                    examples=[
-                        OpenApiExample(
-                            name="Invalid input",
-                            value={
-                                "full_name": ["This field is required."],
-                                "phone": ["Number should be in format: '+79991234567'."],
-                                "telegram": ["User with this telegram already exists."],
-                                "password": [
-                                    "Password must contain at least one uppercase letter, "
-                                    "one lowercase letter, one digit, and one special character."
-                                ],
-                                "uploaded_images": ["This field is required."],
-                            },
-                        ),
-                    ],
-                ),
-            ),
+            400: OpenApiResponse(description="Invalid input"),
         },
     )
     def post(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:

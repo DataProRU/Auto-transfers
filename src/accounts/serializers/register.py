@@ -7,13 +7,8 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from accounts.models.user import DocumentImage, User
+from accounts.serializers.user import DocumentImageSerializer
 from accounts.validators import FileMaxSizeValidator
-
-
-class DocumentImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DocumentImage
-        fields = "__all__"
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
