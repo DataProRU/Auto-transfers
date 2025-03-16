@@ -3,14 +3,15 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
-from accounts.permissons import IsApproved
 from autotrips.models.acceptance_report import AcceptenceReport
 from autotrips.serializers.acceptance_report import AcceptanceReportSerializer
+from project.permissions import IsApproved
 
 User = get_user_model()
 
@@ -21,6 +22,70 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
     permission_classes = [IsApproved]
     http_method_names = ["get", "post"]
 
+    @extend_schema(
+        summary="List all acceptance reports",
+        description="Retrieve a list of all acceptance reports created in the last 3 months. Optionally filter by VIN.",
+        parameters=[
+            OpenApiParameter(
+                name="vin",
+                type=str,
+                location=OpenApiParameter.QUERY,
+                description="Filter reports by VIN.",
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                response=AcceptanceReportSerializer(many=True),
+                description="Reports retrieved successfully",
+                examples=[
+                    OpenApiExample(
+                        name="Successful response",
+                        value=[
+                            {
+                                "id": 1,
+                                "vin": "1HGCM82633A123456",
+                                "reporter": {
+                                    "id": 1,
+                                    "full_name": "John Doe",
+                                    "phone": "+79991234567",
+                                    "telegram": "@johndoe",
+                                },
+                                "model": "Model X",
+                                "place": "Factory A",
+                                "comment": "First report",
+                                "report_number": 1,
+                                "report_time": "2025-03-15T13:57:11.953964+03:00",
+                                "acceptance_date": "2025-03-15",
+                                "status": "Принят",
+                                "car_photos": [
+                                    {
+                                        "id": 1,
+                                        "image": "http://example.com/media/cars/2025/03/15/car1.jpg",
+                                        "created": "2025-03-15T13:57:11.953964+03:00",
+                                    }
+                                ],
+                                "key_photos": [
+                                    {
+                                        "id": 1,
+                                        "image": "http://example.com/media/keys/2025/03/15/key1.jpg",
+                                        "created": "2025-03-15T13:57:11.953964+03:00",
+                                    }
+                                ],
+                                "document_photos": [
+                                    {
+                                        "id": 1,
+                                        "image": "http://example.com/media/car-docs/2025/03/15/doc1.jpg",
+                                        "created": "2025-03-15T13:57:11.953964+03:00",
+                                    }
+                                ],
+                            }
+                        ],
+                    ),
+                ],
+            ),
+            403: OpenApiResponse(description="forbidden"),
+        },
+    )
     def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
         three_months_ago = timezone.now() - timedelta(days=90)
         queryset = self.queryset.filter(report_time__gte=three_months_ago)
@@ -30,7 +95,66 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def perform_create(self, serializer:ModelSerializer) -> None:
+    @extend_schema(
+        summary="Create a new acceptance report",
+        description="Create a new acceptance report with uploaded car photos, key photos, and document photos.",
+        request=AcceptanceReportSerializer,
+        responses={
+            201: OpenApiResponse(
+                description="Report created successfully",
+                response=AcceptanceReportSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="Successful response",
+                        value={
+                            "id": 1,
+                            "vin": "1HGCM82633A123456",
+                            "reporter": {
+                                "id": 1,
+                                "full_name": "John Doe",
+                                "phone": "+79991234567",
+                                "telegram": "@johndoe",
+                            },
+                            "model": "Model X",
+                            "place": "Factory A",
+                            "comment": "First report",
+                            "report_number": 1,
+                            "report_time": "2025-03-15T13:57:11.953964+03:00",
+                            "acceptance_date": "2025-03-15",
+                            "status": "Принят",
+                            "car_photos": [
+                                {
+                                    "id": 1,
+                                    "image": "http://example.com/media/cars/2025/03/15/car1.jpg",
+                                    "created": "2025-03-15T13:57:11.953964+03:00",
+                                }
+                            ],
+                            "key_photos": [
+                                {
+                                    "id": 1,
+                                    "image": "http://example.com/media/keys/2025/03/15/key1.jpg",
+                                    "created": "2025-03-15T13:57:11.953964+03:00",
+                                }
+                            ],
+                            "document_photos": [
+                                {
+                                    "id": 1,
+                                    "image": "http://example.com/media/car-docs/2025/03/15/doc1.jpg",
+                                    "created": "2025-03-15T13:57:11.953964+03:00",
+                                }
+                            ],
+                        },
+                    ),
+                ],
+            ),
+            400: OpenApiResponse(description="Invalid input"),
+            403: OpenApiResponse(description="Forbidden"),
+        },
+    )
+    def create(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+        return super().create(request, *args, **kwargs)
+
+    def perform_create(self, serializer: ModelSerializer) -> None:
         serializer.save(reporter=self.request.user)
 
     def get_serializer_context(self) -> dict[str, Any]:
