@@ -1,16 +1,53 @@
-import asyncio
+"""Signals for handling events in accounts app."""
+
+import logging
+from typing import cast
+
+from django.contrib.auth import get_user_model
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib.auth import get_user_model
-from autotrips.bot.bot import send_registration_notification
 
+from autotrips.tasks import send_registration_notification_task
+
+from .models_types import UserProtocol
+
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
+
 @receiver(post_save, sender=User)
-def notify_admins_about_registration(sender, instance, created, **kwargs):
+def notify_admins_about_registration(
+    instance: AbstractBaseUser,
+    created: bool,  # noqa: FBT001
+    **_: None,
+) -> None:
     """
-    Отправляет уведомление администраторам при создании нового пользователя
+    Send notification to admins about new user registration.
+
+    Args:
+        instance: Model instance
+        created: Flag indicating if object was created
+        **_: Additional arguments (unused)
+
     """
-    if created and instance.role == User.Roles.USER:  # Только при создании нового приёмщика
-        # Запускаем асинхронную функцию в синхронном контексте
-        asyncio.run(send_registration_notification(user_id=instance.id)) 
+    user = cast(UserProtocol, instance)
+    if created and user.role == User.Roles.USER:
+        try:
+            # Check for required data
+            if not user.full_name or not user.phone:
+                logger.warning(
+                    "Skipping notification for user %s: missing required data",
+                    user.id,
+                )
+                return
+
+            # Send task to high priority queue
+            send_registration_notification_task.apply_async(
+                args=[user.id],
+                queue="high_priority",
+                countdown=1,  # Small delay to ensure DB save
+            )
+            logger.info("Notification task for user %s queued", user.id)
+        except Exception:
+            logger.exception("Error queuing notification task")

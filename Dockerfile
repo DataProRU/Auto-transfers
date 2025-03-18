@@ -1,29 +1,27 @@
 # Используем официальный образ Python
 FROM python:3.12-slim
 
-# Устанавливаем рабочую директорию
-# WORKDIR /app
+WORKDIR /app
 
-# Устанавливаем системные зависимости для psycopg2
-# RUN apt-get update && apt-get install -y \
- #    libpq-dev \
-#     gcc \
-#     && rm -rf /var/lib/apt/lists/*
+# Установка системных зависимостей
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    netcat-traditional \
+    && rm -rf /var/lib/apt/lists/*
 
-# Устанавливаем Poetry
-# RUN pip install poetry
+# Установка Poetry
+RUN pip install poetry
 
-# Копируем зависимости
-# COPY pyproject.toml poetry.lock ./
+# Копирование файлов проекта
+COPY pyproject.toml poetry.lock ./
 
-# Устанавливаем зависимости проекта
-# RUN poetry install --no-root
+# Установка зависимостей
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-interaction --no-ansi --no-root
 
-# Копируем исходный код проекта
-# COPY src/ ./src/
+# Копирование исходного кода
+COPY . .
 
-# Устанавливаем рабочую директорию для Django-проекта
-# WORKDIR /app/src
-
-# Команда для запуска приложения
-# CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Создание директории для медиафайлов
+RUN mkdir -p /app/media

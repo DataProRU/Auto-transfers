@@ -1,16 +1,133 @@
 version: '3.8'
 
 services:
-  db:
+  postgres:
+    container_name: autotrips-postgres
     image: postgres:15
     environment:
-      POSTGRES_DB: autotrips
-      POSTGRES_USER: autotrips
-      POSTGRES_PASSWORD: autotrips
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    container_name: autotrips-redis
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    container_name: autotrips-pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  web:
+    container_name: autotrips-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "echo 'Waiting for PostgreSQL...' &&
+             while ! nc -z ${DATABASE_HOST} ${DATABASE_PORT}; do
+               sleep 1
+             done &&
+             echo 'PostgreSQL is ready!' &&
+             poetry run python src/manage.py migrate &&
+             DJANGO_SUPERUSER_PASSWORD=admin poetry run python src/manage.py createsuperuser --noinput --username admin --phone +79991234570 &&
+             poetry run python src/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
+      - SECRET_KEY=${SECRET_KEY}
+      - BOT_TOKEN=${BOT_TOKEN}
+      - ADMIN_GROUP_ID=${ADMIN_GROUP_ID}
+      - ADMIN_URL=${ADMIN_URL}
+      - DJANGO_SUPERUSER_EMAIL=admin@example.com
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  bot:
+    container_name: autotrips-bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "echo 'Waiting for PostgreSQL...' &&
+             while ! nc -z ${DATABASE_HOST} ${DATABASE_PORT}; do
+               sleep 1
+             done &&
+             echo 'PostgreSQL is ready!' &&
+             poetry run python src/manage.py runbot"
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
+      - SECRET_KEY=${SECRET_KEY}
+      - BOT_TOKEN=${BOT_TOKEN}
+      - ADMIN_GROUP_ID=${ADMIN_GROUP_ID}
+      - ADMIN_URL=${ADMIN_URL}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery_worker:
+    container_name: autotrips-celery
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "echo 'Waiting for PostgreSQL...' &&
+             while ! nc -z ${DATABASE_HOST} ${DATABASE_PORT}; do
+               sleep 1
+             done &&
+             echo 'PostgreSQL is ready!' &&
+             poetry run celery -A autotrips worker -l INFO -Q default,high_priority"
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
+      - SECRET_KEY=${SECRET_KEY}
+      - BOT_TOKEN=${BOT_TOKEN}
+      - ADMIN_GROUP_ID=${ADMIN_GROUP_ID}
+      - ADMIN_URL=${ADMIN_URL}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 volumes:
   postgres_data:
+  redis_data:

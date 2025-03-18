@@ -30,7 +30,7 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def perform_create(self, serializer:ModelSerializer) -> None:
+    def perform_create(self, serializer: ModelSerializer) -> None:
         serializer.save(reporter=self.request.user)
 
     def get_serializer_context(self) -> dict[str, Any]:
