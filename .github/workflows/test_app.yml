@@ -40,6 +40,7 @@ jobs:
           echo "DATABASE_PASSWORD=testautotrips" >> .env
           echo "DATABASE_HOST=localhost" >> .env
           echo "DATABASE_PORT=5432" >> .env
+          echo "SECRET_KEY=estautotrips" >> .env
 
       - name: Install dependencies
         run: poetry install
