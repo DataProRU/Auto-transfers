@@ -1,0 +1,33 @@
+[33m1c51e50[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mITO-128[m[33m, [m[1;31morigin/ITO-128[m[33m)[m fix: update GitHub Actions configuration with caching and proper checks
+[33ma542ee8[m [ITO-128]: обновлены настройки окружения в .env.example, добавлены параметры для базы данных, Django, Telegram бота и Redis. Обновлен docker-compose.yml для использования переменных окружения. Внесены изменения в pyproject.toml для добавления новой зависимости. Улучшена обработка ошибок и логирование в celery.py и tasks.py. Добавлены проверки прав администратора в admin_handlers.py.
+[33m2c45a5b[m [ITO-128]: обновлен файл docker-compose.yml для добавления сервисов PostgreSQL, Redis, pgAdmin и веб-приложения. Обновлен Dockerfile для установки необходимых зависимостей. Обновлены настройки проекта в файлах settings.py и pyproject.toml. Добавлены новые функции и улучшена логика обработки сигналов в приложении. Обновлен README.md с инструкциями по запуску проекта через Docker.
+[33m3a882d3[m [ITO-128]: updated Telegram bot notification format and logic for receivers
+[33mb7a9ca5[m [ITO-128]: added Telegram bot for registration notifications
+[33m5ed2e65[m [ITO-130]: create accept car functionality
+[33m1ed46b3[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #2 from DataProRU/ITO-122
+[33m9ae373b[m [ITO-122]: add cors allow creds
+[33m1027919[m [ITO-122]: resolved token blacklist
+[33m7f36a27[m [ITO-122]: removed swagger responses
+[33m16bf2a5[m [ITO-122]: added swag
+[33m0d0aaa2[m [ITO-122]: added get documents
+[33mdbaf3fa[m [ITO-122]: added get current user
+[33m2bc5a73[m [ITO-122]: added swag docs
+[33mc254257[m [ITO-122]: added cors
+[33mdf47583[m[33m ([m[1;31morigin/ITO-122[m[33m, [m[1;32mITO-122[m[33m)[m [ITO-122]: added unique validation to telegram
+[33m3c48cf5[m [ITO-122]: token req
+[33m59a87ec[m [ITO-122]: refactored models and added admin
+[33me39b68c[m [ITO-122]: refactored urls
+[33mf8fc07d[m [ITO-122]: add refresh url
+[33m48beaef[m [ITO-122]: updated pass hashing
+[33m524b096[m [ITO-122]: added secret key to pipeline
+[33m92c0707[m [ITO-122]: added validators and files representation
+[33m1eb858d[m [ITO-122]: refactor previous realisation
+[33m951d661[m ITO-122
+[33ma0cf1b6[m ITO-122
+[33m8ae591b[m[33m ([m[1;32mmaster[m[33m)[m Merge pull request #1 from DataProRU/AUT-1-CI-CD
+[33m316f6cd[m fix ci/cd
+[33m27db962[m fix ci/cd
+[33md192443[m AUT-1: CI/CD add
+[33m453221f[m added black
+[33m890274a[m added black
+[33m611b3ef[m Init

@@ -1,6 +1,13 @@
+"""Django application configuration."""
+
 from django.apps import AppConfig
 
 
 class AccountsConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
+    """Configuration for accounts app."""
+
     name = "accounts"
+
+    def ready(self) -> None:
+        """Import signals when app is ready."""
+        # Импортируем сигналы при загрузке приложения
