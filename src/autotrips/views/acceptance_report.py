@@ -9,9 +9,14 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
-from autotrips.models.acceptance_report import AcceptenceReport
-from autotrips.serializers.acceptance_report import AcceptanceReportSerializer
-from project.permissions import IsApproved
+from autotrips.models.acceptance_report import AcceptenceReport, CarPhoto, DocumentPhoto, KeyPhoto
+from autotrips.serializers.acceptance_report import (
+    AcceptanceReportSerializer,
+    CarPhotoSerializer,
+    DocumentPhotoSerializer,
+    KeyPhotoSerializer,
+)
+from project.permissions import IsAdminOrManager, IsApproved
 
 User = get_user_model()
 
@@ -161,3 +166,153 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
         context: dict[str, Any] = super().get_serializer_context()
         context.update({"request": self.request})
         return context
+
+
+class CarPhotoViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = CarPhotoSerializer
+    permission_classes = [IsAdminOrManager]
+
+    def get_queryset(self) -> CarPhoto:
+        report_id = self.kwargs.get("report_id")
+        return CarPhoto.objects.filter(report_id=report_id)
+
+    @extend_schema(
+        summary="List all images for a specific report",
+        description="Retrieve a list of all car images uploaded for a specific report. "
+        "Only accessible to users with the role 'admin' or 'manager'.",
+        parameters=[
+            OpenApiParameter(
+                name="report_id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="The ID of the report whose car images are to be retrieved.",
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                description="Images retrieved successfully",
+                response=CarPhotoSerializer(many=True),
+                examples=[
+                    OpenApiExample(
+                        name="Successful response",
+                        value=[
+                            {
+                                "id": 1,
+                                "image": "http://example.com/media/cars/2023/10/01/image1.jpg",
+                                "created": "2023-10-01T12:34:56Z",
+                            },
+                            {
+                                "id": 2,
+                                "image": "http://example.com/media/cars/2023/10/01/image2.jpg",
+                                "created": "2023-10-01T12:35:56Z",
+                            },
+                        ],
+                    ),
+                ],
+            ),
+            403: OpenApiResponse(description="Forbidden"),
+            404: OpenApiResponse(description="Not Found"),
+        },
+    )
+    def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+        return super().list(request, *args, **kwargs)
+
+
+class KeyPhotoViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = KeyPhotoSerializer
+    permission_classes = [IsAdminOrManager]
+
+    def get_queryset(self) -> KeyPhoto:
+        report_id = self.kwargs.get("report_id")
+        return KeyPhoto.objects.filter(report_id=report_id)
+
+    @extend_schema(
+        summary="List all images for a specific report",
+        description="Retrieve a list of all key images uploaded for a specific report. "
+        "Only accessible to users with the role 'admin' or 'manager'.",
+        parameters=[
+            OpenApiParameter(
+                name="report_id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="The ID of the report whose key images are to be retrieved.",
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                description="Images retrieved successfully",
+                response=CarPhotoSerializer(many=True),
+                examples=[
+                    OpenApiExample(
+                        name="Successful response",
+                        value=[
+                            {
+                                "id": 1,
+                                "image": "http://example.com/media/keys/2023/10/01/image1.jpg",
+                                "created": "2023-10-01T12:34:56Z",
+                            },
+                            {
+                                "id": 2,
+                                "image": "http://example.com/media/keys/2023/10/01/image2.jpg",
+                                "created": "2023-10-01T12:35:56Z",
+                            },
+                        ],
+                    ),
+                ],
+            ),
+            403: OpenApiResponse(description="Forbidden"),
+            404: OpenApiResponse(description="Not Found"),
+        },
+    )
+    def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+        return super().list(request, *args, **kwargs)
+
+
+class DocPhotoViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = DocumentPhotoSerializer
+    permission_classes = [IsAdminOrManager]
+
+    def get_queryset(self) -> DocumentPhoto:
+        report_id = self.kwargs.get("report_id")
+        return DocumentPhoto.objects.filter(report_id=report_id)
+
+    @extend_schema(
+        summary="List all images for a specific report",
+        description="Retrieve a list of all document images uploaded for a specific report. "
+        "Only accessible to users with the role 'admin' or 'manager'.",
+        parameters=[
+            OpenApiParameter(
+                name="report_id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="The ID of the report whose document images are to be retrieved.",
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                description="Images retrieved successfully",
+                response=CarPhotoSerializer(many=True),
+                examples=[
+                    OpenApiExample(
+                        name="Successful response",
+                        value=[
+                            {
+                                "id": 1,
+                                "image": "http://example.com/media/car-docs/2023/10/01/image1.jpg",
+                                "created": "2023-10-01T12:34:56Z",
+                            },
+                            {
+                                "id": 2,
+                                "image": "http://example.com/media/car-docs/2023/10/01/image2.jpg",
+                                "created": "2023-10-01T12:35:56Z",
+                            },
+                        ],
+                    ),
+                ],
+            ),
+            403: OpenApiResponse(description="Forbidden"),
+            404: OpenApiResponse(description="Not Found"),
+        },
+    )
+    def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+        return super().list(request, *args, **kwargs)
