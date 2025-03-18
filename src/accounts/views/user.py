@@ -1,5 +1,6 @@
 from typing import Any, cast
 
+from django.db.models import QuerySet
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -60,7 +61,7 @@ class DocumentImageViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DocumentImageSerializer
     permission_classes = [IsAdminOrManager]
 
-    def get_queryset(self) -> DocumentImage:
+    def get_queryset(self) -> QuerySet[DocumentImage]:
         user_id = self.kwargs.get("user_id")
         return DocumentImage.objects.filter(user_id=user_id)
 

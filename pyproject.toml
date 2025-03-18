@@ -99,3 +99,6 @@ disallow_subclassing_any = false
 show_error_codes = true
 warn_unreachable = true
 enable_error_code = [ "ignore-without-code", "redundant-expr", "truthy-bool" ]
+namespace_packages = true
+explicit_package_bases = true
+python_version = "3.12"

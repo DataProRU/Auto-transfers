@@ -48,7 +48,7 @@ def setup_logging() -> None:
     # Set formatters based on environment
     if os.getenv("ENVIRONMENT") == "production":
         # Production logging with JSON format
-        json_formatter = jsonlogger.JsonFormatter(
+        json_formatter: jsonlogger.JsonFormatter = jsonlogger.JsonFormatter(  # type: ignore[no-untyped-call]
             fmt="%(asctime)s %(levelname)s %(name)s %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
