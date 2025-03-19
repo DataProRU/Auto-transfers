@@ -7,7 +7,7 @@ from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 
 from accounts.models.user import User
-from bot.services import get_user_info_message
+import bot.bot as bot_module
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ async def approve_user(callback: CallbackQuery) -> None:
 
         if isinstance(callback.message, Message):
             await callback.message.edit_text(
-                get_user_info_message(user) + "\n\n✅ Пользователь одобрен",
+                bot_module.get_user_info_message(user) + "\n\n✅ Пользователь одобрен",
                 reply_markup=None,
             )
     except User.DoesNotExist:
@@ -81,7 +81,7 @@ async def reject_user(callback: CallbackQuery) -> None:
 
         if isinstance(callback.message, Message):
             await callback.message.edit_text(
-                get_user_info_message(user) + "\n\n❌ Пользователь отклонен",
+                bot_module.get_user_info_message(user) + "\n\n❌ Пользователь отклонен",
                 reply_markup=None,
             )
     except User.DoesNotExist:

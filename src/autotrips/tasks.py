@@ -17,7 +17,7 @@ from django.template.loader import render_to_string
 from accounts.models.user import User
 from accounts.models_types import UserProtocol
 from autotrips.models.acceptance_report import AcceptanceReport
-from bot.services import send_message_to_telegram_chat
+from bot.bot import send_message_to_telegram_chat
 from config import DEFAULT_FROM_EMAIL
 
 logger = logging.getLogger(__name__)
