@@ -4,16 +4,22 @@ from typing import Any
 from gspread import Client, Spreadsheet, Worksheet, exceptions, service_account
 from gspread.utils import ValueInputOption
 
-TABLE_ID = os.getenv("TABLE_ID", "")
-TABLE_CREDS = os.getenv("TABLE_CREDS", "")
-
-g_client: Client = service_account(filename=TABLE_CREDS)
+TABLE_ID = os.getenv("TABLE_ID", "1D67_F_XR0AnfW6cokeerC4Yprepm0rdh8ab4EaMyYbU")
+TABLE_CREDS = os.getenv("TABLE_CREDS", "Auto-transfers/credentials.json")
 
 
 class TableManager:
-    def __init__(self, table_id: str) -> None:
+    def __init__(self, table_id: str, creds_path: str) -> None:
         self.table_id = table_id
-        self.table: Spreadsheet = g_client.open_by_key(self.table_id)
+        self.client = self._init_client(creds_path)
+        self.table = self._open_table()
+
+    @staticmethod
+    def _init_client(creds_path: str) -> Client:
+        return service_account(filename=creds_path)
+
+    def _open_table(self) -> Spreadsheet:
+        return self.client.open_by_key(self.table_id)
 
     def get_worksheet(self, title: str) -> Worksheet:
         return self.table.worksheet(title)
@@ -30,7 +36,10 @@ class TableManager:
             worksheet = self.get_worksheet(title)
         except exceptions.WorksheetNotFound:
             worksheet = self.create_worksheet(title, rows, cols_count)
-        worksheet.insert_row(headers, index=index)
+
+        header_values = worksheet.row_values(1)
+        if len(header_values) == 0:
+            worksheet.insert_row(headers, index=index)
 
     def append_row(self, title: str, data: list[Any]) -> None:
         worksheet = self.get_worksheet(title)
@@ -40,5 +49,9 @@ class TableManager:
         worksheet = self.get_worksheet(title)
         return worksheet.get_all_records()
 
+    def get_col_data_from_worksheet(self, title: str, col: int) -> list[Any]:
+        worksheet = self.get_worksheet(title)
+        return worksheet.col_values(col)
 
-table_manager = TableManager(TABLE_ID)
+
+table_manager = TableManager(TABLE_ID, TABLE_CREDS)
