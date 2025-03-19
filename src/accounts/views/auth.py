@@ -9,7 +9,7 @@ from accounts.serializers.custom_token import CustomTokenSerializer
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class: type[CustomTokenSerializer] = CustomTokenSerializer
+    serializer_class = CustomTokenSerializer
 
     @extend_schema(
         summary="Obtain JWT token pair (access and refresh)",

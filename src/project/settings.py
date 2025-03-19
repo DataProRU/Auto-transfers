@@ -157,7 +157,8 @@ STATIC_ROOT = str(STATIC_ROOT)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-MAX_UPLOAD_SIZE = 5242880  # 5 MB
+# Максимальный размер загружаемого файла (в байтах)
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10 MB
 
 DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 MEDIA_ROOT = str(MEDIA_ROOT)

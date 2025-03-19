@@ -2,16 +2,20 @@
 
 import logging
 
-from aiogram import Dispatcher, F
+from aiogram import Dispatcher, F, Router
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
-from django.contrib.auth import get_user_model
+
+from accounts.models.user import User
+from bot.services import get_user_info_message
 
 logger = logging.getLogger(__name__)
-User = get_user_model()
+
+router = Router()
 
 
-async def start_command(message: Message) -> None:
+@router.message(Command("start"))
+async def start_handler(message: Message) -> None:
     """
     Обработчик команды /start.
 
@@ -19,7 +23,11 @@ async def start_command(message: Message) -> None:
         message: Сообщение от пользователя.
 
     """
-    await message.answer("Привет! Я бот для управления регистрациями пользователей.")
+    await message.answer(
+        "Привет! Я бот для управления пользователями. "
+        "Я буду отправлять вам уведомления o новых регистрациях "
+        "и позволю вам одобрять или отклонять пользователей."
+    )
 
 
 async def help_command(message: Message) -> None:
@@ -30,59 +38,60 @@ async def help_command(message: Message) -> None:
         message: Сообщение от пользователя.
 
     """
-    help_text = (
-        "Доступные команды:\n"
-        "/start - Начать работу c ботом\n"
-        "/help - Показать это сообщение"
-    )
+    help_text = "Доступные команды:\n/start - Начать работу c ботом\n/help - Показать это сообщение"
     await message.answer(help_text)
 
 
-async def approve_user(callback: CallbackQuery, user_id: int) -> None:
-    """
-    Обработчик подтверждения регистрации пользователя.
+@router.callback_query(F.data.startswith("approve_"))
+async def approve_user(callback: CallbackQuery) -> None:
+    if not callback.message or not callback.data:
+        return
 
-    Args:
-        callback: Callback запрос от кнопки.
-        user_id: ID пользователя для подтверждения.
-
-    """
+    user_id = int(callback.data.split("_")[1])
     try:
         user = await User.objects.aget(id=user_id)
-        user.is_active = True
+        user.is_approved = True
         await user.asave()
 
-        await callback.message.edit_text(
-            f"✅ Пользователь {user.full_name} успешно подтвержден!",
-            reply_markup=None,
-        )
-        logger.info("User %s approved successfully", user_id)
-    except Exception:
-        logger.exception("Error while approving user")
-        await callback.answer("Произошла ошибка при подтверждении пользователя")
+        if isinstance(callback.message, Message):
+            await callback.message.edit_text(
+                get_user_info_message(user) + "\n\n✅ Пользователь одобрен",
+                reply_markup=None,
+            )
+    except User.DoesNotExist:
+        if isinstance(callback.message, Message):
+            await callback.message.edit_text(
+                "❌ Пользователь не найден",
+                reply_markup=None,
+            )
+    finally:
+        await callback.answer()
 
 
-async def reject_user(callback: CallbackQuery, user_id: int) -> None:
-    """
-    Обработчик отклонения регистрации пользователя.
+@router.callback_query(F.data.startswith("reject_"))
+async def reject_user(callback: CallbackQuery) -> None:
+    if not callback.message or not callback.data:
+        return
 
-    Args:
-        callback: Callback запрос от кнопки.
-        user_id: ID пользователя для отклонения.
-
-    """
+    user_id = int(callback.data.split("_")[1])
     try:
         user = await User.objects.aget(id=user_id)
-        await user.adelete()
+        user.is_approved = False
+        await user.asave()
 
-        await callback.message.edit_text(
-            f"❌ Пользователь {user.full_name} отклонен.",
-            reply_markup=None,
-        )
-        logger.info("User %s rejected successfully", user_id)
-    except Exception:
-        logger.exception("Error while rejecting user")
-        await callback.answer("Произошла ошибка при отклонении пользователя")
+        if isinstance(callback.message, Message):
+            await callback.message.edit_text(
+                get_user_info_message(user) + "\n\n❌ Пользователь отклонен",
+                reply_markup=None,
+            )
+    except User.DoesNotExist:
+        if isinstance(callback.message, Message):
+            await callback.message.edit_text(
+                "❌ Пользователь не найден",
+                reply_markup=None,
+            )
+    finally:
+        await callback.answer()
 
 
 def register_handlers(dp: Dispatcher) -> None:
@@ -93,7 +102,7 @@ def register_handlers(dp: Dispatcher) -> None:
         dp: Диспетчер бота.
 
     """
-    dp.message.register(start_command, Command("start"))
+    dp.message.register(start_handler, Command("start"))
     dp.message.register(help_command, Command("help"))
 
     dp.callback_query.register(

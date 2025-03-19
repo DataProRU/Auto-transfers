@@ -22,7 +22,8 @@ dependencies = [
     "aiogram (>=3.4.1,<4.0.0)",
     "celery (>=5.3.6,<6.0.0)",
     "redis (>=5.0.1,<6.0.0)",
-    "python-json-logger (>=2.0.7,<3.0.0)"
+    "python-json-logger (>=2.0.7,<3.0.0)",
+    "django-stubs (==4.2.7)",
 ]
 
 [tool.poetry]
@@ -79,6 +80,12 @@ ignore = [
   # methods require 'request' as a parameter even if it's unused.
   "ARG002",
 
+  # Allow Cyrillic characters in strings
+  "RUF001",  # String contains ambiguous unicode characters
+
+  # Allow boolean arguments in Django model methods
+  "FBT001",  # Boolean-typed positional argument
+  "FBT002",  # Boolean default value in function definition
 ]
 unfixable = [
   "F841", # Prevents ruff deleting "unused" variables you're still working on
@@ -86,11 +93,13 @@ unfixable = [
 
 
 [tool.mypy]
-files = [ "**/*.py" ]
+files = ["src/**/*.py"]
 exclude = [
-  "src/accounts/tests",
-  "src/manage.py",
+    "src/accounts/tests",
+    "src/manage.py",
 ]
+plugins = ["mypy_django_plugin.main"]
+python_version = "3.12"
 ignore_missing_imports = true
 strict = true
 pretty = true
@@ -98,4 +107,16 @@ disallow_untyped_decorators = false
 disallow_subclassing_any = false
 show_error_codes = true
 warn_unreachable = true
-enable_error_code = [ "ignore-without-code", "redundant-expr", "truthy-bool" ]
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.django-stubs]
+django_settings_module = "project.settings"
+strict_settings = true

@@ -8,12 +8,13 @@ from functools import wraps
 from typing import Any, ParamSpec, TypeVar, cast
 
 from celery import Task, shared_task
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import transaction
 
 from accounts.models_types import UserProtocol
-from bot import send_registration_notification
+from bot.services import send_message_to_telegram_chat
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -107,7 +108,8 @@ def send_registration_notification_task(self: Task, user_id: int) -> str | None:
 
             @handle_async_errors
             async def send_notification() -> bool:
-                return await send_registration_notification(user_id)
+                success = await send_registration_notification(user_id)
+                return bool(success)
 
             success = send_notification()
             status = NotificationStatus.SUCCESS if success else NotificationStatus.FAILURE
@@ -116,3 +118,35 @@ def send_registration_notification_task(self: Task, user_id: int) -> str | None:
     except Exception as exc:
         logger.exception("Error sending notification for user %s", user_id)
         raise self.retry(exc=exc) from exc
+
+
+@shared_task
+async def send_registration_notification(user_id: int) -> bool:
+    try:
+        user = await User.objects.aget(id=user_id)
+        message = (
+            f"Новый пользователь зарегистрирован!\n\n"
+            f"ФИО: {user.full_name}\n"
+            f"Телефон: {user.phone}\n"
+            f"Telegram: {user.telegram}\n"
+            f"Роль: {user.get_role_display()}"
+        )
+        chat_id = getattr(settings, "TELEGRAM_CHAT_ID", None)
+        if chat_id is None:
+            return False
+        await send_message_to_telegram_chat(chat_id, message)
+    except (ObjectDoesNotExist, ConnectionError, OSError) as e:
+        logger.exception("Ошибка при отправке уведомления", exc_info=e)
+        return False
+    else:
+        return True
+
+
+@shared_task
+async def send_notification(user_id: int) -> bool:
+    try:
+        success = await send_registration_notification(user_id)
+        return bool(success)
+    except (ObjectDoesNotExist, ConnectionError, OSError) as e:
+        logger.exception("Ошибка при отправке уведомления", exc_info=e)
+        return False

@@ -1,57 +1,73 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.db.models import QuerySet
+from django.http import HttpRequest
 
-from .models.user import DocumentImage, User
+from accounts.models.user import DocumentImage, User
 
 
+@admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    # Define the fields to be displayed in the list view
-    list_display = ("phone", "full_name", "telegram", "role", "is_approved", "is_staff", "date_joined")
-
-    # Define the fields to be used when adding a new user
+    list_display = ("username", "email", "full_name", "role", "is_approved", "is_onboarded")
+    list_filter = ("role", "is_approved", "is_onboarded")
+    search_fields = ("username", "email", "full_name")
+    ordering = ("username",)
+    fieldsets = (
+        (None, {"fields": ("username", "password")}),
+        (
+            "Personal info",
+            {
+                "fields": (
+                    "email",
+                    "full_name",
+                    "phone",
+                    "telegram",
+                    "role",
+                    "is_approved",
+                    "is_onboarded",
+                )
+            },
+        ),
+        (
+            "Permissions",
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                ),
+            },
+        ),
+        ("Important dates", {"fields": ("last_login", "date_joined")}),
+    )
     add_fieldsets = (
         (
             None,
             {
                 "classes": ("wide",),
                 "fields": (
-                    "phone",
+                    "username",
+                    "email",
                     "full_name",
+                    "phone",
                     "telegram",
+                    "role",
                     "password1",
                     "password2",
-                    "role",
-                    "is_approved",
-                    "is_onboarded",
-                    "is_active",
-                    "is_staff",
-                    "is_superuser",
                 ),
             },
         ),
     )
 
-    # Define the fields to be used for searching
-    search_fields = ("phone", "full_name", "telegram")
 
-    # Define the fields to be used for filtering
-    list_filter = ("role", "is_approved", "is_staff")
-
-    # Define the ordering of the list view
-    ordering = ("full_name", "date_joined")
-
-
-admin.site.register(User, CustomUserAdmin)
-
-
-class DocumentImageAdmin(admin.ModelAdmin):
+@admin.register(DocumentImage)
+class DocumentImageAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     list_display = ("user", "image", "created")
-
-    search_fields = ("user__phone", "user__full_name")
-
-    list_filter = ("created", "user__role")
-
+    list_filter = ("created",)
+    search_fields = ("user__username", "user__full_name")
     ordering = ("-created",)
 
-
-admin.site.register(DocumentImage, DocumentImageAdmin)
+    def get_queryset(self, request: HttpRequest) -> QuerySet[DocumentImage]:
+        return super().get_queryset(request).select_related("user")

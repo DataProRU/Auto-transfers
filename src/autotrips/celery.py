@@ -29,16 +29,19 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
 
+
 @app.task(bind=True)
 def debug_task(self: Task) -> str:
     """Debug task."""
     return f"Request: {self.request!r}"
+
 
 # Настройка логирования
 @after_setup_logger.connect
 def setup_celery_logging(*_args: Never, **_kwargs: Never) -> None:
     """Configure Celery logging."""
     setup_logging()
+
 
 @after_setup_task_logger.connect
 def setup_celery_task_logging(*_args: Never, **_kwargs: Never) -> None:

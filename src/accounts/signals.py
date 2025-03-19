@@ -19,7 +19,7 @@ User = get_user_model()
 @receiver(post_save, sender=User)
 def notify_admins_about_registration(
     instance: AbstractBaseUser,
-    created: bool,  # noqa: FBT001
+    created: bool,
     **_: None,
 ) -> None:
     """

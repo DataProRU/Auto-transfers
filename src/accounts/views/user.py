@@ -10,7 +10,6 @@ from rest_framework.response import Response
 from accounts.models.user import DocumentImage, User
 from accounts.serializers.user import DocumentImageSerializer, UserSerializer
 from accounts.services.single_resource import SingleResourceMixin
-from project.permissions import IsAdminOrManager
 
 
 class CurrentUserViewSet(SingleResourceMixin, mixins.ListModelMixin):
@@ -57,13 +56,14 @@ class CurrentUserViewSet(SingleResourceMixin, mixins.ListModelMixin):
         return super().list(request, *args, **kwargs)
 
 
-class DocumentImageViewSet(viewsets.ReadOnlyModelViewSet):
+class DocumentImageViewSet(viewsets.ReadOnlyModelViewSet[DocumentImage]):
     serializer_class = DocumentImageSerializer
-    permission_classes = [IsAdminOrManager]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self) -> QuerySet[DocumentImage]:
-        user_id = self.kwargs.get("user_id")
-        return DocumentImage.objects.filter(user_id=user_id)
+        if not isinstance(self.request.user, User):
+            return cast(QuerySet[DocumentImage], DocumentImage.objects.none())
+        return cast(QuerySet[DocumentImage], DocumentImage.objects.filter(user=self.request.user))
 
     @extend_schema(
         summary="List all images for a specific user",

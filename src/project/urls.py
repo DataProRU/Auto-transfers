@@ -20,26 +20,39 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from django.urls import URLPattern, URLResolver, include, path
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
+
+from accounts.urls import urlpatterns as accounts_urls
+from autotrips.urls import urlpatterns as autotrips_urls
 
 # ЗДЕСЬ БУДУТ ТОЛЬКО ИНКЛЮДЫ и всякие готовые маршруты библиотек
 
-sub_urls = [
-    # apps
-    path("accounts/", include("accounts.urls")),
-    path("autotrips/", include("autotrips.urls")),
-    # Swagger schema endpoints
+sub_urls: list[URLPattern | URLResolver] = [
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
-    path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path(
+        "schema/swagger-ui/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path(
+        "schema/redoc/",
+        SpectacularRedocView.as_view(url_name="schema"),
+        name="redoc",
+    ),
 ]
 
+sub_urls.extend(accounts_urls)
+sub_urls.extend(autotrips_urls)
 
-urlpatterns = [
+urlpatterns: list[URLPattern | URLResolver] = [
     path("admin/", admin.site.urls),
     path("api/v1/", include(sub_urls)),
 ]
 
-
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG:
+    urlpatterns.extend(static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT))
