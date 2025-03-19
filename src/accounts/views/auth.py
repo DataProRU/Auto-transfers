@@ -1,4 +1,3 @@
-from typing import Any
 
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework.request import Request
@@ -35,5 +34,5 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             400: OpenApiResponse(description="Invalid field format"),
         },
     )
-    def post(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+    def post(self, request: Request, *args: tuple[object, ...], **kwargs: dict[str, object]) -> Response:
         return super().post(request, *args, **kwargs)

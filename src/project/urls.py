@@ -33,11 +33,15 @@ from autotrips.urls import urlpatterns as autotrips_urls
 # ЗДЕСЬ БУДУТ ТОЛЬКО ИНКЛЮДЫ и всякие готовые маршруты библиотек
 
 sub_urls: list[URLPattern | URLResolver] = [
-    path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
-        "schema/swagger-ui/",
+        "schema/",
+        SpectacularAPIView.as_view(),
+        name="schema",
+    ),
+    path(
+        "schema/swagger/",
         SpectacularSwaggerView.as_view(url_name="schema"),
-        name="swagger-ui",
+        name="swagger",
     ),
     path(
         "schema/redoc/",
@@ -55,4 +59,6 @@ urlpatterns: list[URLPattern | URLResolver] = [
 ]
 
 if settings.DEBUG:
-    urlpatterns.extend(static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT))
+    static_urls = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    if static_urls:
+        urlpatterns.extend(static_urls)

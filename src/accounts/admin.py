@@ -63,7 +63,7 @@ class CustomUserAdmin(UserAdmin):
 
 
 @admin.register(DocumentImage)
-class DocumentImageAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+class DocumentImageAdmin(admin.ModelAdmin):
     list_display = ("user", "image", "created")
     list_filter = ("created",)
     search_fields = ("user__username", "user__full_name")

@@ -6,7 +6,7 @@ from .models.acceptance_report import AcceptanceReport, ReportPhoto
 
 
 @admin.register(AcceptanceReport)
-class AcceptanceReportAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+class AcceptanceReportAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "user",
@@ -24,7 +24,7 @@ class AcceptanceReportAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
 
 
 @admin.register(ReportPhoto)
-class ReportPhotoAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+class ReportPhotoAdmin(admin.ModelAdmin):
     list_display = ("id", "report", "type", "photo", "created")
     list_filter = ("report", "type", "created")
     search_fields = ("report__report_number",)

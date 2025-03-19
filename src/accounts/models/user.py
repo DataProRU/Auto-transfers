@@ -16,6 +16,7 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
         help_text="Обязательное поле. Не более 150 символов.",
+        validators=[UnicodeUsernameValidator()],
         error_messages={
             "unique": "Пользователь с таким именем уже существует.",
         },
@@ -34,8 +35,6 @@ class User(AbstractUser):
     is_onboarded = models.BooleanField(default=False)
 
     objects = CustomUserManager()
-
-    username_validator = UnicodeUsernameValidator()
 
     USERNAME_FIELD = "username"
     EMAIL_FIELD = "email"

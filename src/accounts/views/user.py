@@ -1,24 +1,25 @@
-from typing import Any, cast
+from typing import cast
 
 from django.db.models import QuerySet
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema
-from rest_framework import mixins, viewsets
+from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from accounts.models.user import DocumentImage, User
 from accounts.serializers.user import DocumentImageSerializer, UserSerializer
-from accounts.services.single_resource import SingleResourceMixin
+from project.views import SingleResourceMixin
 
 
-class CurrentUserViewSet(SingleResourceMixin, mixins.ListModelMixin):
+class CurrentUserViewSet(SingleResourceMixin, ListModelMixin):
     serializer_class = UserSerializer
     queryset = User.objects.order_by("id")
     permission_classes = [IsAuthenticated]
 
     def get_object(self) -> User:
-        return cast(User, self.request.user)
+        return self.request.user
 
     @extend_schema(
         summary="Retrieve the currently authenticated user",
@@ -52,11 +53,11 @@ class CurrentUserViewSet(SingleResourceMixin, mixins.ListModelMixin):
             401: OpenApiResponse(description="Unauthorized"),
         },
     )
-    def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+    def list(self, request: Request, *args: tuple[object, ...], **kwargs: dict[str, object]) -> Response:
         return super().list(request, *args, **kwargs)
 
 
-class DocumentImageViewSet(viewsets.ReadOnlyModelViewSet[DocumentImage]):
+class DocumentImageViewSet(ReadOnlyModelViewSet[DocumentImage]):
     serializer_class = DocumentImageSerializer
     permission_classes = [IsAuthenticated]
 
@@ -103,5 +104,5 @@ class DocumentImageViewSet(viewsets.ReadOnlyModelViewSet[DocumentImage]):
             404: OpenApiResponse(description="Not Found"),
         },
     )
-    def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+    def list(self, request: Request, *args: tuple[object, ...], **kwargs: dict[str, object]) -> Response:
         return super().list(request, *args, **kwargs)

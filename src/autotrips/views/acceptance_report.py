@@ -4,6 +4,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Never
 
 from django.contrib.auth import get_user_model
+from django.db.models import QuerySet
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.request import Request
@@ -39,7 +40,8 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet[AcceptanceReport]):
             QuerySet[AcceptanceReport]: QuerySet с отчетами.
 
         """
-        return super().get_queryset().select_related("user")
+        qs: QuerySet[AcceptanceReport] = super().get_queryset()
+        return qs.select_related("user")
 
     def list(self, request: Request, *args: Never, **kwargs: Never) -> Response:
         """
@@ -80,6 +82,6 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet[AcceptanceReport]):
             dict[str, Any]: Контекст сериализатора.
 
         """
-        context = super().get_serializer_context()
-        context.update({"request": self.request})
-        return context
+        base_context: dict[str, Any] = super().get_serializer_context()
+        base_context["request"] = self.request
+        return base_context

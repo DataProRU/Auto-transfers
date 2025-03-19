@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from datetime import timedelta
 from pathlib import Path
+from typing import TypeAlias
 from urllib.parse import urlparse
 
 from config import (
@@ -28,6 +29,12 @@ from config import (
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Type aliases for settings
+DjangoSecretKey: TypeAlias = str
+DjangoDebug: TypeAlias = bool
+DjangoHosts: TypeAlias = list[str]
+DjangoCorsOrigins: TypeAlias = list[str]
+DjangoMediaRoot: TypeAlias = str
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
