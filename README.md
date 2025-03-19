@@ -1,64 +1,102 @@
 # Auto-transfers
 
-Система автоматизации работы с перевозчиками.
+Система управления автопоездками с интеграцией Telegram бота.
 
-## Установка и запуск
+## Требования
+
+- Python 3.12+
+- PostgreSQL 14+
+- Redis 7+
+- Poetry
+
+## Установка
 
 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com/DataProRU/Auto-transfers.git
-cd Auto-transfers
+git clone https://github.com/yourusername/auto-transfers.git
+cd auto-transfers
 ```
 
-2. Создайте файл `.env` и заполните его:
-```bash
-# Database settings
-DATABASE_URL=postgres://autotrips:autotrips@localhost:5432/autotrips
-SECRET_KEY=your-secret-key
-
-# Telegram Bot settings
-BOT_TOKEN=your_bot_token_here
-ADMIN_GROUP_ID=your_admin_group_id_here
-ADMIN_URL=http://localhost:8000/admin/
-```
-
-3. Запустите проект через Docker Compose:
-```bash
-docker-compose up --build
-```
-
-4. Откройте в браузере:
-- Админ-панель: http://localhost:8000/admin/
-- pgAdmin: http://localhost:5050/
-
-## Разработка
-
-1. Установите Poetry:
-```bash
-pip install poetry
-```
-
-2. Установите зависимости:
+2. Установите зависимости с помощью Poetry:
 ```bash
 poetry install
 ```
 
-3. Примените миграции:
+3. Создайте файл `.env` на основе `.env.example`:
+```bash
+cp .env.example .env
+```
+
+4. Отредактируйте `.env` файл, установив необходимые значения переменных окружения.
+
+5. Примените миграции базы данных:
 ```bash
 poetry run python src/manage.py migrate
 ```
 
-4. Создайте суперпользователя:
+6. Создайте суперпользователя:
 ```bash
 poetry run python src/manage.py createsuperuser
 ```
 
-5. Запустите сервер разработки:
+## Запуск
+
+1. Запустите Redis:
+```bash
+docker-compose up -d redis
+```
+
+2. Запустите Celery:
+```bash
+poetry run celery -A project worker -l info
+```
+
+3. Запустите Django сервер:
 ```bash
 poetry run python src/manage.py runserver
 ```
 
-6. Запустите бота:
+4. Запустите Telegram бота:
 ```bash
-poetry run python src/manage.py runbot
+poetry run python src/run_bot.py
 ```
+
+## Разработка
+
+### Линтинг и типизация
+
+Проект использует `ruff` для линтинга и `mypy` для проверки типов:
+
+```bash
+# Запуск линтера
+poetry run ruff check .
+
+# Запуск проверки типов
+poetry run mypy .
+```
+
+### Тесты
+
+Запуск тестов:
+
+```bash
+poetry run pytest
+```
+
+## Структура проекта
+
+```
+src/
+├── accounts/          # Приложение для управления пользователями
+├── autotrips/         # Приложение для управления поездками
+├── bot/              # Telegram бот
+└── project/          # Основные настройки Django
+```
+
+## API документация
+
+API документация доступна по адресу `/api/schema/swagger-ui/` после запуска сервера.
+
+## Лицензия
+
+MIT

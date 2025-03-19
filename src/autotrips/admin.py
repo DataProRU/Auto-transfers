@@ -1,53 +1,31 @@
-from typing import Any
-
 from django.contrib import admin
 from django.db.models import QuerySet
 from django.http import HttpRequest
 
-from .models.acceptance_report import AcceptenceReport, CarPhoto, DocumentPhoto, KeyPhoto
+from .models.acceptance_report import AcceptanceReport, ReportPhoto
 
 
-@admin.register(AcceptenceReport)
-class AcceptenceReportAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+@admin.register(AcceptanceReport)
+class AcceptanceReportAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     list_display = (
         "id",
-        "vin",
-        "reporter",
-        "model",
-        "place",
-        "status",
+        "user",
         "report_number",
-        "report_time",
-        "acceptance_date",
+        "created",
+        "updated",
     )
-    list_filter = ("status", "reporter", "acceptance_date")
-    search_fields = ("vin", "model", "place", "reporter__username")
-    readonly_fields = ("report_number", "report_time", "acceptance_date")
-    date_hierarchy = "acceptance_date"
+    list_filter = ("user", "created")
+    search_fields = ("report_number", "user__username")
+    readonly_fields = ("report_number", "created", "updated")
+    date_hierarchy = "created"
 
-    def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
-        return super().get_queryset(request).select_related("reporter")
-
-
-@admin.register(CarPhoto)
-class CarPhotoAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
-    list_display = ("id", "report", "image", "created")
-    list_filter = ("report", "created")
-    search_fields = ("report__vin",)
-    readonly_fields = ("created",)
+    def get_queryset(self, request: HttpRequest) -> QuerySet[AcceptanceReport]:
+        return super().get_queryset(request).select_related("user")
 
 
-@admin.register(KeyPhoto)
-class KeyPhotoAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
-    list_display = ("id", "report", "image", "created")
-    list_filter = ("report", "created")
-    search_fields = ("report__vin",)
-    readonly_fields = ("created",)
-
-
-@admin.register(DocumentPhoto)
-class DocumentPhotoAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
-    list_display = ("id", "report", "image", "created")
-    list_filter = ("report", "created")
-    search_fields = ("report__vin",)
+@admin.register(ReportPhoto)
+class ReportPhotoAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+    list_display = ("id", "report", "type", "photo", "created")
+    list_filter = ("report", "type", "created")
+    search_fields = ("report__report_number",)
     readonly_fields = ("created",)

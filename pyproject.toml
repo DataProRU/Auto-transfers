@@ -91,6 +91,8 @@ unfixable = [
   "F841", # Prevents ruff deleting "unused" variables you're still working on
 ]
 
+# Отключаем проверку русских символов
+extend-ignore = ["RUF002"]
 
 [tool.mypy]
 files = ["src/**/*.py"]
