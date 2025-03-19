@@ -13,8 +13,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from accounts.models_types import UserProtocol
-
-from .bot.bot import send_registration_notification
+from bot import send_registration_notification
 
 logger = logging.getLogger(__name__)
 User = get_user_model()

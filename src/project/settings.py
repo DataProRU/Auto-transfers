@@ -10,14 +10,20 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-import os
 from datetime import timedelta
 from pathlib import Path
 from urllib.parse import urlparse
 
-from dotenv import load_dotenv
-
-load_dotenv()
+from config import (
+    ALLOWED_HOSTS,
+    CORS_ALLOWED_ORIGINS,
+    DATABASE_URL,
+    DEBUG,
+    MEDIA_ROOT,
+    REDIS_URL,
+    SECRET_KEY,
+    STATIC_ROOT,
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,12 +33,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p")
+SECRET_KEY = str(SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(DEBUG)
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = list(ALLOWED_HOSTS)
 
 
 # Application definition
@@ -63,7 +69,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = list(CORS_ALLOWED_ORIGINS)
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = "project.urls"
@@ -89,8 +95,7 @@ WSGI_APPLICATION = "project.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgres://autotrips:autotrips@localhost:5432/autotrips")
-db_url = urlparse(DATABASE_URL)
+db_url = urlparse(str(DATABASE_URL))
 
 DATABASES = {
     "default": {
@@ -145,7 +150,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "static"
+STATIC_ROOT = str(STATIC_ROOT)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -155,7 +160,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MAX_UPLOAD_SIZE = 5242880  # 5 MB
 
 DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = str(MEDIA_ROOT)
 MEDIA_URL = "/media/"
 
 SIMPLE_JWT = {
@@ -187,8 +192,8 @@ SPECTACULAR_SETTINGS = {
 }
 
 # Celery Configuration
-CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
-CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "redis://redis:6379/0")
+CELERY_BROKER_URL = str(REDIS_URL)
+CELERY_RESULT_BACKEND = str(REDIS_URL)
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"

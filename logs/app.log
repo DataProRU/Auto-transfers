@@ -1,0 +1,263 @@
+2025-03-19 10:52:21 - root - INFO - Logging system initialized
+2025-03-19 10:52:21 - root - INFO - Logging system initialized
+2025-03-19 10:52:21 - root - INFO - Logging system initialized
+2025-03-19 10:52:21 - root - INFO - Logging system initialized
+2025-03-19 10:52:21 - py.warnings - WARNING - C:\Users\Administrator\AppData\Local\pypoetry\Cache\virtualenvs\autotrips-TvHaGJtg-py3.12\Lib\site-packages\billiard\pool.py:1022: UserWarning: Soft timeouts are not supported: on this platform: It does not have the SIGUSR1 signal.
+  warnings.warn(UserWarning(
+
+2025-03-19 10:52:21 - py.warnings - WARNING - C:\Users\Administrator\AppData\Local\pypoetry\Cache\virtualenvs\autotrips-TvHaGJtg-py3.12\Lib\site-packages\celery\worker\consumer\consumer.py:508: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+2025-03-19 10:52:23 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 2.00 seconds... (1/100)
+
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:26 - root - INFO - Logging system initialized
+2025-03-19 10:52:28 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 4.00 seconds... (2/100)
+
+2025-03-19 10:52:28 - root - INFO - Logging system initialized
+2025-03-19 10:52:28 - root - INFO - Logging system initialized
+2025-03-19 10:52:28 - root - INFO - Logging system initialized
+2025-03-19 10:52:28 - root - INFO - Logging system initialized
+2025-03-19 10:52:34 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 6.00 seconds... (3/100)
+
+2025-03-19 10:52:42 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 8.00 seconds... (4/100)
+
+2025-03-19 10:52:52 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 10.00 seconds... (5/100)
+
+2025-03-19 10:53:05 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 12.00 seconds... (6/100)
+
+2025-03-19 10:53:19 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 14.00 seconds... (7/100)
+
+2025-03-19 10:53:35 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 16.00 seconds... (8/100)
+
+2025-03-19 10:53:54 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 18.00 seconds... (9/100)
+
+2025-03-19 10:54:12 - root - INFO - Logging system initialized
+2025-03-19 10:54:12 - root - INFO - Logging system initialized
+2025-03-19 10:54:12 - root - INFO - Logging system initialized
+2025-03-19 10:54:12 - root - INFO - Logging system initialized
+2025-03-19 10:54:12 - py.warnings - WARNING - C:\Users\Administrator\AppData\Local\pypoetry\Cache\virtualenvs\autotrips-TvHaGJtg-py3.12\Lib\site-packages\billiard\pool.py:1022: UserWarning: Soft timeouts are not supported: on this platform: It does not have the SIGUSR1 signal.
+  warnings.warn(UserWarning(
+
+2025-03-19 10:54:12 - py.warnings - WARNING - C:\Users\Administrator\AppData\Local\pypoetry\Cache\virtualenvs\autotrips-TvHaGJtg-py3.12\Lib\site-packages\celery\worker\consumer\consumer.py:508: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+2025-03-19 10:54:14 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 20.00 seconds... (10/100)
+
+2025-03-19 10:54:14 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 2.00 seconds... (1/100)
+
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:17 - root - INFO - Logging system initialized
+2025-03-19 10:54:19 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 4.00 seconds... (2/100)
+
+2025-03-19 10:54:25 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 6.00 seconds... (3/100)
+
+2025-03-19 10:54:33 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 8.00 seconds... (4/100)
+
+2025-03-19 10:54:36 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 22.00 seconds... (11/100)
+
+2025-03-19 10:54:44 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 10.00 seconds... (5/100)
+
+2025-03-19 10:54:56 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 12.00 seconds... (6/100)
+
+2025-03-19 10:55:27 - root - INFO - Logging system initialized
+2025-03-19 10:55:27 - root - INFO - Logging system initialized
+2025-03-19 10:55:27 - root - INFO - Logging system initialized
+2025-03-19 10:55:27 - root - INFO - Logging system initialized
+2025-03-19 10:55:29 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 2.00 seconds... (1/None)
+
+2025-03-19 10:55:34 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 4.00 seconds... (2/None)
+
+2025-03-19 10:55:40 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 6.00 seconds... (3/None)
+
+2025-03-19 10:55:48 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 8.00 seconds... (4/None)
+
+2025-03-19 10:56:41 - root - INFO - Logging system initialized
+2025-03-19 10:56:41 - root - INFO - Logging system initialized
+2025-03-19 10:56:41 - root - INFO - Logging system initialized
+2025-03-19 10:56:41 - root - INFO - Logging system initialized
+2025-03-19 10:56:58 - root - INFO - Logging system initialized
+2025-03-19 10:56:58 - root - INFO - Logging system initialized
+2025-03-19 10:56:58 - root - INFO - Logging system initialized
+2025-03-19 10:56:58 - root - INFO - Logging system initialized
+2025-03-19 10:57:00 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 2.00 seconds... (1/None)
+
+2025-03-19 10:57:04 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 4.00 seconds... (2/None)
+
+2025-03-19 10:57:11 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 6.00 seconds... (3/None)
+
+2025-03-19 10:57:19 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 8.00 seconds... (4/None)
+
+2025-03-19 10:57:29 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 10.00 seconds... (5/None)
+
+2025-03-19 10:57:52 - root - INFO - Logging system initialized
+2025-03-19 10:57:52 - root - INFO - Logging system initialized
+2025-03-19 10:57:52 - root - INFO - Logging system initialized
+2025-03-19 10:57:52 - root - INFO - Logging system initialized
+2025-03-19 10:57:54 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 2.00 seconds... (1/None)
+
+2025-03-19 10:57:59 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 4.00 seconds... (2/None)
+
+2025-03-19 10:58:05 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 6.00 seconds... (3/None)
+
+2025-03-19 10:58:13 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 8.00 seconds... (4/None)
+
+2025-03-19 10:58:23 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 10.00 seconds... (5/None)
+
+2025-03-19 10:58:36 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 12.00 seconds... (6/None)
+
+2025-03-19 10:59:16 - root - INFO - Logging system initialized
+2025-03-19 10:59:16 - root - INFO - Logging system initialized
+2025-03-19 10:59:16 - root - INFO - Logging system initialized
+2025-03-19 10:59:16 - root - INFO - Logging system initialized
+2025-03-19 10:59:18 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 2.00 seconds... (1/None)
+
+2025-03-19 10:59:23 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 4.00 seconds... (2/None)
+
+2025-03-19 10:59:29 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 6.00 seconds... (3/None)
+
+2025-03-19 10:59:37 - celery.worker.consumer.consumer - ERROR - consumer: Cannot connect to redis://redis:6379/0: Error 11001 connecting to redis:6379. getaddrinfo failed..
+Trying again in 8.00 seconds... (4/None)
+
+2025-03-19 11:00:24 - root - INFO - Logging system initialized
+2025-03-19 11:00:24 - root - INFO - Logging system initialized
+2025-03-19 11:00:24 - root - INFO - Logging system initialized
+2025-03-19 11:00:24 - root - INFO - Logging system initialized
+2025-03-19 11:00:24 - celery.worker.consumer.connection - INFO - Connected to redis://127.0.0.1:6379/0
+2025-03-19 11:00:24 - celery.worker.consumer.mingle - INFO - mingle: searching for neighbors
+2025-03-19 11:00:25 - celery.worker.consumer.mingle - INFO - mingle: all alone
+2025-03-19 11:00:25 - celery.apps.worker - INFO - celery@WIN-K7D3HGC5RDG ready.
+2025-03-19 11:00:25 - kombu.common - DEBUG - basic.qos: prefetch_count->48
