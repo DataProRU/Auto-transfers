@@ -180,3 +180,8 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "SECURITY": [{"Authentication": []}],
 }
+
+# GOOGLE TABLES
+TABLE_ID = os.getenv("TABLE_ID", "")
+TABLE_CREDS = os.getenv("TABLE_CREDS", "")
+VINS_WORKSHEET = os.getenv("VINS_WORKSHEET", "База VIN")
