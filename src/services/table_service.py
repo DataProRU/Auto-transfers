@@ -1,11 +1,7 @@
-import os
 from typing import Any
 
 from gspread import Client, Spreadsheet, Worksheet, exceptions, service_account
 from gspread.utils import ValueInputOption
-
-TABLE_ID = os.getenv("TABLE_ID", "")
-TABLE_CREDS = os.getenv("TABLE_CREDS", "")
 
 
 class TableManager:
@@ -52,6 +48,3 @@ class TableManager:
     def get_col_data_from_worksheet(self, title: str, col: int) -> list[Any]:
         worksheet = self.get_worksheet(title)
         return worksheet.col_values(col)
-
-
-table_manager = TableManager(TABLE_ID, TABLE_CREDS)

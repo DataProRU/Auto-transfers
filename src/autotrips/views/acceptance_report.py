@@ -1,9 +1,11 @@
 from datetime import timedelta
 from typing import Any
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema
+from gspread.exceptions import GSpreadException
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -18,9 +20,11 @@ from autotrips.serializers.acceptance_report import (
     KeyPhotoSerializer,
 )
 from project.permissions import IsAdminOrManager, IsApproved
-from services.table_service import table_manager
+from services.table_service import TableManager
 
 User = get_user_model()
+
+WORKSHEET = settings.VINS_WORKSHEET
 
 
 class AcceptanceReportViewSet(viewsets.ModelViewSet):
@@ -169,11 +173,56 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
         context.update({"request": self.request})
         return context
 
+    @extend_schema(
+        description="Retrieve a mapping of VINs to car brands from the 'База VIN' google worksheet.",
+        summary="Get VIN to Car Brand Mapping",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                description="Successfully retrieved VIN to car brand mapping.",
+                response=dict,
+                examples=[
+                    OpenApiExample(
+                        name="Success Example",
+                        value={
+                            "vins": {
+                                "ABC123456789DEFGH": "Toyota Camry",
+                                "XYZ987654321UVWST": "Honda Civic",
+                            }
+                        },
+                        status_codes=[str(status.HTTP_200_OK)],
+                    ),
+                ],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                description="Invalid header in the VIN table.",
+                response=dict,
+                examples=[
+                    OpenApiExample(
+                        name="Error Example",
+                        value={"error": "Invalid header in VIN table: <header>"},
+                        status_codes=[str(status.HTTP_400_BAD_REQUEST)],
+                    ),
+                ],
+            ),
+        },
+        methods=["GET"],
+    )
     @action(methods=["GET"], detail=False, url_path="cars", url_name="get_cars")
     def get_table_data(self, request: Request) -> Response:
-        worksheet = "База VIN"
-        data = table_manager.get_data_from_worksheet(worksheet)
-        return Response({"cars": data})
+        try:
+            table_manager = TableManager(settings.TABLE_ID, settings.TABLE_CREDS)
+        except GSpreadException as e:
+            resp = e.args[0].json()
+            return Response(resp["error"]["message"], status=resp["error"]["code"])
+
+        data = table_manager.get_data_from_worksheet(WORKSHEET)
+
+        try:
+            vins_mapping = {row["VIN"]: row["Марка"] for row in data}
+        except KeyError as e:
+            return Response({"error": f"Invalid header in VIN table: {e.args[0]}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"vins": vins_mapping})
 
 
 class CarPhotoViewSet(viewsets.ReadOnlyModelViewSet):
