@@ -28,6 +28,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 sub_urls = [
     # apps
     path("accounts/", include("accounts.urls")),
+    path("autotrips/", include("autotrips.urls")),
     # Swagger schema endpoints
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path("schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
