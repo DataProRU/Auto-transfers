@@ -4,8 +4,8 @@ from typing import Any
 from gspread import Client, Spreadsheet, Worksheet, exceptions, service_account
 from gspread.utils import ValueInputOption
 
-TABLE_ID = os.getenv("TABLE_ID", "1D67_F_XR0AnfW6cokeerC4Yprepm0rdh8ab4EaMyYbU")
-TABLE_CREDS = os.getenv("TABLE_CREDS", "Auto-transfers/credentials.json")
+TABLE_ID = os.getenv("TABLE_ID", "")
+TABLE_CREDS = os.getenv("TABLE_CREDS", "")
 
 
 class TableManager:

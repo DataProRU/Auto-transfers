@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
@@ -17,6 +18,7 @@ from autotrips.serializers.acceptance_report import (
     KeyPhotoSerializer,
 )
 from project.permissions import IsAdminOrManager, IsApproved
+from services.table_service import table_manager
 
 User = get_user_model()
 
@@ -166,6 +168,12 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
         context: dict[str, Any] = super().get_serializer_context()
         context.update({"request": self.request})
         return context
+
+    @action(methods=["GET"], detail=False, url_path="cars", url_name="get_cars")
+    def get_table_data(self, request: Request) -> Response:
+        worksheet = "База VIN"
+        data = table_manager.get_data_from_worksheet(worksheet)
+        return Response({"cars": data})
 
 
 class CarPhotoViewSet(viewsets.ReadOnlyModelViewSet):
