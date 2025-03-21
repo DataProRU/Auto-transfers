@@ -1,10 +1,12 @@
-from aiogram import Bot, Dispatcher
-from aiogram.filters import CommandStart
-from aiogram.types import CallbackQuery as CallbackQueryType, Message
-from django.conf import settings
-from accounts.models import User
 import asyncio
-from aiogram import F
+
+from aiogram import Bot, Dispatcher, F
+from aiogram.filters import CommandStart
+from aiogram.types import CallbackQuery as CallbackQueryType
+from aiogram.types import Message
+from django.conf import settings
+
+from accounts.models import User
 
 bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()

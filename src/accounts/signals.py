@@ -1,10 +1,14 @@
+import asyncio
+
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import User
+
 from telegram_bot.bot import bot
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-import asyncio
-from django.conf import settings
+
+from .models import User
+
 
 def build_keyboard(user_id: int) -> InlineKeyboardMarkup:
     accept_button = InlineKeyboardButton(
