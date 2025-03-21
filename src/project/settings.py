@@ -66,6 +66,8 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000/")
+
 ROOT_URLCONF = "project.urls"
 
 TEMPLATES = [
@@ -190,3 +192,4 @@ TABLE_ID = os.getenv("TABLE_ID", "")
 TABLE_CREDS = os.getenv("TABLE_CREDS", "")
 VINS_WORKSHEET = os.getenv("VINS_WORKSHEET", "База VIN")
 CHECKER_WORKSHEET = os.getenv("CHECKER_WORKSHEET", "База приемщиков")
+REPORTS_WORKSHEET = os.getenv("REPORTS_WORKSHEET", "Принятие авто 2")
