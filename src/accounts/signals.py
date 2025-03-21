@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from django.conf import settings
@@ -9,6 +10,7 @@ from telegram_bot.bot import bot
 
 from .models import User
 
+logger = logging.getLogger(__name__)
 
 def build_keyboard(user_id: int) -> InlineKeyboardMarkup:
     accept_button = InlineKeyboardButton(
@@ -25,6 +27,21 @@ def build_keyboard(user_id: int) -> InlineKeyboardMarkup:
 @receiver(post_save, sender=User)
 def send_registration_notification(sender, instance: User, created: bool, **kwargs) -> None:
     if created:
+        logger.info(f"Создан новый пользователь: {instance.full_name}")
         keyboard = build_keyboard(instance.id)
         text = f"Зарегистрирован новый приемщик:\n{instance.full_name}\n{instance.phone}\nСсылка на документы: api/v1/account/users/{instance.id}/documents"
-        asyncio.run(bot.send_message(chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text=text, reply_markup=keyboard))
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+        if loop.is_running():
+            asyncio.run_coroutine_threadsafe(
+                bot.send_message(chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text=text, reply_markup=keyboard),
+                loop
+            )
+        else:
+            loop.run_until_complete(
+                bot.send_message(chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text=text, reply_markup=keyboard)
+            )
