@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.conf import settings
 from gspread import Client, Spreadsheet, Worksheet, exceptions, service_account
 from gspread.utils import ValueInputOption
 
@@ -48,3 +49,6 @@ class TableManager:
     def get_col_data_from_worksheet(self, title: str, col: int) -> list[Any]:
         worksheet = self.get_worksheet(title)
         return worksheet.col_values(col)
+
+
+table_manager = TableManager(settings.TABLE_ID, settings.TABLE_CREDS)

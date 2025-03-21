@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema
-from gspread.exceptions import GSpreadException
+from gspread.exceptions import WorksheetNotFound
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -20,7 +20,7 @@ from autotrips.serializers.acceptance_report import (
     KeyPhotoSerializer,
 )
 from project.permissions import IsAdminOrManager, IsApproved
-from services.table_service import TableManager
+from services.table_service import table_manager
 
 User = get_user_model()
 
@@ -198,8 +198,13 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
                 response=dict,
                 examples=[
                     OpenApiExample(
-                        name="Error Example",
+                        name="Invalid table header",
                         value={"error": "Invalid header in VIN table: <header>"},
+                        status_codes=[str(status.HTTP_400_BAD_REQUEST)],
+                    ),
+                    OpenApiExample(
+                        name="Worksheet not exist",
+                        value={"error": "Worksheet <WORKSHEET> not found"},
                         status_codes=[str(status.HTTP_400_BAD_REQUEST)],
                     ),
                 ],
@@ -210,12 +215,9 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
     @action(methods=["GET"], detail=False, url_path="cars", url_name="get_cars")
     def get_table_data(self, request: Request) -> Response:
         try:
-            table_manager = TableManager(settings.TABLE_ID, settings.TABLE_CREDS)
-        except GSpreadException as e:
-            resp = e.args[0].json()
-            return Response(resp["error"]["message"], status=resp["error"]["code"])
-
-        data = table_manager.get_data_from_worksheet(WORKSHEET)
+            data = table_manager.get_data_from_worksheet(WORKSHEET)
+        except WorksheetNotFound as e:
+            return Response({"error": f"Worksheet {e} not found"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             vins_mapping = {row["VIN"]: row["Марка"] for row in data}
