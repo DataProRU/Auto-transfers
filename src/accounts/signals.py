@@ -31,17 +31,20 @@ def send_registration_notification(sender, instance: User, created: bool, **kwar
         keyboard = build_keyboard(instance.id)
         text = f"Зарегистрирован новый приемщик:\n{instance.full_name}\n{instance.phone}\nСсылка на документы: api/v1/account/users/{instance.id}/documents"
         try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
 
-        if loop.is_running():
-            asyncio.run_coroutine_threadsafe(
-                bot.send_message(chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text=text, reply_markup=keyboard),
-                loop
-            )
-        else:
-            loop.run_until_complete(
-                bot.send_message(chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text=text, reply_markup=keyboard)
-            )
+            if loop.is_running():
+                asyncio.create_task(
+                    bot.send_message(chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text=text, reply_markup=keyboard)
+                )
+            else:
+                loop.run_until_complete(
+                    bot.send_message(chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text=text, reply_markup=keyboard)
+                )
+            logger.info("Уведомление отправлено успешно.")
+        except Exception as e:
+            logger.error(f"Ошибка при отправке уведомления: {e}")
