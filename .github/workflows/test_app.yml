@@ -61,7 +61,6 @@ jobs:
           echo "SECRET_KEY=estautotrips" >> .env
           echo "TABLE_ID=${{ secrets.TABLE_ID }}" >> .env
           echo "TABLE_CREDS=credentials.json" >> .env
-          echo "VINS_WORKSHEET=База VIN" >> .env
 
       - name: Install dependencies
         run: poetry install
