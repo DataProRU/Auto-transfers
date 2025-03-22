@@ -58,7 +58,6 @@ jobs:
           echo "DATABASE_PORT=5432" >> .env
           echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
           echo "SECRET_KEY=testautotrips" >> .env
-          echo "SECRET_KEY=estautotrips" >> .env
           echo "TABLE_ID=${{ secrets.TABLE_ID }}" >> .env
           echo "TABLE_CREDS=credentials.json" >> .env
           echo "VINS_WORKSHEET=База VIN" >> .env
