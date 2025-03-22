@@ -1,7 +1,8 @@
 from typing import Any, cast
 
 from drf_spectacular.utils import OpenApiExample, OpenApiParameter, OpenApiResponse, extend_schema
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -9,7 +10,7 @@ from rest_framework.response import Response
 from accounts.models.user import DocumentImage, User
 from accounts.serializers.user import DocumentImageSerializer, UserSerializer
 from accounts.services.single_resource import SingleResourceMixin
-from project.permissions import IsAdminOrManager
+from project.permissions import IsAdminOrManager, IsApproved
 
 
 class CurrentUserViewSet(SingleResourceMixin, mixins.ListModelMixin):
@@ -54,6 +55,36 @@ class CurrentUserViewSet(SingleResourceMixin, mixins.ListModelMixin):
     )
     def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
         return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Onboard current user",
+        description="Endpoint to onboard a user. Can only be accessed by approved users.",
+        request=None,
+        responses={
+            200: OpenApiResponse(
+                response=dict,
+                examples=[
+                    OpenApiExample("Already Onboarded", value={"message": "The user is already onboarded"}),
+                    OpenApiExample(
+                        "Successfully Onboarded", value={"message": "User 'John Doe' has been successfully onboarded"}
+                    ),
+                ],
+            ),
+        },
+    )
+    @action(
+        methods=["PATCH"], detail=False, url_path="onboard", url_name="onboard_user", permission_classes=[IsApproved]
+    )
+    def onboard(self, request: Request) -> Response:
+        user: User = request.user
+        if user.is_onboarded:
+            return Response({"message": "The user is already onboarded"}, status=status.HTTP_200_OK)
+
+        user.is_onboarded = True
+        user.save()
+        return Response(
+            {"message": f"User '{user.full_name}' has been successfully onboarded"}, status=status.HTTP_200_OK
+        )
 
 
 class DocumentImageViewSet(viewsets.ReadOnlyModelViewSet):
