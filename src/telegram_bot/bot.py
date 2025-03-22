@@ -37,7 +37,8 @@ async def accept_callback(callback_query: CallbackQueryType):
                     await callback_query.message.edit_text(text="Пользователь принят")
 
                     # Запись в Google таблицу
-                    table_manager.append_row("Users", [user_id, user.username, "Принят"])
+                    document_url = f"api/v1/account/users/{user_id}/documents"
+                    table_manager.append_row("База приемщиков", [user.full_name, user.phone, user.telegram, document_url])
                 else:
                     await callback_query.answer("У вас нет прав для выполнения этого действия")
             except User.DoesNotExist:
