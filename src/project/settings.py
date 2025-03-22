@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "accounts",
     "autotrips",
+    "telegram_bot"
 ]
 
 MIDDLEWARE = [
@@ -180,3 +181,6 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "SECURITY": [{"Authentication": []}],
 }
+
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_GROUP_CHAT_ID = os.getenv("TELEGRAM_GROUP_CHAT_ID")
