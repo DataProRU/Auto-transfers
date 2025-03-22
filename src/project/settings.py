@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "accounts",
     "autotrips",
+    "telegram_bot"
 ]
 
 MIDDLEWARE = [
@@ -180,3 +181,11 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "SECURITY": [{"Authentication": []}],
 }
+
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_GROUP_CHAT_ID = os.getenv("TELEGRAM_GROUP_CHAT_ID")
+
+# GOOGLE TABLES
+TABLE_ID = os.getenv("TABLE_ID", "")
+TABLE_CREDS = os.getenv("TABLE_CREDS", "")
+VINS_WORKSHEET = os.getenv("VINS_WORKSHEET", "База VIN")
