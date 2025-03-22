@@ -7,6 +7,7 @@ from aiogram.types import Message
 from django.conf import settings
 
 from accounts.models import User
+from services.table_service import table_manager
 
 bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
@@ -34,6 +35,9 @@ async def accept_callback(callback_query: CallbackQueryType):
                     await asyncio.to_thread(user.save)
                     await callback_query.answer()
                     await callback_query.message.edit_text(text="Пользователь принят")
+
+                    # Запись в Google таблицу
+                    table_manager.append_row("Users", [user_id, user.username, "Принят"])
                 else:
                     await callback_query.answer("У вас нет прав для выполнения этого действия")
             except User.DoesNotExist:
