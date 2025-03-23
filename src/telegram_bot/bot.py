@@ -7,9 +7,12 @@ from aiogram.types import Message
 from django.conf import settings
 
 from accounts.models import User
+from services.table_service import table_manager
+from django.utils import timezone
 
 bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
 dp = Dispatcher()
+WORKSHEET = settings.CHECKER_WORKSHEET
 
 # Тестовый обработчик команды /start
 @dp.message(CommandStart())
@@ -31,6 +34,10 @@ async def accept_callback(callback_query: CallbackQueryType):
                 clicker_user = await asyncio.to_thread(User.objects.get, telegram=clicker_telegram)
                 if clicker_user.role in ["admin", "manager"]:
                     user.is_approved = True
+                    accept_datetime = timezone.now().strftime("%Y-%m-%d %H:%M")
+                    documents_url = f"Ссылка на документы: api/v1/account/users/{user_id}/documents"
+                    data = [accept_datetime, user.full_name, user.phone, user.telegram, documents_url]
+                    table_manager.append_row(WORKSHEET, data)
                     await asyncio.to_thread(user.save)
                     await callback_query.answer()
                     await callback_query.message.edit_text(text="Пользователь принят")

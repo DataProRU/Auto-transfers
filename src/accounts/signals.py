@@ -29,7 +29,8 @@ def send_registration_notification(sender, instance: User, created: bool, **kwar
     if created:
         logger.info(f"Создан новый пользователь: {instance.full_name}")
         keyboard = build_keyboard(instance.id)
-        text = f"Зарегистрирован новый приемщик:\n{instance.full_name}\n{instance.phone}\nСсылка на документы: api/v1/account/users/{instance.id}/documents"
+        documents_url = f"Ссылка на документы: api/v1/account/users/{instance.id}/documents"
+        text = f"Зарегистрирован новый приемщик:\n{instance.full_name}\n{instance.phone}\n{documents_url}"
         try:
             try:
                 loop = asyncio.get_event_loop()
