@@ -6,7 +6,7 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from telegram_bot.bot import bot
+
 
 from .models import User
 
@@ -26,6 +26,7 @@ def build_keyboard(user_id: int) -> InlineKeyboardMarkup:
 
 @receiver(post_save, sender=User)
 def send_registration_notification(sender, instance: User, created: bool, **kwargs) -> None:
+    from telegram_bot.bot import bot
     if created:
         logger.info(f"Создан новый пользователь: {instance.full_name}")
         keyboard = build_keyboard(instance.id)
