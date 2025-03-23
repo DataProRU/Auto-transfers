@@ -1,8 +1,10 @@
 from typing import Any
-
+import logging
 from django.conf import settings
 from gspread import Client, Spreadsheet, Worksheet, exceptions, service_account
 from gspread.utils import ValueInputOption
+
+logger = logging.getLogger(__name__)
 
 
 class TableManager:
@@ -51,4 +53,23 @@ class TableManager:
         return worksheet.col_values(col)
 
 
-table_manager = TableManager(settings.TABLE_ID, settings.TABLE_CREDS)
+class DummyTableManager:
+    """Заглушка для работы без реального подключения к таблицам"""
+
+    def __init__(self):
+        logger.warning("Using DummyTableManager - no real spreadsheet access")
+
+    def __getattr__(self, name):
+        def dummy_method(*args, **kwargs):
+            logger.warning(f"DummyTableManager: {name} called but not configured")
+
+        return dummy_method
+
+try:
+    if settings.TABLE_ID and settings.TABLE_CREDS:
+        table_manager = TableManager(settings.TABLE_ID, settings.TABLE_CREDS)
+    else:
+        raise ValueError("Missing table credentials")
+except Exception as e:
+    logger.warning(f"TableManager initialization failed: {e}")
+    table_manager = DummyTableManager()
