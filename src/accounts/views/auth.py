@@ -3,9 +3,9 @@ from typing import Any
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from accounts.serializers.custom_token import CustomTokenSerializer
+from accounts.serializers.custom_token import CustomTokenRefreshSerializer, CustomTokenSerializer
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -33,3 +33,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     )
     def post(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
         return super().post(request, *args, **kwargs)
+
+
+class CustomTokenRefreshView(TokenRefreshView):
+    serializer_class = CustomTokenRefreshSerializer

@@ -1,5 +1,7 @@
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.tokens import Token
+from typing import Any
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken, Token
 
 from accounts.models.user import User
 
@@ -16,3 +18,23 @@ class CustomTokenSerializer(TokenObtainPairSerializer):
         token["onboarded"] = user.is_onboarded
 
         return token
+
+
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        refresh = RefreshToken(attrs["refresh"])
+        user_id = refresh.payload.get("user_id")
+        user = User.objects.get(id=user_id)
+
+        data = super().validate(attrs)
+
+        new_access = AccessToken(data["access"])  # type: ignore[arg-type]
+        new_access.payload.update(
+            {
+                "role": user.role,
+                "approved": user.is_approved,
+                "onboarded": user.is_onboarded,
+            }
+        )
+        data["access"] = str(new_access)
+        return data
