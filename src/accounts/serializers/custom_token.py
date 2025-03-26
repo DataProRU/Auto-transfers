@@ -1,17 +1,18 @@
-from typing import Any
-
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import Token
+
+from accounts.models.user import User
 
 
 class CustomTokenSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        data = super().validate(attrs)
-        data.update(
-            {
-                "user_id": self.user.id,
-                "role": self.user.role,
-                "approved": self.user.is_approved,
-                "onboarded": self.user.is_onboarded,
-            }
-        )
-        return data
+    @classmethod
+    def get_token(cls, user: User) -> Token:
+        """Add custom claims directly to the token payload."""
+        token = super().get_token(user)
+
+        token["user_id"] = user.id
+        token["role"] = user.role
+        token["approved"] = user.is_approved
+        token["onboarded"] = user.is_onboarded
+
+        return token

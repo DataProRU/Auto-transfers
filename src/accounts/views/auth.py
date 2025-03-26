@@ -24,10 +24,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                         value={
                             "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                             "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                            "user_id": "<id>",
-                            "role": "user",
-                            "approved": "true",
-                            "onboarded": "true",
                         },
                     ),
                 ],
