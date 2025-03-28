@@ -135,3 +135,62 @@ class DocumentImageViewSet(viewsets.ReadOnlyModelViewSet):
     )
     def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
         return super().list(request, *args, **kwargs)
+
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.filter(role=User.Roles.USER)
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminOrManager]
+
+    @extend_schema(
+        summary="List all users",
+        description="Retrieve a list of all users. Only accessible to users with the role 'admin' or 'manager'.",
+        responses={
+            200: OpenApiResponse(
+                description="Users retrieved successfully",
+                response=UserSerializer(many=True),
+                examples=[
+                    OpenApiExample(
+                        name="Successful response",
+                        value=[
+                            {
+                                "id": 1,
+                                "full_name": "John Doe",
+                                "phone": "+79991234567",
+                                "telegram": "@johndoe",
+                                "role": "user",
+                                "is_approved": True,
+                                "is_onboarded": True,
+                                "documents": [
+                                    {
+                                        "id": 1,
+                                        "image": "http://example.com/media/documents/2023/10/01/image1.jpg",
+                                        "created": "2023-10-01T12:34:56Z",
+                                    },
+                                ],
+                            },
+                            {
+                                "id": 2,
+                                "full_name": "John Smith",
+                                "phone": "+79991234566",
+                                "telegram": "@johnsmith",
+                                "role": "user",
+                                "is_approved": True,
+                                "is_onboarded": True,
+                                "documents": [
+                                    {
+                                        "id": 2,
+                                        "image": "http://example.com/media/documents/2023/10/01/image1.jpg",
+                                        "created": "2023-10-01T12:34:56Z",
+                                    },
+                                ],
+                            },
+                        ],
+                    ),
+                ],
+            ),
+            403: OpenApiResponse(description="Forbidden"),
+        },
+    )
+    def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+        return super().list(request, *args, **kwargs)
