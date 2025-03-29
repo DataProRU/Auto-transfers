@@ -41,8 +41,8 @@ class PostReportSaveSignalReciever:
         self,
         sender: AcceptenceReport,
         instance: AcceptenceReport,
-        created: bool,
-        **kwargs: dict[str, Any],  # noqa: FBT001
+        created: bool,  # noqa: FBT001
+        **kwargs: dict[str, Any],
     ) -> None:
         if created:
             row = self.build_data_to_table(instance)

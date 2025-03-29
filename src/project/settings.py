@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "accounts",
     "autotrips",
-    "telegram_bot"
+    "telegram_bot",
 ]
 
 MIDDLEWARE = [
@@ -158,7 +158,7 @@ MEDIA_URL = "/media/"
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=55),
-    "REFRESH_TOKEN_LIFETIME": timedelta(hours=3),
+    "REFRESH_TOKEN_LIFETIME": timedelta(weeks=48),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
     "ALGORITHM": "HS256",

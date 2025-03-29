@@ -1,5 +1,7 @@
-from typing import Any
 import logging
+from collections.abc import Callable
+from typing import Any
+
 from django.conf import settings
 from gspread import Client, Spreadsheet, Worksheet, exceptions, service_account
 from gspread.utils import ValueInputOption
@@ -54,22 +56,27 @@ class TableManager:
 
 
 class DummyTableManager:
-    """Заглушка для работы без реального подключения к таблицам"""
+    """Заглушка для работы без реального подключения к таблицам."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         logger.warning("Using DummyTableManager - no real spreadsheet access")
 
-    def __getattr__(self, name):
-        def dummy_method(*args, **kwargs):
-            logger.warning(f"DummyTableManager: {name} called but not configured")
+    def __getattr__(self, name: str) -> Callable[[Any, Any], None]:
+        def dummy_method(*_: Any, **__: Any) -> None:  # noqa: ANN401
+            msg = f"DummyTableManager: {name} called but not configured"
+            logger.warning(msg)
 
         return dummy_method
+
+
+table_manager: TableManager | DummyTableManager
 
 try:
     if settings.TABLE_ID and settings.TABLE_CREDS:
         table_manager = TableManager(settings.TABLE_ID, settings.TABLE_CREDS)
     else:
-        raise ValueError("Missing table credentials")
-except Exception as e:
-    logger.warning(f"TableManager initialization failed: {e}")
+        raise ValueError("Missing table credentials")  # noqa: TRY301
+except Exception as e:  # noqa: BLE001
+    msg = f"TableManager initialization failed: {e}"
+    logger.warning(msg)
     table_manager = DummyTableManager()

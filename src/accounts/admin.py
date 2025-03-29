@@ -6,7 +6,8 @@ from .models.user import DocumentImage, User
 
 class CustomUserAdmin(UserAdmin):
     # Define the fields to be displayed in the list view
-    list_display = ("phone", "full_name", "telegram", "role", "is_approved", "is_staff", "date_joined")
+    list_display = ("phone", "full_name", "telegram", "role", "is_approved", "is_onboarded", "is_staff", "date_joined")
+    list_editable = ("is_approved", "is_onboarded")
 
     # Define the fields to be used when adding a new user
     add_fieldsets = (
