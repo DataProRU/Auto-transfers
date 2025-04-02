@@ -218,15 +218,25 @@ async def process_new_password(message: Message, state: FSMContext):
 
     new_password = message.text.strip()
 
-    # Валидация пароля
-    if len(new_password) < 8:
-        await message.answer("❌ Пароль должен содержать минимум 8 символов")
-        return
-    if not any(c.isdigit() for c in new_password):
-        await message.answer("❌ Пароль должен содержать хотя бы одну цифру")
-        return
-    if not any(c.isalpha() for c in new_password):
-        await message.answer("❌ Пароль должен содержать хотя бы одну букву")
+    try:
+        # Стандартная валидация пароля Django
+        await asyncio.to_thread(validate_password, new_password, user=user)
+    except ValidationError as e:
+        # Преобразование стандартных ошибок в русские сообщения
+        error_messages = []
+        for error in e.error_list:
+            if error.code == 'password_too_short':
+                error_messages.append("❌ Пароль должен содержать минимум 8 символов")
+            elif error.code == 'password_entirely_numeric':
+                error_messages.append("❌ Пароль не может состоять только из цифр")
+            elif error.code == 'password_too_common':
+                error_messages.append("❌ Пароль слишком распространён")
+            elif error.code == 'password_too_similar':
+                error_messages.append("❌ Пароль слишком похож на ваши личные данные")
+            else:
+                error_messages.append(f"❌ {error.message}")
+
+        await message.answer("\n".join(error_messages))
         return
 
     try:
