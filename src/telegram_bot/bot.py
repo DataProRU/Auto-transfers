@@ -285,7 +285,6 @@ async def accept_callback(callback_query: CallbackQueryType) -> None:
     except Exception as e:  # noqa: BLE001
         await callback_query.answer(f"Ошибка при обработке запроса: {e}")
 
-
 @dp.callback_query(F.data.startswith("reject:"))
 async def reject_callback(callback_query: CallbackQueryType) -> None:
     try:
@@ -308,3 +307,23 @@ async def reject_callback(callback_query: CallbackQueryType) -> None:
             await callback_query.answer("Пользователь уже отклонен или неактивен")
     except Exception:  # noqa: BLE001
         await callback_query.answer("Ошибка при обработке запроса")
+
+@dp.callback_query(F.data.startswith("process_report:"))
+async def process_report_callback(callback: CallbackQueryType):
+    try:
+        # Проверка прав пользователя
+        user = await asyncio.to_thread(User.objects.get, tg_user_id=callback.from_user.id)
+        if user.role not in [User.Roles.ADMIN, User.Roles.MANAGER]:
+            return await callback.answer("❌ Недостаточно прав!")
+
+        # Редактирование сообщения
+        await callback.message.edit_text(
+            text=f"✅ {callback.message.text}\n\n🛠 *Обработал*: @{callback.from_user.username}",
+            parse_mode="Markdown",
+            reply_markup=None
+        )
+        await callback.answer()
+
+    except Exception as e:
+        logger.error(f"Error processing report: {str(e)}")
+        await callback.answer("❌ Ошибка обработки запроса")
