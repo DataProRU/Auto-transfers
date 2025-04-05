@@ -59,6 +59,9 @@ ignore = [
   "ANN003", # Missing type annotation for **kwargs
   "ANN204", # Missing return type annotation for special method `__init__`"
   
+  "RUF001",  # String contains ambiguous `с` (CYRILLIC SMALL LETTER ES)
+  "RUF002",  # String contains ambiguous `с` (CYRILLIC SMALL LETTER ES)
+  "RUF003",  # String contains ambiguous `a` (CYRILLIC SMALL LETTER A)
   "RUF012",  # Mutable class attributes should be annotated with `typing.ClassVar`
   "TRY003",  # Avoid specifying long messages outside the exception class
   "EM101",   # Exception must not use a string literal

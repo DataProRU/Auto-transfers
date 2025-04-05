@@ -2,8 +2,8 @@ import asyncio
 import logging
 from typing import Any
 
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.enums import ParseMode
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -11,6 +11,7 @@ from django.dispatch import receiver
 from .models import User
 
 logger = logging.getLogger(__name__)
+URL = settings.FRONTEND_URL
 
 
 def build_keyboard(user_id: int) -> InlineKeyboardMarkup:
@@ -22,12 +23,12 @@ def build_keyboard(user_id: int) -> InlineKeyboardMarkup:
 @receiver(post_save, sender=User)
 def send_registration_notification(sender: User, instance: User, created: bool, **kwargs: dict[Any, str]) -> None:  # noqa: ARG001, FBT001
     from telegram_bot.bot import bot
-    URL = settings.FRONTEND_URL
+
     if created:
         msg = f"Создан новый пользователь: {instance.full_name}"
         logger.info(msg)
         keyboard = build_keyboard(instance.id)
-        documents_url = f"Ссылка на документы: {URL}/docs/{instance.id}"
+        documents_url = f"Ссылка на документы: {URL}docs/{instance.id}"
         text = f"Зарегистрирован новый приемщик:\n{instance.full_name}\n{instance.phone}\n{documents_url}"
         try:
             try:
@@ -42,7 +43,7 @@ def send_registration_notification(sender: User, instance: User, created: bool, 
                         chat_id=settings.TELEGRAM_GROUP_CHAT_ID,
                         text=text,
                         reply_markup=keyboard,
-                        parse_mode=ParseMode.HTML
+                        parse_mode=ParseMode.HTML,
                     )
                 )
             else:
@@ -51,7 +52,7 @@ def send_registration_notification(sender: User, instance: User, created: bool, 
                         chat_id=settings.TELEGRAM_GROUP_CHAT_ID,
                         text=text,
                         reply_markup=keyboard,
-                        parse_mode=ParseMode.HTML
+                        parse_mode=ParseMode.HTML,
                     )
                 )
             logger.info("Уведомление отправлено успешно.")
