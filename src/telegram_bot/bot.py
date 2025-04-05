@@ -6,7 +6,7 @@ from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery as CallbackQueryType
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -16,13 +16,17 @@ from django.utils import timezone
 from accounts.models import User
 from services.table_service import table_manager
 
+URL = settings.FRONTEND_URL
 WORKSHEET = settings.CHECKER_WORKSHEET
 logger = logging.getLogger(__name__)
+
 try:
     bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
 except Exception as e:  # noqa: BLE001
-    bot = None
-    logger.warning(f"Bot is disabled. Telegram bot configuration error: {e} ")
+    bot = None  # type: ignore[assignment]
+    msg = f"Bot is disabled. Telegram bot configuration error: {e}"
+    logger.warning(msg)
+
 dp = Dispatcher()
 
 
@@ -31,16 +35,21 @@ class PasswordResetStates(StatesGroup):
     enter_new_password = State()
 
 
-def get_password_reset_keyboard():
+def check_user_permission(user: User) -> None:
+    if user.role not in [User.Roles.ADMIN, User.Roles.MANAGER]:
+        raise PermissionError
+
+
+def get_password_reset_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text="Отменить сброс пароля")]],
         resize_keyboard=True,
-        selective=True
+        selective=True,
     )
 
 
 def get_main_keyboard(user: User) -> ReplyKeyboardMarkup:
-    """Генерирует клавиатуру на основе роли и статуса пользователя"""
+    """Генерирует клавиатуру на основе роли и статуса пользователя."""
     buttons = []
 
     # Кнопка только для админов и менеджеров
@@ -55,58 +64,38 @@ def get_main_keyboard(user: User) -> ReplyKeyboardMarkup:
     if not user.tg_user_id:
         buttons.append([KeyboardButton(text="Привязать Telegram ID")])
 
-    return ReplyKeyboardMarkup(
-        keyboard=buttons,
-        resize_keyboard=True,
-        selective=True
-    )
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True, selective=True)
 
 
 def get_unauthorized_keyboard() -> ReplyKeyboardMarkup:
-    """Клавиатура для непривязанных пользователей"""
+    """Клавиатура для непривязанных пользователей."""
     return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text="Привязать Telegram ID")]],
-        resize_keyboard=True,
-        selective=True
+        keyboard=[[KeyboardButton(text="Привязать Telegram ID")]], resize_keyboard=True, selective=True
     )
 
 
 @dp.message(CommandStart())
 async def start_command(message: Message) -> None:
-    """Обработчик команды /start с динамической клавиатурой"""
+    """Обработчик команды /start с динамической клавиатурой."""
     try:
         # Пытаемся найти пользователя по привязанному ID
-        user = await asyncio.to_thread(
-            User.objects.get,
-            tg_user_id=message.from_user.id
-        )
+        user = await asyncio.to_thread(User.objects.get, tg_user_id=message.from_user.id)  # type: ignore[union-attr]
         keyboard = get_main_keyboard(user)
         await message.answer("Выберите действие:", reply_markup=keyboard)
     except User.DoesNotExist:
         # Пользователь не привязан - минимальная клавиатура
         keyboard = get_unauthorized_keyboard()
-        await message.answer(
-            "🔑 Для начала работы привяжите свой Telegram ID:",
-            reply_markup=keyboard
-        )
+        await message.answer("🔑 Для начала работы привяжите свой Telegram ID:", reply_markup=keyboard)
 
 
 @dp.message(F.text == "Отправить тестовое сообщение в группу")
-async def send_test_message(message: Message):
-    """Обработчик тестового сообщения с проверкой прав"""
+async def send_test_message(message: Message) -> None:
+    """Обработчик тестового сообщения с проверкой прав."""
     try:
-        user = await asyncio.to_thread(
-            User.objects.get,
-            tg_user_id=message.from_user.id
-        )
+        user = await asyncio.to_thread(User.objects.get, tg_user_id=message.from_user.id)  # type: ignore[union-attr]
+        check_user_permission(user)
 
-        if user.role not in [User.Roles.ADMIN, User.Roles.MANAGER]:
-            raise PermissionError
-
-        await bot.send_message(
-            chat_id=settings.TELEGRAM_GROUP_CHAT_ID,
-            text="Бот работает! Это тестовое сообщение."
-        )
+        await bot.send_message(chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text="Бот работает! Это тестовое сообщение.")
         await message.answer("✅ Сообщение отправлено в группу!")
 
     except User.DoesNotExist:
@@ -116,27 +105,21 @@ async def send_test_message(message: Message):
 
 
 @dp.message(F.text == "Привязать Telegram ID")
-async def bind_tg_user_id(message: Message):
-    """Обработчик привязки Telegram ID"""
+async def bind_tg_user_id(message: Message) -> None:
+    """Обработчик привязки Telegram ID."""
     try:
         # Ищем пользователя по telegram username
-        user = await asyncio.to_thread(
-            User.objects.get,
-            telegram=message.from_user.username
-        )
+        user = await asyncio.to_thread(User.objects.get, telegram=message.from_user.username)  # type: ignore[union-attr]
 
         if user.tg_user_id:
             await message.answer("✅ Ваш аккаунт уже привязан!")
             return
 
-        user.tg_user_id = message.from_user.id
+        user.tg_user_id = message.from_user.id  # type: ignore[union-attr]
         await asyncio.to_thread(user.save)
 
         # Показываем обновленную клавиатуру
-        await message.answer(
-            "✅ Аккаунт успешно привязан!",
-            reply_markup=get_main_keyboard(user)
-        )
+        await message.answer("✅ Аккаунт успешно привязан!", reply_markup=get_main_keyboard(user))
 
     except User.DoesNotExist:
         await message.answer("❌ Аккаунт не найден. Обратитесь к администратору.")
@@ -145,78 +128,59 @@ async def bind_tg_user_id(message: Message):
 
 
 @dp.message(F.text == "Сбросить пароль")
-async def start_password_reset(message: Message, state: FSMContext):
+async def start_password_reset(message: Message, state: FSMContext) -> None:
     try:
-        user = await asyncio.to_thread(
-            User.objects.get,
-            tg_user_id=message.from_user.id
-        )
+        user = await asyncio.to_thread(User.objects.get, tg_user_id=message.from_user.id)  # type: ignore[union-attr]
 
         # Добавляем проверку привязки аккаунта через клавиатуру
         if not user.tg_user_id:
-            await message.answer(
-                "❌ Сначала привяжите Telegram ID",
-                reply_markup=get_main_keyboard(user)
-            )
+            await message.answer("❌ Сначала привяжите Telegram ID", reply_markup=get_main_keyboard(user))
             return
 
         await message.answer(
             "⚠️ Вы уверены, что хотите сбросить пароль?",
             reply_markup=ReplyKeyboardMarkup(
-                keyboard=[
-                    [KeyboardButton(text="Да"), KeyboardButton(text="Нет")]
-                ],
-                resize_keyboard=True
-            )
+                keyboard=[[KeyboardButton(text="Да"), KeyboardButton(text="Нет")]], resize_keyboard=True
+            ),
         )
         await state.set_state(PasswordResetStates.confirm_reset)
 
     except User.DoesNotExist:
-        await message.answer(
-            "❌ Аккаунт не привязан!",
-            reply_markup=get_unauthorized_keyboard()
-        )
+        await message.answer("❌ Аккаунт не привязан!", reply_markup=get_unauthorized_keyboard())
 
 
 @dp.message(PasswordResetStates.confirm_reset, F.text.in_(["Да", "Нет"]))
-async def handle_reset_confirmation(message: Message, state: FSMContext):
-    user = await asyncio.to_thread(
-        User.objects.get,
-        tg_user_id=message.from_user.id
-    )
+async def handle_reset_confirmation(message: Message, state: FSMContext) -> None:
+    user = await asyncio.to_thread(User.objects.get, tg_user_id=message.from_user.id)  # type: ignore[union-attr]
 
     if message.text == "Нет":
         await message.answer(
             "❌ Сброс пароля отменен.",
-            reply_markup=get_main_keyboard(user) if user else get_unauthorized_keyboard()
+            reply_markup=get_main_keyboard(user) if user else get_unauthorized_keyboard(),
         )
         await state.clear()
         return
 
     await message.answer(
-        "🔐 Введите новый пароль (минимум 8 символов, буквы и цифры):",
-        reply_markup=get_password_reset_keyboard()
+        "🔐 Введите новый пароль (минимум 8 символов, буквы и цифры):", reply_markup=get_password_reset_keyboard()
     )
     await state.set_state(PasswordResetStates.enter_new_password)
 
 
 # Обработчик ввода нового пароля
 @dp.message(PasswordResetStates.enter_new_password)
-async def process_new_password(message: Message, state: FSMContext):
-    user = await asyncio.to_thread(
-        User.objects.get,
-        tg_user_id=message.from_user.id
-    )
+async def process_new_password(message: Message, state: FSMContext) -> None:
+    user = await asyncio.to_thread(User.objects.get, tg_user_id=message.from_user.id)  # type: ignore[union-attr]
 
     if message.text == "Отменить сброс пароля":
         await message.answer(
             "❌ Сброс пароля отменен.",
-            reply_markup=get_main_keyboard(user) if user else get_unauthorized_keyboard()
+            reply_markup=get_main_keyboard(user) if user else get_unauthorized_keyboard(),
         )
         await state.clear()
         return
 
-    new_password = message.text.strip()
+    new_password = message.text.strip()  # type: ignore[union-attr]
 
     try:
         # Стандартная валидация пароля Django
@@ -225,13 +189,13 @@ async def process_new_password(message: Message, state: FSMContext):
         # Преобразование стандартных ошибок в русские сообщения
         error_messages = []
         for error in e.error_list:
-            if error.code == 'password_too_short':
+            if error.code == "password_too_short":
                 error_messages.append("❌ Пароль должен содержать минимум 8 символов")
-            elif error.code == 'password_entirely_numeric':
+            elif error.code == "password_entirely_numeric":
                 error_messages.append("❌ Пароль не может состоять только из цифр")
-            elif error.code == 'password_too_common':
+            elif error.code == "password_too_common":
                 error_messages.append("❌ Пароль слишком распространён")
-            elif error.code == 'password_too_similar':
+            elif error.code == "password_too_similar":
                 error_messages.append("❌ Пароль слишком похож на ваши личные данные")
             else:
                 error_messages.append(f"❌ {error.message}")
@@ -243,16 +207,14 @@ async def process_new_password(message: Message, state: FSMContext):
         await asyncio.to_thread(user.set_password, new_password)
         await asyncio.to_thread(user.save)
 
-        await message.answer(
-            "✅ Пароль успешно изменен!",
-            reply_markup=get_main_keyboard(user)
-        )
+        await message.answer("✅ Пароль успешно изменен!", reply_markup=get_main_keyboard(user))
 
     except Exception as e:
-        logger.error(f"Password reset error: {str(e)}")
+        msg = f"Password reset error: {e!s}"
+        logger.exception(msg)
         await message.answer(
             "❌ Произошла ошибка при изменении пароля",
-            reply_markup=get_main_keyboard(user) if user else get_unauthorized_keyboard()
+            reply_markup=get_main_keyboard(user) if user else get_unauthorized_keyboard(),
         )
     finally:
         await state.clear()
@@ -270,20 +232,21 @@ async def accept_callback(callback_query: CallbackQueryType) -> None:
                 if clicker_user.role in ["admin", "manager"]:
                     user.is_approved = True
                     accept_datetime = timezone.now().strftime("%Y-%m-%d %H:%M")
-                    documents_url = f"Ссылка на документы: api/v1/account/users/{user_id}/documents"  # front url
+                    documents_url = f"Ссылка на документы: {URL}docs/{user.id}"
                     data = [accept_datetime, user.full_name, user.phone, user.telegram, documents_url]
                     table_manager.append_row(WORKSHEET, data)
                     await asyncio.to_thread(user.save)
                     await callback_query.answer()
                     await callback_query.message.edit_text(text="Пользователь принят")  # type: ignore[union-attr]
                 else:
-                    await callback_query.answer("У вас нет прав для выполнения этого действия")  # noqa: RUF001
+                    await callback_query.answer("У вас нет прав для выполнения этого действия")
             except User.DoesNotExist:
                 await callback_query.answer("Вы не авторизованы для выполнения этого действия")
         else:
             await callback_query.answer("Пользователь уже принят")
     except Exception as e:  # noqa: BLE001
         await callback_query.answer(f"Ошибка при обработке запроса: {e}")
+
 
 @dp.callback_query(F.data.startswith("reject:"))
 async def reject_callback(callback_query: CallbackQueryType) -> None:
@@ -300,7 +263,7 @@ async def reject_callback(callback_query: CallbackQueryType) -> None:
                     await callback_query.answer()
                     await callback_query.message.edit_text(text="Пользователь отклонен")  # type: ignore[union-attr]
                 else:
-                    await callback_query.answer("У вас нет прав для выполнения этого действия")  # noqa: RUF001
+                    await callback_query.answer("У вас нет прав для выполнения этого действия")
             except User.DoesNotExist:
                 await callback_query.answer("Вы не авторизованы для выполнения этого действия")
         else:
@@ -308,22 +271,24 @@ async def reject_callback(callback_query: CallbackQueryType) -> None:
     except Exception:  # noqa: BLE001
         await callback_query.answer("Ошибка при обработке запроса")
 
+
 @dp.callback_query(F.data.startswith("process_report:"))
-async def process_report_callback(callback: CallbackQueryType):
+async def process_report_callback(callback: CallbackQueryType) -> None:
     try:
         # Проверка прав пользователя
         user = await asyncio.to_thread(User.objects.get, tg_user_id=callback.from_user.id)
-        if user.role not in [User.Roles.ADMIN, User.Roles.MANAGER]:
-            return await callback.answer("❌ Недостаточно прав!")
+        check_user_permission(user)
 
         # Редактирование сообщения
-        await callback.message.edit_text(
-            text=f"✅ {callback.message.text}\n\n🛠 *Обработал*: @{callback.from_user.username}",
+        await callback.message.edit_text(  # type: ignore[union-attr]
+            text=f"✅ {callback.message.text}\n\n🛠 *Обработал*: @{callback.from_user.username}",  # type: ignore[union-attr]
             parse_mode="Markdown",
-            reply_markup=None
+            reply_markup=None,
         )
         await callback.answer()
-
+    except PermissionError:
+        await callback.answer("⛔ У вас недостаточно прав для этого действия!")
     except Exception as e:
-        logger.error(f"Error processing report: {str(e)}")
+        msg = f"Error processing report: {e!s}"
+        logger.exception(msg)
         await callback.answer("❌ Ошибка обработки запроса")
