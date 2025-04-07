@@ -3,7 +3,6 @@ import logging
 from typing import Any
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from asgiref.sync import async_to_sync
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.utils import timezone
@@ -61,18 +60,16 @@ class PostReportSaveSignalReciever:
             f"✉️ Telegram: @{report.reporter.telegram.lstrip('@')}"
         )
 
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[[
-            InlineKeyboardButton(
-                text="Проработать",
-                callback_data=f"process_report:{report.id}"
-            )
-        ]])
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[[InlineKeyboardButton(text="Проработать", callback_data=f"process_report:{report.id}")]]
+        )
 
         return message, keyboard
 
     def send_telegram_notification(self, report: AcceptenceReport) -> None:
-        """Отправка уведомления в Telegram"""
+        """Отправка уведомления в Telegram."""
         from telegram_bot.bot import bot
+
         try:
             try:
                 loop = asyncio.get_event_loop()
@@ -80,36 +77,32 @@ class PostReportSaveSignalReciever:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
             message, keyboard = self.build_telegram_message(report)
-            logger.info(f"Generated message: {message}")
+            info = f"Generated message: {message}"
+            logger.info(info)
 
             if loop.is_running():
-                asyncio.create_task(
+                asyncio.create_task(  # noqa: RUF006
                     bot.send_message(
-                        chat_id=settings.TELEGRAM_GROUP_CHAT_ID,
-                        text=message,
-                        parse_mode="HTML",
-                        reply_markup=keyboard
+                        chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text=message, parse_mode="HTML", reply_markup=keyboard
                     )
                 )
             else:
                 loop.run_until_complete(
                     bot.send_message(
-                        chat_id=settings.TELEGRAM_GROUP_CHAT_ID,
-                        text=message,
-                        parse_mode="HTML",
-                        reply_markup=keyboard
+                        chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text=message, parse_mode="HTML", reply_markup=keyboard
                     )
                 )
             logger.info("Уведомление отправлено успешно.")
         except Exception as e:
-            logger.error(f"Error sending notification: {e}")
+            msg = f"Error sending notification: {e}"
+            logger.exception(msg)
 
     def __call__(
-            self,
-            sender: AcceptenceReport,
-            instance: AcceptenceReport,
-            created: bool,  # noqa: FBT001
-            **kwargs: dict[str, Any],
+        self,
+        sender: AcceptenceReport,
+        instance: AcceptenceReport,
+        created: bool,  # noqa: FBT001
+        **kwargs: dict[str, Any],
     ) -> None:
         if created:
             row = self.build_data_to_table(instance)

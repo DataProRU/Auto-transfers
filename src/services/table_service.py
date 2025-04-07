@@ -72,6 +72,7 @@ class DummyTableManager:
 table_manager: TableManager | DummyTableManager
 try:
     table_manager = TableManager(settings.TABLE_ID, settings.TABLE_CREDS)
-except Exception as e:
-    logger.warning(f"TableManager initialization failed: {e}")
+except Exception as e:  # noqa: BLE001
+    msg = f"TableManager initialization failed: {e}"
+    logger.warning(msg)
     table_manager = DummyTableManager()
