@@ -57,10 +57,16 @@ jobs:
           echo "DATABASE_HOST=localhost" >> .env
           echo "DATABASE_PORT=5432" >> .env
           echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
+          echo "TELEGRAM_GROUP_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> .env
           echo "SECRET_KEY=testautotrips" >> .env
-          echo "SECRET_KEY=estautotrips" >> .env
           echo "TABLE_ID=${{ secrets.TABLE_ID }}" >> .env
           echo "TABLE_CREDS=credentials.json" >> .env
+          echo "VINS_WORKSHEET=testvins" >> .env
+          echo "CHECKERS_WORKSHEET=testcheck" >> .env
+          echo "REPORTS_WORKSHEET=testreport" >> .env
+          echo "FRONTEND_URL=http://localhost:3000/" >> .env
+          echo "ALLOWED_HOSTS=localhost,127.0.0.1" >> .env
+          echo "DEBUG=True" >> .env
 
       - name: Install dependencies
         run: poetry install
