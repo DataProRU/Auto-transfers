@@ -8,7 +8,7 @@ from rest_framework.validators import UniqueValidator
 
 from accounts.models.user import DocumentImage, User
 from accounts.serializers.user import DocumentImageSerializer
-from accounts.validators import FileMaxSizeValidator
+from accounts.validators import FileMaxSizeValidator, telegram_validator
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -52,7 +52,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     )
     telegram = serializers.CharField(
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all(), message=("user with this telegram already exists"))],
+        validators=[
+            UniqueValidator(queryset=User.objects.all(), message=("User with this telegram already exists.")),
+            telegram_validator,
+        ],
     )
 
     class Meta:

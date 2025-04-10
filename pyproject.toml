@@ -92,6 +92,7 @@ files = [ "**/*.py" ]
 exclude = [
   "src/accounts/tests",
   "src/manage.py",
+  ".*/migrations/.*\\.py",
 ]
 ignore_missing_imports = true
 strict = true
