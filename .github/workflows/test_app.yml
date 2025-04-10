@@ -67,6 +67,10 @@ jobs:
           echo "FRONTEND_URL=http://localhost:3000/" >> .env
           echo "ALLOWED_HOSTS=localhost,127.0.0.1" >> .env
           echo "DEBUG=True" >> .env
+          echo "ADMIN_FULLNAME=test" >> .env
+          echo "ADMIN_PHONE=+999999999" >> .env
+          echo "ADMIN_TELEGRAM=testautotrips" >> .env
+          echo "ADMIN_PASSWORD=testautotrips" >> .env
 
       - name: Install dependencies
         run: poetry install
