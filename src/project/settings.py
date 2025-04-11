@@ -20,9 +20,9 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUG = os.getenv("DEBUG", "False") == "True"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000/")
+DEBUG = os.getenv("DEBUG", "1") == '1'
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",") if not DEBUG else []
+FRONTEND_URL = os.getenv("FRONTEND_URL") if not DEBUG else "http://localhost:5173/"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -42,9 +42,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -52,9 +52,13 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CSRF_TRUSTED_ORIGINS = ["https://workshop-garage.ru"]
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = ["https://workshop-garage.ru"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://workshop-garage.ru",
+    "http://localhost:5173",
+    "https://localhost:5173",
+]
 
 ROOT_URLCONF = "project.urls"
 

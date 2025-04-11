@@ -19,5 +19,5 @@ poetry install
 ```
 5. Запустите приложение
 ```
-python manage.py runserver #  или poetry run python manage.py runserver
+poetry run python src/manage.py runserver
 ```
