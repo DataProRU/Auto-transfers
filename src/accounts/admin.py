@@ -6,8 +6,38 @@ from .models.user import DocumentImage, User
 
 class CustomUserAdmin(UserAdmin):
     # Define the fields to be displayed in the list view
-    list_display = ("phone", "full_name", "telegram", "role", "is_approved", "is_onboarded", "is_staff", "date_joined")
+    list_display = (
+        "phone",
+        "full_name",
+        "telegram",
+        "role",
+        "is_approved",
+        "is_onboarded",
+        "is_superuser",
+        "date_joined",
+    )
     list_editable = ("is_approved", "is_onboarded")
+
+    fieldsets = (
+        ("User", {"fields": ("phone", "password")}),
+        ("Personal info", {"fields": ("full_name", "telegram", "tg_user_id")}),
+        (
+            "Permissions",
+            {
+                "fields": (
+                    "role",
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "is_approved",
+                    "is_onboarded",
+                    "groups",
+                    "user_permissions",
+                ),
+            },
+        ),
+        ("Important dates", {"fields": ("last_login", "date_joined")}),
+    )
 
     # Define the fields to be used when adding a new user
     add_fieldsets = (
