@@ -2,7 +2,7 @@ import re
 from typing import Any
 
 from django.conf import settings
-from django.core.validators import FileExtensionValidator, RegexValidator
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -34,7 +34,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 regex=r"^\+?1?\d{9,15}$",
                 message="Number should be in format: '+79991234567'.",
             ),
-            UniqueValidator(queryset=User.objects.all(), message=("user with this phone already exists")),
+            UniqueValidator(queryset=User.objects.all(), message=("User with this phone already exists.")),
         ],
     )
     images = DocumentImageSerializer(many=True, read_only=True)
@@ -44,7 +44,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             use_url=False,
             validators=[
                 FileMaxSizeValidator(settings.MAX_UPLOAD_SIZE),
-                FileExtensionValidator(["jpeg", "jpg", "png"]),
             ],
         ),
         write_only=True,

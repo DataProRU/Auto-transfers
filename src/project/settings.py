@@ -20,8 +20,8 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUG = os.getenv("DEBUG", "1") == '1'
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",") if not DEBUG else []
+DEBUG = os.getenv("DEBUG", "1") == "1"
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",") if not DEBUG else []  # type: ignore[union-attr]
 FRONTEND_URL = os.getenv("FRONTEND_URL") if not DEBUG else "http://localhost:5173/"
 
 INSTALLED_APPS = [
