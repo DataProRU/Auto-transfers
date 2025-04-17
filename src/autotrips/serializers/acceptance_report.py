@@ -44,7 +44,6 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
             use_url=False,
             validators=[
                 FileMaxSizeValidator(settings.MAX_UPLOAD_SIZE),
-                FileExtensionValidator(["jpeg", "jpg", "png"]),
             ],
         ),
         write_only=True,
@@ -57,7 +56,6 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
             use_url=False,
             validators=[
                 FileMaxSizeValidator(settings.MAX_UPLOAD_SIZE),
-                FileExtensionValidator(["jpeg", "jpg", "png"]),
             ],
         ),
         write_only=True,
@@ -70,7 +68,6 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
             use_url=False,
             validators=[
                 FileMaxSizeValidator(settings.MAX_UPLOAD_SIZE),
-                FileExtensionValidator(["jpeg", "jpg", "png"]),
             ],
         ),
         write_only=True,
