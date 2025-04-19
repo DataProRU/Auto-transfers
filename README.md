@@ -20,7 +20,7 @@ https://python-poetry.org/docs/managing-environments/#bash-csh-zsh
 ```
 poetry install
 ```
-5 Разверните базу данных 
+5. Разверните базу данных 
 ```
  docker compose up -d
 ```
@@ -30,7 +30,7 @@ poetry install
 poetry run python src/manage.py runserver
 ```
 
-7 Запустите телеграмм бота
+7. Запустите телеграмм бота
 ```
 poetry run python src/manage.py start_bot
 ```
