@@ -7,6 +7,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from accounts.models.user import DocumentImage, User
+from accounts.serializers.custom_image import HEIFImageField
 from accounts.serializers.user import DocumentImageSerializer
 from accounts.validators import FileMaxSizeValidator, telegram_validator
 
@@ -39,7 +40,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     )
     images = DocumentImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
-        child=serializers.ImageField(
+        child=HEIFImageField(
             allow_empty_file=False,
             use_url=False,
             validators=[
