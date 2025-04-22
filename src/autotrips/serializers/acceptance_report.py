@@ -2,9 +2,9 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.validators import FileExtensionValidator
 from rest_framework import serializers
 
+from accounts.serializers.custom_image import HEIFImageField
 from accounts.validators import FileMaxSizeValidator
 from autotrips.models.acceptance_report import AcceptenceReport, CarPhoto, DocumentPhoto, KeyPhoto
 
@@ -39,7 +39,7 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
     reporter = UserReportSerializer(read_only=True)
     car_photos = CarPhotoSerializer(many=True, read_only=True)
     uploaded_car_photos = serializers.ListField(
-        child=serializers.ImageField(
+        child=HEIFImageField(
             allow_empty_file=False,
             use_url=False,
             validators=[
@@ -51,7 +51,7 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
     )
     key_photos = KeyPhotoSerializer(many=True, read_only=True)
     uploaded_key_photos = serializers.ListField(
-        child=serializers.ImageField(
+        child=HEIFImageField(
             allow_empty_file=False,
             use_url=False,
             validators=[
@@ -63,7 +63,7 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
     )
     document_photos = DocumentPhotoSerializer(many=True, read_only=True)
     uploaded_document_photos = serializers.ListField(
-        child=serializers.ImageField(
+        child=HEIFImageField(
             allow_empty_file=False,
             use_url=False,
             validators=[

@@ -54,7 +54,7 @@ def get_main_keyboard(user: User) -> ReplyKeyboardMarkup:
 
     # Кнопка только для админов и менеджеров
     # if user.role in [User.Roles.ADMIN, User.Roles.MANAGER]:
-    #     buttons.append([KeyboardButton(text="Отправить тестовое сообщение в группу")])
+    #     buttons.append([KeyboardButton(text="Отправить тестовое сообщение в группу")])  # noqa: ERA001
 
     # Кнопка сброса пароля только при привязанном ID
     if user.tg_user_id:
