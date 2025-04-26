@@ -12,6 +12,7 @@ class User(AbstractUser):
         ADMIN = "admin"
         MANAGER = "manager"
         USER = "user"
+        CLIENT = "client"
 
     objects = CustomUserManager()
 
@@ -32,6 +33,8 @@ class User(AbstractUser):
     full_name = models.CharField(max_length=255, null=False, blank=False)
     phone = models.CharField(max_length=15, unique=True, null=False, blank=False)
     telegram = models.CharField(max_length=32, unique=True, null=True, blank=True)
+    address = models.CharField(max_length=255, blank=True, default="")
+    company = models.CharField(max_length=255, blank=True, default="")
     tg_user_id = models.BigIntegerField(unique=True, null=True, blank=True)
     role = models.CharField(max_length=10, choices=Roles.choices, default=Roles.USER)
     is_approved = models.BooleanField(default=False)
