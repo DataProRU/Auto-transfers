@@ -2,6 +2,8 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher, F
+from aiogram.enums import ParseMode
+from aiogram.exceptions import AiogramError
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -274,21 +276,36 @@ async def reject_callback(callback_query: CallbackQueryType) -> None:
 
 @dp.callback_query(F.data.startswith("process_report:"))
 async def process_report_callback(callback: CallbackQueryType) -> None:
+    """Handle report processing callback with proper error handling and user feedback."""
     try:
-        # Проверка прав пользователя
-        user = await asyncio.to_thread(User.objects.get, tg_user_id=callback.from_user.id)
-        check_user_permission(user)
+        if not callback.message or not isinstance(callback.message, Message):
+            await callback.answer("❌ Сообщение не найдено")
+            return
 
-        # Редактирование сообщения
-        await callback.message.edit_text(  # type: ignore[union-attr]
-            text=f"✅ {callback.message.text}\n\n🛠 *Обработал*: @{callback.from_user.username}",  # type: ignore[union-attr]
-            parse_mode="Markdown",
-            reply_markup=None,
-        )
-        await callback.answer()
-    except PermissionError:
-        await callback.answer("⛔ У вас недостаточно прав для этого действия!")
-    except Exception as e:
-        msg = f"Error processing report: {e!s}"
-        logger.exception(msg)
-        await callback.answer("❌ Ошибка обработки запроса")
+        user = await asyncio.to_thread(User.objects.get, tg_user_id=callback.from_user.id)
+
+        try:
+            check_user_permission(user)
+        except PermissionError:
+            await callback.answer("⛔ У вас недостаточно прав для этого действия!")
+            return
+
+        text = f"✅ {callback.message.text}\n\n🛠 *Обработал*: @{callback.from_user.username}"
+        try:
+            await callback.message.edit_text(text=text, parse_mode=ParseMode.MARKDOWN)
+            await callback.answer()
+
+        except AiogramError as e:
+            if "can't parse entities" in str(e):
+                await callback.message.edit_text(text=text, parse_mode=None)
+                await callback.answer()
+            else:
+                raise
+
+    except Exception:
+        logger.exception("Error processing report callback")
+        try:
+            await callback.answer("❌ Ошибка обработки запроса")
+        except Exception as answer_error:
+            msg = f"Failed to send error answer: {answer_error}"
+            logger.exception(msg)
