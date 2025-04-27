@@ -9,11 +9,23 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
+
+from services.table_service import table_manager
 
 from .models import User
 
 logger = logging.getLogger(__name__)
 URL = settings.FRONTEND_URL
+WORKSHEET = settings.CLIENTS_WORKSHEET
+
+
+class SpreadsheetError(Exception):
+    """Custom exception for google table-related errors."""
+
+
+class NotificationError(Exception):
+    """Custom exception for telegram-related errors."""
 
 
 def _build_user_register_keyboard(user_id: int) -> InlineKeyboardMarkup:
@@ -53,36 +65,57 @@ async def _send_telegram_notification(bot: Bot, chat_id: str, text: str, keyboar
         msg = f"Telegram API error: {e!s}"
         logger.exception(msg)
     except Exception as e:
-        msg = f"Unexpected error sending notification: {e!s}"
-        logger.exception(msg)
+        msg = f"Failed to send Telegram notification: {e!s}"
+        raise NotificationError(msg) from e
 
 
-@receiver(post_save, sender=User)
-def send_registration_notification(sender: User, instance: User, created: bool, **kwargs: dict[Any, str]) -> None:  # noqa: ARG001, FBT001
-    """Send Telegram notification when new user is created."""
-    if not created:
-        return
+def _handle_client_registration(instance: User) -> None:
+    """Handle the registration process for client users."""
+    try:
+        create_datetime = timezone.now().strftime("%Y-%m-%d %H:%M")
+        data = [
+            create_datetime,
+            instance.full_name,
+            instance.company,
+            instance.phone,
+            instance.telegram,
+            instance.address,
+            instance.email,
+        ]
+        table_manager.append_row(WORKSHEET, data)
+    except Exception as e:
+        msg = f"Failed to write client registration data into table: {e!s}"
+        raise SpreadsheetError(msg) from e
 
+
+def _prepare_notification_content(instance: User) -> tuple[str, InlineKeyboardMarkup]:
+    """Prepare the notification text and keyboard based on user role."""
+    if instance.role == User.Roles.USER:
+        text = _get_register_user_text(instance)
+        keyboard = _build_user_register_keyboard(instance.id)
+    else:
+        text = _get_register_client_text(instance)
+        keyboard = _build_client_register_keyboard()
+
+    return text, keyboard
+
+
+def _get_or_create_event_loop() -> asyncio.AbstractEventLoop:
+    """Get existing event loop or create a new one."""
+    try:
+        return asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        return loop
+
+
+def _handle_notification_sending(text: str, keyboard: InlineKeyboardMarkup) -> None:
+    """Handle the async notification sending process."""
     from telegram_bot.bot import bot
 
     try:
-        text = (
-            _get_register_user_text(instance)
-            if instance.role == User.Roles.USER
-            else _get_register_client_text(instance)
-        )
-        keyboard = (
-            _build_user_register_keyboard(instance.id)
-            if instance.role == User.Roles.USER
-            else _build_client_register_keyboard()
-        )
-
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
+        loop = _get_or_create_event_loop()
         coro = _send_telegram_notification(
             bot=bot, chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text=text, keyboard=keyboard
         )
@@ -92,5 +125,31 @@ def send_registration_notification(sender: User, instance: User, created: bool, 
         else:
             loop.run_until_complete(coro)
 
-    except Exception:
-        logger.exception("Failed to process notification")
+    except Exception as e:
+        msg = f"Failed to process notification sending: {e!s}"
+        raise NotificationError(msg) from e
+
+
+@receiver(post_save, sender=User)
+def send_registration_notification(sender: User, instance: User, created: bool, **kwargs: dict[Any, str]) -> None:  # noqa: ARG001, FBT001
+    """Send Telegram notification when new user is created."""
+    if not created:
+        return
+
+    try:
+        if instance.role == User.Roles.CLIENT:
+            _handle_client_registration(instance)
+
+        text, keyboard = _prepare_notification_content(instance)
+
+        _handle_notification_sending(text, keyboard)
+
+    except SpreadsheetError as e:
+        msg = f"Failed to update spreadsheet for client {instance.full_name}: {e!s}"
+        logger.exception(msg)
+    except NotificationError as e:
+        msg = f"Failed to send Telegram notification: {e!s}"
+        logger.exception(msg)
+    except Exception as e:
+        msg = f"Unexpected error in registration notification: {e!s}"
+        logger.exception(msg)
