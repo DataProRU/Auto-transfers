@@ -12,6 +12,9 @@ User = get_user_model()
 class VehicleInfoListSerializer(serializers.ListSerializer):
     def create(self, validated_data: dict[str, Any]) -> list[VehicleInfo]:
         vehicles = [VehicleInfo(**item) for item in validated_data]
+        vehicles_idxs = {vehicle.client_id for vehicle in vehicles}
+        if len(vehicles_idxs) > 1:
+            raise serializers.ValidationError({"non_field_error": "Can create multiply vehicles only for one client"})
         return VehicleInfo.objects.bulk_create(vehicles)  # type: ignore[no-any-return]
 
     def update(self, _: VehicleInfo, __: dict[str, Any]) -> None:
