@@ -10,7 +10,7 @@ User = get_user_model()
 
 
 class VehicleType(models.Model):
-    v_type = models.CharField(max_length=100, default="SUV", null=False, blank=False)
+    v_type = models.CharField(max_length=100, unique=True, null=False, blank=False)
 
     def __str__(self) -> str:
         return cast(str, self.v_type)
@@ -23,9 +23,7 @@ class VehicleInfo(models.Model):
     client = models.ForeignKey(User, on_delete=models.RESTRICT, related_name="vehicles", null=False, blank=False)
     brand = models.CharField(max_length=100, null=False, blank=False)
     model = models.CharField(max_length=100, null=False, blank=False)
-    v_type = models.ForeignKey(
-        VehicleType, on_delete=models.SET_DEFAULT, related_name="vehicles", null=False, blank=False
-    )
+    v_type = models.ForeignKey(VehicleType, on_delete=models.RESTRICT, related_name="vehicles", null=False, blank=False)
     vin = models.CharField(
         validators=[RegexValidator(regex=re.compile(r"^[A-HJ-NPR-Z0-9]{17}$"), message="Invalid vin format.")]
     )
@@ -35,6 +33,7 @@ class VehicleInfo(models.Model):
     recipient = models.CharField(max_length=100, null=False, blank=False)
     comment = models.CharField(max_length=255, default="", blank=True)
     status = models.CharField(max_length=10, choices=Statuses.choices, default=Statuses.NEW)
+    status_changed = models.DateTimeField(default=timezone.now)
     creation_time = models.DateTimeField(default=timezone.now)
 
     def __str__(self) -> str:
