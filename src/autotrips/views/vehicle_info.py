@@ -13,11 +13,13 @@ from rest_framework.response import Response
 
 from autotrips.models.vehicle import VehicleInfo
 from autotrips.serializers.vehicle_info import VehicleInfoSerializer
+from project.permissions import VehicleAccessPermission
 
 
 class VehicleInfoViewSet(viewsets.ModelViewSet):
     queryset = VehicleInfo.objects.select_related("client", "v_type")
     serializer_class = VehicleInfoSerializer
+    permission_classes = (VehicleAccessPermission,)
 
     @extend_schema(
         summary="Create vehicle(s)",
