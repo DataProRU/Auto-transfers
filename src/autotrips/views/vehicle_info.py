@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -15,9 +16,11 @@ from autotrips.models.vehicle import VehicleInfo
 from autotrips.serializers.vehicle_info import VehicleInfoSerializer
 from project.permissions import VehicleAccessPermission
 
+User = get_user_model()
+
 
 class VehicleInfoViewSet(viewsets.ModelViewSet):
-    queryset = VehicleInfo.objects.select_related("client", "v_type")
+    queryset = VehicleInfo.objects.select_related("client", "v_type").order_by("-id")
     serializer_class = VehicleInfoSerializer
     permission_classes = (VehicleAccessPermission,)
 
@@ -144,7 +147,7 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
                 ],
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
-                response=list,
+                response=dict,
                 description="Validation error",
                 examples=[
                     OpenApiExample(
@@ -172,3 +175,25 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        summary="List vehicles",
+        description="""Returns list of vehicles based on user role:
+        - Admins see all vehicles
+        - Clients see only their own vehicles""",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=VehicleInfoSerializer(many=True),
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(description="Not authorized to view vehicles"),
+        },
+    )
+    def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+        staff_roles = {User.Roles.ADMIN, User.Roles.MANAGER}
+        queryset = self.get_queryset()
+
+        if request.user.role not in staff_roles:
+            queryset = queryset.filter(client=request.user)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
