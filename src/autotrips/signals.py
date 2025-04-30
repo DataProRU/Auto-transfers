@@ -8,6 +8,7 @@ from django.db.models.signals import post_save
 from django.utils import timezone
 
 from autotrips.models.acceptance_report import AcceptenceReport
+from autotrips.models.vehicle_info import VehicleInfo
 from services.table_service import table_manager
 
 logger = logging.getLogger(__name__)
@@ -112,5 +113,40 @@ class PostReportSaveSignalReciever:
                 self.send_telegram_notification(instance)
 
 
-reciever = PostReportSaveSignalReciever()
-post_save.connect(receiver=reciever, sender=AcceptenceReport)
+class PostVehicleSaveSignalReciever:
+    WORKSHEET = settings.VEHICLES_WORKSHEET
+
+    def build_data_to_table(self, info: VehicleInfo) -> list[str]:
+        info_time_local = timezone.localtime(info.creation_time)
+        info_time = info_time_local.strftime("%d.%m.%Y %H:%M:%S")
+        return [
+            info_time,
+            info.client.full_name,
+            info.brand,
+            info.model,
+            info.v_type.v_type,
+            info.vin,
+            info.container_number,
+            info.arrival_date,
+            info.transporter,
+            info.recipient,
+            info.comment,
+        ]
+
+    def __call__(
+        self,
+        sender: VehicleInfo,
+        instance: VehicleInfo,
+        created: bool,  # noqa: FBT001
+        **kwargs: dict[str, Any],
+    ) -> None:
+        if created:
+            row = self.build_data_to_table(instance)
+            table_manager.append_row(self.WORKSHEET, row)
+
+
+report_reciever = PostReportSaveSignalReciever()
+post_save.connect(receiver=report_reciever, sender=AcceptenceReport)
+
+vehicle_reciever = PostVehicleSaveSignalReciever()
+post_save.connect(receiver=vehicle_reciever, sender=VehicleInfo)
