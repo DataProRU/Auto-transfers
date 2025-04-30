@@ -12,7 +12,7 @@ from rest_framework import status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from autotrips.models.vehicle import VehicleInfo
+from autotrips.models.vehicle_info import VehicleInfo
 from autotrips.serializers.vehicle_info import VehicleInfoSerializer
 from project.permissions import VehicleAccessPermission
 

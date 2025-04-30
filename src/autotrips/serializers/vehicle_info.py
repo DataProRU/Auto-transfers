@@ -4,7 +4,7 @@ from typing import Any
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from autotrips.models.vehicle import VehicleInfo, VehicleType
+from autotrips.models.vehicle_info import VehicleInfo, VehicleType
 
 User = get_user_model()
 

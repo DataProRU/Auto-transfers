@@ -7,7 +7,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from autotrips.models.acceptance_report import AcceptenceReport, CarPhoto, DocumentPhoto, KeyPhoto
-from autotrips.models.vehicle import VehicleInfo, VehicleType
+from autotrips.models.vehicle_info import VehicleInfo, VehicleType
 
 
 @admin.register(AcceptenceReport)
