@@ -20,7 +20,13 @@ class IsApproved(permissions.BasePermission):
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         # Check if the user is authenticated and approved
-        return bool(request.user and request.user.is_authenticated and request.user.is_approved)
+        allowed_roles = {User.Roles.ADMIN, User.Roles.MANAGER, User.Roles.USER}
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.is_approved
+            and request.user.role in allowed_roles
+        )
 
 
 class VehicleAccessPermission(permissions.BasePermission):
@@ -34,7 +40,7 @@ class VehicleAccessPermission(permissions.BasePermission):
     allowed_roles = staff_roles | {User.Roles.CLIENT}
 
     def has_permission(self, request: Request, view: APIView) -> bool:
-        return bool(request.user.is_authenticated and request.user.role in self.allowed_roles)
+        return bool(request.user and request.user.is_authenticated and request.user.role in self.allowed_roles)
 
     def has_object_permission(self, request: Request, view: APIView, obj: models.Model) -> bool:
         if request.user.role in self.staff_roles:
