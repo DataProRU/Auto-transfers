@@ -33,7 +33,7 @@ class VehicleInfo(models.Model):
     arrival_date = models.DateField(null=False, blank=False)
     transporter = models.CharField(max_length=100, null=False, blank=False)
     recipient = models.CharField(max_length=100, null=False, blank=False)
-    comment = models.CharField(max_length=255, default="", blank=True)
+    comment = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
     status = models.CharField(max_length=10, choices=Statuses.choices, default=Statuses.NEW)
     status_changed = models.DateTimeField(default=timezone.now)
     creation_time = models.DateTimeField(default=timezone.now)
