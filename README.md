@@ -24,13 +24,15 @@ poetry install
 ```
  docker compose up -d
 ```
-
-6. Запустите приложение
+6. Примените миграции
+```
+poetry run python src/manage.py migrate
+```
+7. Запустите приложение
 ```
 poetry run python src/manage.py runserver
 ```
-
-7. Запустите телеграмм бота
+8. Запустите телеграмм бота
 ```
 poetry run python src/manage.py start_bot
 ```
