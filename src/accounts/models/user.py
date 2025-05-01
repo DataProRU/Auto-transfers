@@ -33,8 +33,8 @@ class User(AbstractUser):
     full_name = models.CharField(max_length=255, null=False, blank=False)
     phone = models.CharField(max_length=15, unique=True, null=False, blank=False)
     telegram = models.CharField(max_length=32, unique=True, null=True, blank=True)
-    address = models.CharField(max_length=255, blank=True, default="")
-    company = models.CharField(max_length=255, blank=True, default="")
+    address = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
+    company = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
     tg_user_id = models.BigIntegerField(unique=True, null=True, blank=True)
     role = models.CharField(max_length=10, choices=Roles.choices, default=Roles.USER)
     is_approved = models.BooleanField(default=False)

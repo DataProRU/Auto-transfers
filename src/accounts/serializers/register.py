@@ -118,6 +118,7 @@ class ClientRegistrationSerializer(serializers.ModelSerializer):
     )
     email = serializers.EmailField(
         required=False,
+        allow_blank=True,
         validators=[
             UniqueValidator(queryset=User.objects.all(), message=("User with this email already exists.")),
         ],
