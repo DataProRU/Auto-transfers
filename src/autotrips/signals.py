@@ -8,6 +8,7 @@ from django.db.models.signals import post_save
 from django.utils import timezone
 
 from autotrips.models.acceptance_report import AcceptenceReport
+from autotrips.models.managers import vehicle_info_save
 from autotrips.models.vehicle_info import VehicleInfo
 from services.table_service import table_manager
 
@@ -116,6 +117,46 @@ class PostReportSaveSignalReciever:
 class PostVehicleSaveSignalReciever:
     WORKSHEET = settings.VEHICLES_WORKSHEET
 
+    def _build_telegram_notification(self, instances: list[VehicleInfo]) -> tuple[str, InlineKeyboardMarkup]:
+        client = instances[0].client.full_name
+        vins = "\n".join(f"{idx}. {instance.vin}" for idx, instance in enumerate(instances, 1))
+        message = f"<b>🚗 Зарегестрированы новые ТС:</b>\n👤 от {client}\n\n{vins}"
+
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[[InlineKeyboardButton(text="Обработать", callback_data="process_report:")]]
+        )
+
+        return message, keyboard
+
+    def send_telegram_notification(self, instances: list[VehicleInfo]) -> None:
+        from telegram_bot.bot import bot
+
+        try:
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+
+            message, keyboard = self._build_telegram_notification(instances)
+
+            if loop.is_running():
+                asyncio.create_task(  # noqa: RUF006
+                    bot.send_message(
+                        chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text=message, parse_mode="HTML", reply_markup=keyboard
+                    )
+                )
+            else:
+                loop.run_until_complete(
+                    bot.send_message(
+                        chat_id=settings.TELEGRAM_GROUP_CHAT_ID, text=message, parse_mode="HTML", reply_markup=keyboard
+                    )
+                )
+            logger.info("Уведомление отправлено успешно.")
+        except Exception as e:
+            msg = f"Error sending notification: {e}"
+            logger.exception(msg)
+
     def build_data_to_table(self, info: VehicleInfo) -> list[str]:
         info_time_local = timezone.localtime(info.creation_time)
         info_time = info_time_local.strftime("%d.%m.%Y %H:%M:%S")
@@ -136,17 +177,17 @@ class PostVehicleSaveSignalReciever:
     def __call__(
         self,
         sender: VehicleInfo,
-        instance: VehicleInfo,
-        created: bool,  # noqa: FBT001
+        instances: list[VehicleInfo],
         **kwargs: dict[str, Any],
     ) -> None:
-        if created:
+        for instance in instances:
             row = self.build_data_to_table(instance)
             table_manager.append_row(self.WORKSHEET, row)
+        self.send_telegram_notification(instances)
 
 
 report_reciever = PostReportSaveSignalReciever()
 post_save.connect(receiver=report_reciever, sender=AcceptenceReport)
 
 vehicle_reciever = PostVehicleSaveSignalReciever()
-post_save.connect(receiver=vehicle_reciever, sender=VehicleInfo)
+vehicle_info_save.connect(receiver=vehicle_reciever, sender=VehicleInfo)

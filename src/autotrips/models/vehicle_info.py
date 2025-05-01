@@ -6,6 +6,8 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
 
+from autotrips.models.managers import VehicleInfoManager
+
 User = get_user_model()
 
 
@@ -35,6 +37,8 @@ class VehicleInfo(models.Model):
     status = models.CharField(max_length=10, choices=Statuses.choices, default=Statuses.NEW)
     status_changed = models.DateTimeField(default=timezone.now)
     creation_time = models.DateTimeField(default=timezone.now)
+
+    objects = VehicleInfoManager()
 
     def __str__(self) -> str:
         return f"{self.client.full_name}_{self.model}_{self.v_type}"
