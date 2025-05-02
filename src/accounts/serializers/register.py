@@ -82,3 +82,68 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
         user.images = DocumentImage.objects.filter(user=user)
         return user
+
+
+class ClientRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        required=True,
+        write_only=True,
+        validators=[
+            RegexValidator(
+                regex=re.compile(
+                    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?[\]{};:\/<>,.'\-_...])[A-Za-z\d!@#$%^&*()"
+                    r"_\-+=<>?[\]{};:\/<>,.'\-_...]{6,20}$"
+                ),
+                message="password must contain at least one uppercase letter, one lowercase letter, one digit,"
+                " and one special character",
+            )
+        ],
+    )
+    phone = serializers.CharField(
+        required=True,
+        validators=[
+            RegexValidator(
+                regex=r"^\+?1?\d{9,15}$",
+                message="Number should be in format: '+79991234567'.",
+            ),
+            UniqueValidator(queryset=User.objects.all(), message=("User with this phone already exists.")),
+        ],
+    )
+    telegram = serializers.CharField(
+        required=True,
+        validators=[
+            UniqueValidator(queryset=User.objects.all(), message=("User with this telegram already exists.")),
+            telegram_validator,
+        ],
+    )
+    email = serializers.EmailField(
+        required=False,
+        allow_blank=True,
+        validators=[
+            UniqueValidator(queryset=User.objects.all(), message=("User with this email already exists.")),
+        ],
+    )
+    address = serializers.CharField(max_length=255, required=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "full_name",
+            "phone",
+            "telegram",
+            "company",
+            "address",
+            "email",
+            "password",
+        )
+
+    def create(self, validated_data: dict[str, Any]) -> User:
+        password = validated_data.pop("password")
+        user = User(**validated_data)
+        user.role = User.Roles.CLIENT
+        user.is_approved = True
+        user.is_onboarded = True
+        user.set_password(password)
+        user.save()
+        return user

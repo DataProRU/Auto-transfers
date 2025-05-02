@@ -6,7 +6,7 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from accounts.serializers.register import UserRegistrationSerializer
+from accounts.serializers.register import ClientRegistrationSerializer, UserRegistrationSerializer
 
 
 class RegisterView(generics.CreateAPIView):
@@ -41,6 +41,41 @@ class RegisterView(generics.CreateAPIView):
                                     "image": "http://example.com/media/documents/2023/10/01/image2.jpg",
                                 },
                             ],
+                        },
+                    ),
+                ],
+            ),
+            400: OpenApiResponse(description="Invalid input"),
+        },
+    )
+    def post(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+        return super().post(request, *args, **kwargs)
+
+
+class ClientRegisterView(generics.CreateAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = ClientRegistrationSerializer
+
+    @extend_schema(
+        summary="Register a new client",
+        description="Register a new client with the provided details, "
+        "including full name, phone, telegram, password, email, address and company.",
+        request=ClientRegistrationSerializer,
+        responses={
+            201: OpenApiResponse(
+                description="Client registered successfully",
+                response=ClientRegistrationSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="Successful registration",
+                        value={
+                            "id": 42,
+                            "full_name": "John Doe",
+                            "phone": "+79991234567",
+                            "telegram": "@johndoe",
+                            "company": "Acme Inc",
+                            "address": "123 Main St, New York, NY",
+                            "email": "john.doe@example.com",
                         },
                     ),
                 ],

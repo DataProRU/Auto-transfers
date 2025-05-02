@@ -11,6 +11,9 @@ class CustomUserAdmin(UserAdmin):
         "full_name",
         "telegram",
         "role",
+        "address",
+        "company",
+        "email",
         "is_approved",
         "is_onboarded",
         "is_superuser",
@@ -20,7 +23,7 @@ class CustomUserAdmin(UserAdmin):
 
     fieldsets = (
         ("User", {"fields": ("phone", "password")}),
-        ("Personal info", {"fields": ("full_name", "telegram", "tg_user_id")}),
+        ("Personal info", {"fields": ("full_name", "telegram", "tg_user_id", "email", "address", "company")}),
         (
             "Permissions",
             {
@@ -52,6 +55,9 @@ class CustomUserAdmin(UserAdmin):
                     "password1",
                     "password2",
                     "role",
+                    "address",
+                    "company",
+                    "email",
                     "is_approved",
                     "is_onboarded",
                     "is_active",
