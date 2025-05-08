@@ -8,7 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from accounts.models.user import DocumentImage, User
-from accounts.serializers.user import DocumentImageSerializer, UserSerializer, ClientSerializer
+from accounts.serializers.user import ClientSerializer, DocumentImageSerializer, UserSerializer
 from accounts.services.single_resource import SingleResourceMixin
 from project.permissions import IsAdminOrManager, IsApproved
 

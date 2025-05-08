@@ -2,8 +2,10 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models.query import QuerySet
 from drf_spectacular.utils import (
     OpenApiExample,
+    OpenApiParameter,
     OpenApiRequest,
     OpenApiResponse,
     extend_schema,
@@ -23,6 +25,20 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
     queryset = VehicleInfo.objects.select_related("client", "v_type").order_by("-id")
     serializer_class = VehicleInfoSerializer
     permission_classes = (VehicleAccessPermission,)
+
+    def get_queryset(self) -> QuerySet:
+        queryset = super().get_queryset()
+        staff_roles = {User.Roles.ADMIN, User.Roles.MANAGER}
+
+        client_id = self.request.query_params.get("client_id")
+
+        if self.request.user.role in staff_roles:
+            if client_id:
+                queryset = queryset.filter(client_id=client_id)
+        else:
+            queryset = queryset.filter(client=self.request.user)
+
+        return queryset
 
     @extend_schema(
         summary="Create vehicle(s)",
@@ -179,8 +195,16 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
     @extend_schema(
         summary="List vehicles",
         description="""Returns list of vehicles based on user role:
-        - Admins see all vehicles
+        - Admins and managers see all vehicles (can filter by client_id)
         - Clients see only their own vehicles""",
+        parameters=[
+            OpenApiParameter(
+                name="client_id",
+                description="Filter vehicles by client ID (admin/manager only)",
+                required=False,
+                type=int,
+            ),
+        ],
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=VehicleInfoSerializer(many=True),
@@ -189,11 +213,6 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
         },
     )
     def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
-        staff_roles = {User.Roles.ADMIN, User.Roles.MANAGER}
         queryset = self.get_queryset()
-
-        if request.user.role not in staff_roles:
-            queryset = queryset.filter(client=request.user)
-
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
