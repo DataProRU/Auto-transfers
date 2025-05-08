@@ -63,3 +63,9 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
         if value < datetime.now(UTC).date():
             raise serializers.ValidationError("Arrival date cannot be in the past")
         return value
+
+
+class VehicleTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehicleType
+        fields = ["id", "v_type"]

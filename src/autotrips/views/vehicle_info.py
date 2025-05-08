@@ -10,12 +10,12 @@ from drf_spectacular.utils import (
     OpenApiResponse,
     extend_schema,
 )
-from rest_framework import status, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from autotrips.models.vehicle_info import VehicleInfo
-from autotrips.serializers.vehicle_info import VehicleInfoSerializer
+from autotrips.models.vehicle_info import VehicleInfo, VehicleType
+from autotrips.serializers.vehicle_info import VehicleInfoSerializer, VehicleTypeSerializer
 from project.permissions import VehicleAccessPermission
 
 User = get_user_model()
@@ -216,3 +216,9 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class VehicleTypeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = VehicleType.objects.all()
+    serializer_class = VehicleTypeSerializer
+    permission_classes = (VehicleAccessPermission,)
