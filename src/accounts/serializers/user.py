@@ -24,3 +24,17 @@ class UserSerializer(serializers.ModelSerializer):
             "is_onboarded",
             "documents",
         ]
+
+
+class ClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "full_name",
+            "phone",
+            "telegram",
+            "company",
+            "address",
+            "email",
+        ]

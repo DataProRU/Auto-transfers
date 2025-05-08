@@ -8,7 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from accounts.models.user import DocumentImage, User
-from accounts.serializers.user import DocumentImageSerializer, UserSerializer
+from accounts.serializers.user import DocumentImageSerializer, UserSerializer, ClientSerializer
 from accounts.services.single_resource import SingleResourceMixin
 from project.permissions import IsAdminOrManager, IsApproved
 
@@ -194,3 +194,20 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     )
     def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
         return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="List all clients",
+        description="Retrieve a list of all users with 'client' role. "
+        "Only accessible to users with the role 'admin' or 'manager'.",
+        responses={
+            200: OpenApiResponse(description="Clients retrieved successfully", response=ClientSerializer(many=True)),
+            403: OpenApiResponse(description="Forbidden"),
+        },
+    )
+    @action(
+        methods=["GET"], detail=False, url_path="clients", url_name="get_clients", permission_classes=[IsAdminOrManager]
+    )
+    def get_clients(self, request: Request) -> Response:
+        clients = User.objects.filter(role=User.Roles.CLIENT)
+        serializer = ClientSerializer(clients, many=True, context={"request": request})
+        return Response(serializer.data)
