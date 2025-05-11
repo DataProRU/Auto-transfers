@@ -1,4 +1,3 @@
-from datetime import UTC, date, datetime
 from typing import Any
 
 from django.contrib.auth import get_user_model
@@ -59,10 +58,10 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
         extra_kwargs = {"arrival_date": {"error_messages": {"invalid": "Enter a valid date in YYYY-MM-DD format"}}}
         list_serializer_class = VehicleInfoListSerializer
 
-    def validate_arrival_date(self, value: date) -> date:
-        if value < datetime.now(UTC).date():
-            raise serializers.ValidationError("Arrival date cannot be in the past")
-        return value
+    # def validate_arrival_date(self, value: date) -> date:  noqa: ERA001 (for the future)
+    #     if value < datetime.now(UTC).date():
+    #         raise serializers.ValidationError("Arrival date cannot be in the past")  noqa: ERA001
+    #     return value  noqa: ERA001
 
 
 class VehicleTypeSerializer(serializers.ModelSerializer):
