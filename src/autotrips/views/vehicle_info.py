@@ -168,15 +168,21 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
                 examples=[
                     OpenApiExample(
                         "Single vehicle error",
-                        value={"vin": ["Invalid VIN format"], "arrival_date": ["Arrival date cannot be in the past"]},
+                        value={
+                            "vin": {"message": "Vehicle with this VIN already exists", "error_type": "vin_exists"},
+                            "arrival_date": ["Arrival date cannot be in the past"],
+                        },
                     ),
                     OpenApiExample(
                         "Bulk vehicle error",
-                        value={
-                            "non_field_error": "Can create multiply vehicles only for one client",
-                            "0": {"vin": ["Invalid VIN format"]},
-                            "1": {"arrival_date": ["Arrival date cannot be in the past"]},
-                        },
+                        value=[
+                            {"vin": {"message": "Vehicle with this VIN already exists", "error_type": "vin_exists"}},
+                            {"arrival_date": ["Arrival date cannot be in the past"]},
+                        ],
+                    ),
+                    OpenApiExample(
+                        "Multiply clients",
+                        value={"non_field_error": "Can create multiply vehicles only for one client"},
                     ),
                 ],
             ),
