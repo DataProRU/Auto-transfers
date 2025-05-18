@@ -13,8 +13,14 @@ class VehicleInfoListSerializer(serializers.ListSerializer):
     def create(self, validated_data: dict[str, Any]) -> list[VehicleInfo]:
         vehicles = [VehicleInfo(**item) for item in validated_data]
         vehicles_idxs = {vehicle.client_id for vehicle in vehicles}
+        vehicles_vins = {vehicle.vin for vehicle in vehicles}
         if len(vehicles_idxs) > 1:
             raise serializers.ValidationError({"non_field_error": "Can create multiply vehicles only for one client"})
+        if len(vehicles_vins) < len(vehicles):
+            raise serializers.ValidationError(
+                {"vins_error": "It is not possible to create multiple vehicles with the same VINs"}
+            )
+
         return VehicleInfo.objects.bulk_create(vehicles)  # type: ignore[no-any-return]
 
     def update(self, _: VehicleInfo, __: dict[str, Any]) -> None:

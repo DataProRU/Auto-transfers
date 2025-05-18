@@ -27,7 +27,8 @@ class VehicleInfo(models.Model):
     model = models.CharField(max_length=100, null=False, blank=False)
     v_type = models.ForeignKey(VehicleType, on_delete=models.RESTRICT, related_name="vehicles", null=False, blank=False)
     vin = models.CharField(
-        validators=[RegexValidator(regex=re.compile(r"^[A-HJ-NPR-Z0-9]{17}$"), message="Invalid vin format.")]
+        unique=True,
+        validators=[RegexValidator(regex=re.compile(r"^[A-HJ-NPR-Z0-9]{17}$"), message="Invalid vin format.")],
     )
     container_number = models.CharField(max_length=100, null=False, blank=False)
     arrival_date = models.DateField(null=False, blank=False)
