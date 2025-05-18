@@ -9,7 +9,7 @@ from rest_framework.validators import UniqueValidator
 from accounts.models.user import DocumentImage, User
 from accounts.serializers.custom_image import HEIFImageField
 from accounts.serializers.user import DocumentImageSerializer
-from accounts.validators import FileMaxSizeValidator, telegram_validator
+from accounts.validators import CustomRegexValidator, FileMaxSizeValidator
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -31,11 +31,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(
         required=True,
         validators=[
-            RegexValidator(
+            CustomRegexValidator(
                 regex=r"^\+?1?\d{9,15}$",
                 message="Number should be in format: '+79991234567'.",
+                error_type="phone_invalid",
             ),
-            UniqueValidator(queryset=User.objects.all(), message=("User with this phone already exists.")),
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message={"message": "User with this phone already exists.", "error_type": "phone_exists"},
+            ),
         ],
     )
     images = DocumentImageSerializer(many=True, read_only=True)
@@ -53,8 +57,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     telegram = serializers.CharField(
         required=True,
         validators=[
-            UniqueValidator(queryset=User.objects.all(), message=("User with this telegram already exists.")),
-            telegram_validator,
+            CustomRegexValidator(
+                regex=r"^[a-zA-Z0-9_]{5,32}$",
+                message="Telegram username must be 5-32 characters long, contain only letters, "
+                "numbers and underscores.",
+                error_type="telegram_invalid",
+            ),
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message={"message": "User with this telegram already exists.", "error_type": "telegram_exists"},
+            ),
         ],
     )
 
@@ -102,18 +114,30 @@ class ClientRegistrationSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(
         required=True,
         validators=[
-            RegexValidator(
+            CustomRegexValidator(
                 regex=r"^\+?1?\d{9,15}$",
                 message="Number should be in format: '+79991234567'.",
+                error_type="phone_invalid",
             ),
-            UniqueValidator(queryset=User.objects.all(), message=("User with this phone already exists.")),
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message={"message": "Client with this phone already exists.", "error_type": "phone_exists"},
+            ),
         ],
     )
     telegram = serializers.CharField(
         required=True,
         validators=[
-            UniqueValidator(queryset=User.objects.all(), message=("User with this telegram already exists.")),
-            telegram_validator,
+            CustomRegexValidator(
+                regex=r"^[a-zA-Z0-9_]{5,32}$",
+                message="Telegram username must be 5-32 characters long, contain only letters, "
+                "numbers and underscores.",
+                error_type="telegram_invalid",
+            ),
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message={"message": "Client with this telegram already exists.", "error_type": "telegram_exists"},
+            ),
         ],
     )
     email = serializers.EmailField(
