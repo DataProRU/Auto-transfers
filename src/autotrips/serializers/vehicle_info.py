@@ -3,6 +3,7 @@ from typing import Any
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from accounts.serializers.user import ClientSerializer
 from autotrips.models.vehicle_info import VehicleInfo, VehicleType
 
 User = get_user_model()
@@ -21,23 +22,19 @@ class VehicleInfoListSerializer(serializers.ListSerializer):
 
 
 class VehicleInfoSerializer(serializers.ModelSerializer):
-    client_id = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.filter(role=User.Roles.CLIENT), source="client", write_only=True
+    client = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.filter(role=User.Roles.CLIENT), write_only=False, required=True
     )
-    client_name = serializers.CharField(source="client.full_name", read_only=True)
-    v_type_id = serializers.PrimaryKeyRelatedField(queryset=VehicleType.objects.all(), source="v_type", write_only=True)
-    v_type_name = serializers.CharField(source="v_type.v_type", read_only=True)
+    v_type = serializers.PrimaryKeyRelatedField(queryset=VehicleType.objects.all(), write_only=False, required=True)
 
     class Meta:
         model = VehicleInfo
         fields = [
             "id",
-            "client_id",
-            "client_name",
+            "client",
             "brand",
             "model",
-            "v_type_id",
-            "v_type_name",
+            "v_type",
             "vin",
             "container_number",
             "arrival_date",
@@ -49,8 +46,6 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
             "creation_time",
         ]
         read_only_fields = [
-            "client_name",
-            "v_type_name",
             "status",
             "status_changed",
             "creation_time",
@@ -62,6 +57,12 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
     #     if value < datetime.now(UTC).date():
     #         raise serializers.ValidationError("Arrival date cannot be in the past")  noqa: ERA001
     #     return value  noqa: ERA001
+
+    def to_representation(self, instance: VehicleInfo) -> Any:  # noqa: ANN401
+        representation = super().to_representation(instance)
+        representation["client"] = ClientSerializer(instance.client).data
+        representation["v_type"] = VehicleTypeSerializer(instance.v_type).data
+        return representation
 
 
 class VehicleTypeSerializer(serializers.ModelSerializer):
