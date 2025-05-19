@@ -144,7 +144,10 @@ class ClientRegistrationSerializer(serializers.ModelSerializer):
         required=False,
         allow_blank=True,
         validators=[
-            UniqueValidator(queryset=User.objects.all(), message=("User with this email already exists.")),
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message={"message": "Client with this email already exists.", "error_type": "email_exists"},
+            ),
         ],
     )
     address = serializers.CharField(max_length=255, required=True)
