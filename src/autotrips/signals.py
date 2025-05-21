@@ -10,7 +10,7 @@ from django.utils import timezone
 from autotrips.models.acceptance_report import AcceptenceReport
 from autotrips.models.managers import vehicle_info_save
 from autotrips.models.vehicle_info import VehicleInfo
-from services.table_service import table_manager
+from services.table_service import crm_table_manager, table_manager
 
 logger = logging.getLogger(__name__)
 
@@ -182,7 +182,7 @@ class PostVehicleSaveSignalReciever:
     ) -> None:
         for instance in instances:
             row = self.build_data_to_table(instance)
-            table_manager.append_row(self.WORKSHEET, row)
+            crm_table_manager.append_row(self.WORKSHEET, row)
         self.send_telegram_notification(instances)
 
 

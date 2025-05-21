@@ -76,3 +76,12 @@ except Exception as e:  # noqa: BLE001
     msg = f"TableManager initialization failed: {e}"
     logger.warning(msg)
     table_manager = DummyTableManager()
+
+
+crm_table_manager: TableManager | DummyTableManager
+try:
+    crm_table_manager = TableManager(settings.CRM_TABLE_ID, settings.TABLE_CREDS)
+except Exception as e:  # noqa: BLE001
+    msg = f"CRMTableManager initialization failed: {e}"
+    logger.warning(msg)
+    crm_table_manager = DummyTableManager()
