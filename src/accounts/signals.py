@@ -11,7 +11,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
-from services.table_service import table_manager
+from services.table_service import crm_table_manager
 
 from .models import User
 
@@ -82,7 +82,7 @@ def _handle_client_registration(instance: User) -> None:
             instance.address,
             instance.email,
         ]
-        table_manager.append_row(WORKSHEET, data)
+        crm_table_manager.append_row(WORKSHEET, data)
     except Exception as e:
         msg = f"Failed to write client registration data into table: {e!s}"
         raise SpreadsheetError(msg) from e
