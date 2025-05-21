@@ -160,6 +160,7 @@ class PostVehicleSaveSignalReciever:
     def build_data_to_table(self, info: VehicleInfo) -> list[str]:
         info_time_local = timezone.localtime(info.creation_time)
         info_time = info_time_local.strftime("%d.%m.%Y %H:%M:%S")
+        arrival_date = info.arrival_date.strftime("%d.%m.%Y")
         return [
             info_time,
             info.client.full_name,
@@ -168,7 +169,7 @@ class PostVehicleSaveSignalReciever:
             info.v_type.v_type,
             info.vin,
             info.container_number,
-            info.arrival_date,
+            arrival_date,
             info.transporter,
             info.recipient,
             info.comment,
