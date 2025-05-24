@@ -1,0 +1,65 @@
+name: Production Deployment
+
+on: 
+    workflow_run:
+      workflows: ["Check Application"]
+      branches: [master]
+      types:
+        - completed
+    workflow_dispatch:
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add SSH Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Install SSH Key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+
+      - name: Deploy Application
+        run: |
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SERVER_IP }} "
+            # Backend
+            cd Auto-transfers
+            git pull origin master
+
+            poetry install --no-dev --sync
+            poetry run python manage.py migrate
+            poetry run python manage.py collectstatic --noinput
+
+            # Frontend
+            cd ../AutoTrips-frontend
+            git pull origin master
+
+            npm install
+            npm run build
+
+            sudo rm -rf /var/www/dist
+            sudo cp -r dist /var/www/
+            sudo chown -R www-data:www-data /var/www/dist
+
+            # Restart services
+            sudo systemctl restart gunicorn
+            sudo systemctl restart telebot
+            sudo systemctl restart nginx
+          "
+      - name: Verify Deployment
+        run: |
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SERVER_IP }} "
+            for i in {1..5}; do
+              curl -sSf http://localhost:8000/api/health/ && exit 0
+              sleep 5
+            done
+            exit 1
+          "      

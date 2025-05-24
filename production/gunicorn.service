@@ -1,0 +1,17 @@
+[Unit]
+Description=Gunicorn for Django project
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/root/Auto-transfers
+Environment="PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/root/.local/bin/poetry run gunicorn project.wsgi:application --bind 127.0.0.1:8000
+Restart=always
+RestartSec=3
+StandardOutput=file:/root/Auto-transfers/gunicorn.log
+StandardError=file:/root/Auto-transfers/gunicorn.error.log
+
+[Install]
+WantedBy=multi-user.target

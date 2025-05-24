@@ -1,3 +1,7 @@
+![Lint](https://github.com/your/repo/actions/workflows/lint.yml/badge.svg)
+![Tests](https://github.com/your/repo/actions/workflows/test_app.yml/badge.svg)
+![Deploy](https://github.com/your/repo/actions/workflows/deploy.yml/badge.svg)
+
 Для запуска приложения
 
 1. Склонируйте репозиторий
