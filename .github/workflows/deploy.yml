@@ -24,41 +24,58 @@ jobs:
       - name: Install SSH Key
         uses: webfactory/ssh-agent@v0.5.3
         with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Deploy Application
         run: |
-          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SERVER_IP }} "
-            # Backend
-            cd Auto-transfers
-            git pull origin master
+            ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SERVER_IP }} << 'DEPLOY_SCRIPT'
+            set -eo pipefail  # Exit immediately on any error
+            export PATH="$HOME/.local/bin:$PATH"
+        
+            echo "📂 Entering project directory..."
+            cd Auto-transfers || {
+              echo "❌ Failed to enter project directory"
+              exit 1
+            }
+        
+            echo "🔄 Updating codebase..."
+            git pull origin master || {
+              echo "❌ Git pull failed"
+              exit 1
+            }
+        
+            echo "📦 Installing production dependencies..."
+            poetry install --no-root --no-interaction || {
+              echo "❌ Dependency installation failed"
+              exit 1 
+            }
 
-            poetry install --no-dev --sync
-            poetry run python manage.py migrate
-            poetry run python manage.py collectstatic --noinput
+            echo "💾 Running migrations..."
+            poetry run python src/manage.py migrate --no-input || {
+              echo "❌ Migration failed"
+              exit 1
+            }
+        
+            echo "🖼️  Collecting static files..."
+            poetry run python src/manage.py collectstatic --noinput || {
+              echo "❌ Static file collection failed"
+              exit 1
+            }
+        
+            echo "🔄 Restarting services..."
+            sudo systemctl restart gunicorn telebot nginx || {
+              echo "❌ Service restart failed"
+              exit 1
+            }
+        
+            echo "✅ Deployment completed successfully!"
+            DEPLOY_SCRIPT
 
-            # Frontend
-            cd ../AutoTrips-frontend
-            git pull origin master
-
-            npm install
-            npm run build
-
-            sudo rm -rf /var/www/dist
-            sudo cp -r dist /var/www/
-            sudo chown -R www-data:www-data /var/www/dist
-
-            # Restart services
-            sudo systemctl restart gunicorn
-            sudo systemctl restart telebot
-            sudo systemctl restart nginx
-          "
       - name: Verify Deployment
         run: |
           ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SERVER_IP }} "
             for i in {1..5}; do
-              curl -sSf http://localhost:8000/api/health/ && exit 0
+              curl -sSf http://localhost:8000/api/v1/docs/ && exit 0
               sleep 5
             done
             exit 1
