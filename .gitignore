@@ -7,3 +7,4 @@ __pycache__
 src/staticfiles/
 media/
 credentials.json
+*.log

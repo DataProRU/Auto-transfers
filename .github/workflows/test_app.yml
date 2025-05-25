@@ -1,11 +1,32 @@
 name: Check Application
 
-on: [push, pull_request]
+on: [pull_request, push]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+      
+      - name: Run Ruff
+        run: poetry run ruff check .
+      
+      - name: Run mypy
+        run: poetry run mypy .
   check:
     runs-on: ubuntu-latest
-
+    needs: lint
+    if: ${{ needs.lint.result == 'success' }}
     services:
       db:
         image: postgres:15
@@ -33,22 +54,6 @@ jobs:
       - name: Install Poetry
         run: pip install poetry
 
-      - name: Create creds
-        run: |
-          echo '{
-            "type": "service_account",
-            "project_id": "${{ secrets.PROJECT_ID }}",
-            "private_key_id": "${{ secrets.PRIVATE_KEY_ID }}",
-            "private_key": "${{ secrets.PRIVATE_KEY }}",
-            "client_email": "${{ secrets.CLIENT_EMAIL }}",
-            "client_id": "${{ secrets.CLIENT_ID }}",
-            "auth_uri": "${{ secrets.AUTH_URI }}",
-            "token_uri": "${{ secrets.TOKEN_URI }}",
-            "auth_provider_x509_cert_url": "${{ secrets.AUTH_PROVIDER_CERT_URL }}",
-            "client_x509_cert_url": "${{ secrets.CLIENT_CERT_URL }}",
-            "universe_domain": "${{ secrets.UNIVERSE_DOMAIN }}"
-          }' > credentials.json
-
       - name: Create .env file
         run: |
           echo "DATABASE_NAME=testautotrips" > .env
@@ -64,6 +69,8 @@ jobs:
           echo "VINS_WORKSHEET=testvins" >> .env
           echo "CHECKERS_WORKSHEET=testcheck" >> .env
           echo "REPORTS_WORKSHEET=testreport" >> .env
+          echo "CLIENTS_WORKSHEET=testclient" >> .env
+          echo "VEHICLES_WORKSHEET=testvehicle" >> .env
           echo "FRONTEND_URL=http://localhost:3000/" >> .env
           echo "ALLOWED_HOSTS=localhost,127.0.0.1" >> .env
           echo "DEBUG=True" >> .env
