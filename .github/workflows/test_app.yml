@@ -1,6 +1,7 @@
 name: Check Application
 
-on: [pull_request, push]
+on: 
+  push:
 
 jobs:
   lint:
