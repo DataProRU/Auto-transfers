@@ -13,6 +13,12 @@ class User(AbstractUser):
         MANAGER = "manager"
         USER = "user"
         CLIENT = "client"
+        LOGISTICIAN = "logistician"
+        OPENING_MANAGER = "opening_manager"
+        TITLE = "title"
+        INSPECTOR = "inspector"
+        RE_EXPORT = "re_export"
+        RECIEVER = "reciever"
 
     objects = CustomUserManager()
 
@@ -36,7 +42,7 @@ class User(AbstractUser):
     address = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
     company = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
     tg_user_id = models.BigIntegerField(unique=True, null=True, blank=True)
-    role = models.CharField(max_length=10, choices=Roles.choices, default=Roles.USER)
+    role = models.CharField(max_length=15, choices=Roles.choices, default=Roles.USER)
     is_approved = models.BooleanField(default=False)
     is_onboarded = models.BooleanField(default=False)
 
