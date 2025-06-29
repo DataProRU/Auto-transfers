@@ -2,6 +2,7 @@ from typing import Any
 
 from rest_framework import serializers
 
+from accounts.serializers.user import ClientSerializer
 from autotrips.models.vehicle_info import VehicleInfo
 
 
@@ -16,7 +17,7 @@ class BaseVehicleBidSerializer(serializers.ModelSerializer):
         model = VehicleInfo
         fields = "__all__"
 
-    def __init__(self, _: tuple[Any], __: dict[str, Any]) -> None:
+    def __init__(self, *_: tuple[Any], **__: dict[str, Any]) -> None:
         super().__init__(_, __)
 
         for field_name in self.always_read_only_fields:
@@ -53,6 +54,8 @@ class BaseVehicleBidSerializer(serializers.ModelSerializer):
 
 
 class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
+    client = ClientSerializer(read_only=True)
+
     read_only_fields = [
         "client",
         "container_number",
@@ -76,7 +79,7 @@ class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
         return super().update(instance, validated_data)
 
 
-def get_vehicle_info_serializer(user_role: str) -> type[BaseVehicleBidSerializer]:
+def get_vehicle_bid_serializer(user_role: str) -> type[BaseVehicleBidSerializer]:
     role_serializers = {
         "logistician": LogisticianVehicleBidSerializer,
     }
