@@ -13,6 +13,8 @@ class CustomTokenSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)
 
         token["user_id"] = user.id
+        token["username"] = user.username
+        token["phone"] = user.phone
         token["role"] = user.role
         token["approved"] = user.is_approved
         token["onboarded"] = user.is_onboarded
@@ -31,6 +33,8 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
         new_access = AccessToken(data["access"])  # type: ignore[arg-type]
         new_access.payload.update(
             {
+                "username": user.username,
+                "phone": user.phone,
                 "role": user.role,
                 "approved": user.is_approved,
                 "onboarded": user.is_onboarded,
