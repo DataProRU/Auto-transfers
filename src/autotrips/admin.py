@@ -107,6 +107,38 @@ class VehicleInfoAdmin(admin.ModelAdmin):
             },
         ),
         (_("Client & Status"), {"fields": ("client", "status", "status_changed", "comment")}),
+        (
+            _("CRM Information"),
+            {
+                "fields": (
+                    "transit_method",
+                    "location",
+                    "requested_title",
+                    "notified_parking",
+                    "notified_inspector",
+                    "logistician_comment",
+                    "openning_date",
+                    "opened",
+                    "manager_comment",
+                    "pickup_address",
+                    "took_title",
+                    "title_collection_date",
+                    "transit_number",
+                    "inspection_done",
+                    "inspection_date",
+                    "number_sent",
+                    "number_sent_date",
+                    "inspection_paid",
+                    "inspector_comment",
+                    "approved_by_logistician",
+                    "approved_by_manager",
+                    "approved_by_inspector",
+                    "approved_by_title",
+                    "approved_by_re_export",
+                    "approved_by_receiver",
+                )
+            },
+        ),
         (_("System Information"), {"fields": ("creation_time",), "classes": ("collapse",)}),
     )
 

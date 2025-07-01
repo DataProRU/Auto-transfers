@@ -50,3 +50,32 @@ class VehicleAccessPermission(permissions.BasePermission):
             return bool(obj.client == request.user)
 
         return False
+
+
+class VehicleBidAccessPermission(permissions.BasePermission):
+    """Custom permission to only allow admins and crm users to access vehicles info."""
+
+    allowed_roles = {
+        User.Roles.ADMIN,
+        User.Roles.LOGISTICIAN,
+        User.Roles.OPENING_MANAGER,
+        User.Roles.TITLE,
+        User.Roles.INSPECTOR,
+        User.Roles.RE_EXPORT,
+        User.Roles.RECIEVER,
+    }
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        return bool(request.user and request.user.is_authenticated and request.user.role in self.allowed_roles)
+
+
+class AdminLogistianVehicleBidAccessPermission(permissions.BasePermission):
+    """Custom permission to only allow admins and logisticians to access vehicles info."""
+
+    allowed_roles = {
+        User.Roles.ADMIN,
+        User.Roles.LOGISTICIAN,
+    }
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        return bool(request.user and request.user.is_authenticated and request.user.role in self.allowed_roles)
