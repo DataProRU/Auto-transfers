@@ -4,9 +4,22 @@ from rest_framework import serializers
 
 from accounts.serializers.user import ClientSerializer
 from autotrips.models.vehicle_info import VehicleInfo
+from autotrips.serializers.vehicle_info import VehicleTypeSerializer
+
+
+class AdminVehicleBidSerialiser(serializers.ModelSerializer):
+    client = ClientSerializer()
+    v_type = VehicleTypeSerializer()
+
+    class Meta:
+        model = VehicleInfo
+        fields = "__all__"
 
 
 class BaseVehicleBidSerializer(serializers.ModelSerializer):
+    client = ClientSerializer(read_only=True)
+    v_type = VehicleTypeSerializer(read_only=True)
+
     always_read_only_fields = ["id", "vin", "brand", "model"]
 
     read_only_fields: list[str] = []
@@ -17,8 +30,8 @@ class BaseVehicleBidSerializer(serializers.ModelSerializer):
         model = VehicleInfo
         fields = "__all__"
 
-    def __init__(self, *_: tuple[Any], **__: dict[str, Any]) -> None:
-        super().__init__(_, __)
+    def __init__(self, *args: tuple[Any], **kwargs: dict[str, Any]) -> None:
+        super().__init__(*args, **kwargs)
 
         for field_name in self.always_read_only_fields:
             if field_name in self.fields:
@@ -54,8 +67,6 @@ class BaseVehicleBidSerializer(serializers.ModelSerializer):
 
 
 class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
-    client = ClientSerializer(read_only=True)
-
     read_only_fields = [
         "client",
         "container_number",
@@ -79,8 +90,9 @@ class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
         return super().update(instance, validated_data)
 
 
-def get_vehicle_bid_serializer(user_role: str) -> type[BaseVehicleBidSerializer]:
+def get_vehicle_bid_serializer(user_role: str) -> type[serializers.ModelSerializer]:
     role_serializers = {
         "logistician": LogisticianVehicleBidSerializer,
+        "admin": AdminVehicleBidSerialiser,
     }
     return role_serializers.get(user_role, BaseVehicleBidSerializer)

@@ -9,8 +9,7 @@ from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
 )
-from rest_framework import viewsets
-from rest_framework.decorators import action
+from rest_framework import mixins, viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -35,53 +34,14 @@ LOGISTICIAN_GROUPS = {
 
 @extend_schema_view(
     list=extend_schema(
-        summary="List all vehicle bids (admin only)",
-        description="Returns a flat list of all vehicle bids. Only accessible by admins.",
-        responses={
-            200: OpenApiResponse(
-                description="A list of vehicle bids.", response=LogisticianVehicleBidSerializer(many=True)
-            )
-        },
-    ),
-    retrieve=extend_schema(
-        summary="Retrieve a vehicle bid",
-        description="Retrieve a single vehicle bid by ID.",
-        responses={
-            200: OpenApiResponse(description="A vehicle bid instance.", response=LogisticianVehicleBidSerializer)
-        },
-    ),
-)
-class VehicleBidViewSet(viewsets.ModelViewSet):
-    queryset = VehicleInfo.objects.select_related("client", "v_type").order_by("-id")
-    permission_classes = (VehicleBidAccessPermission,)
-    http_method_names = ["get", "patch", "list", "retrieve", "update"]
-
-    def get_serializer_class(self) -> Any:  # noqa: ANN401
-        role = self.request.user.role
-        return get_vehicle_bid_serializer(role)
-
-    def get_queryset(self) -> QuerySet:
-        role = self.request.user.role
-        qs = super().get_queryset()
-        if role in {User.Roles.ADMIN, User.Roles.LOGISTICIAN}:
-            return qs
-        return qs.none()
-
-    def list(self, request: Request, *args: tuple[str], **kwargs: dict[str, Any]) -> Response:
-        role = request.user.role
-        if role != "admin":
-            raise PermissionDenied("You do not have permission to view all bids.")
-        return super().list(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Logistician dashboard: grouped vehicle bids",
-        description="Returns grouped vehicle bids for logisticians, grouped by 'untouched' and 'in_progress'. "
-        "Optional 'status' query parameter filters by vehicle status.",
+        summary="List vehicle bids (admin: flat list, logistician: grouped)",
+        description="Admins receive a flat list of all vehicle bids. Logisticians receive grouped bids by status"
+        " and approval. The 'status' query parameter is required for logisticians.",
         parameters=[
             OpenApiParameter(
                 name="status",
-                description="Vehicle status to filter by (e.g., 'initial').",
-                required=True,
+                description="Vehicle status to filter by (e.g., 'initial'). Required for logisticians.",
+                required=False,
                 type=str,
                 location=OpenApiParameter.QUERY,
                 examples=[
@@ -94,41 +54,246 @@ class VehicleBidViewSet(viewsets.ModelViewSet):
         ],
         responses={
             200: OpenApiResponse(
-                description="Grouped vehicle bids by status and approval.",
+                description="Flat list for admin or grouped for logistician.",
                 response=LogisticianVehicleBidSerializer(many=True),
                 examples=[
                     OpenApiExample(
-                        "Grouped bids",
+                        "Admin flat list",
+                        value=[
+                            {
+                                "id": 1,
+                                "vin": "1HGCM82633A004352",
+                                "brand": "Honda",
+                                "model": "Accord",
+                                "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
+                                "v_type": {"id": 1, "name": "Sedan"},
+                                "container_number": "CONT1234567",
+                                "arrival_date": "2024-06-01",
+                                "openning_date": "2024-06-02",
+                                "transporter": "TransCo",
+                                "recipient": "Jane Smith",
+                                "approved_by_inspector": False,
+                                "approved_by_title": False,
+                                "approved_by_re_export": False,
+                                "transit_method": "t1",
+                                "location": "Warehouse 1",
+                                "requested_title": True,
+                                "notified_parking": True,
+                                "notified_inspector": False,
+                                "logistician_comment": "Urgent",
+                                "approved_by_logistician": True,
+                                "status": "loading",
+                                "status_changed": "2024-06-01T12:00:00Z",
+                            },
+                        ],
+                    ),
+                    OpenApiExample(
+                        "Logistician grouped list",
                         value={
                             "untouched": [
                                 {
                                     "id": 1,
-                                    "vin": "...",
-                                    "brand": "...",
-                                    "model": "...",
+                                    "vin": "1HGCM82633A004352",
+                                    "brand": "Honda",
+                                    "model": "Accord",
                                     "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
+                                    "v_type": {"id": 1, "name": "Sedan"},
+                                    "container_number": "CONT1234567",
+                                    "arrival_date": "2024-06-01",
+                                    "openning_date": "2024-06-02",
+                                    "transporter": "TransCo",
+                                    "recipient": "Jane Smith",
+                                    "approved_by_inspector": False,
+                                    "approved_by_title": False,
+                                    "approved_by_re_export": False,
+                                    "transit_method": "t1",
+                                    "location": "Warehouse 1",
+                                    "requested_title": True,
+                                    "notified_parking": True,
+                                    "notified_inspector": False,
+                                    "logistician_comment": "Urgent",
+                                    "approved_by_logistician": False,
+                                    "status": "initial",
+                                    "status_changed": "2024-06-01T12:00:00Z",
                                 },
                             ],
                             "in_progress": [
                                 {
-                                    "id": 3,
-                                    "vin": "...",
-                                    "brand": "...",
-                                    "model": "...",
-                                    "client": {"id": 4, "full_name": "Jane Smith", "email": "jane@example.com"},
+                                    "id": 2,
+                                    "vin": "2HGCM82633A004353",
+                                    "brand": "Toyota",
+                                    "model": "Camry",
+                                    "client": {"id": 3, "full_name": "Jane Smith", "email": "jane@example.com"},
+                                    "v_type": {"id": 2, "name": "Sedan"},
+                                    "container_number": "CONT7654321",
+                                    "arrival_date": "2024-06-03",
+                                    "openning_date": "2024-06-04",
+                                    "transporter": "MoveIt",
+                                    "recipient": "John Doe",
+                                    "approved_by_inspector": True,
+                                    "approved_by_title": False,
+                                    "approved_by_re_export": False,
+                                    "transit_method": "re_export",
+                                    "location": "Warehouse 2",
+                                    "requested_title": False,
+                                    "notified_parking": False,
+                                    "notified_inspector": True,
+                                    "logistician_comment": "Check docs",
+                                    "approved_by_logistician": True,
+                                    "status": "loading",
+                                    "status_changed": "2024-06-03T09:00:00Z",
                                 },
                             ],
+                        },
+                    ),
+                ],
+            )
+        },
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve a vehicle bid",
+        description="Retrieve a single vehicle bid by ID.",
+        responses={
+            200: OpenApiResponse(
+                description="A vehicle bid instance.",
+                response=LogisticianVehicleBidSerializer,
+                examples=[
+                    OpenApiExample(
+                        "Single bid",
+                        value={
+                            "id": 1,
+                            "vin": "1HGCM82633A004352",
+                            "brand": "Honda",
+                            "model": "Accord",
+                            "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
+                            "v_type": {"id": 1, "name": "Sedan"},
+                            "container_number": "CONT1234567",
+                            "arrival_date": "2024-06-01",
+                            "openning_date": "2024-06-02",
+                            "transporter": "TransCo",
+                            "recipient": "Jane Smith",
+                            "approved_by_inspector": False,
+                            "approved_by_title": False,
+                            "approved_by_re_export": False,
+                            "transit_method": "t1",
+                            "location": "Warehouse 1",
+                            "requested_title": True,
+                            "notified_parking": True,
+                            "notified_inspector": False,
+                            "logistician_comment": "Urgent",
+                            "approved_by_logistician": True,
+                            "status": "loading",
+                            "status_changed": "2024-06-01T12:00:00Z",
                         },
                     )
                 ],
             )
         },
-    )
-    @action(detail=False, methods=["get"], url_path="logistician-dashboard")
-    def logistician_dashboard(self, request: Request) -> Response:
-        if request.user.role != "logistician":
-            return PermissionDenied("You do not have permission to access logistician dashboard.")
+    ),
+    update=extend_schema(
+        summary="Update a vehicle bid",
+        description="Update a vehicle bid by ID. Only fields allowed by the serializer and role can be updated."
+        " The example shows both admin and logistician update payloads.",
+        request=LogisticianVehicleBidSerializer,
+        responses={
+            200: OpenApiResponse(
+                description="Updated vehicle bid instance.",
+                response=LogisticianVehicleBidSerializer,
+                examples=[
+                    OpenApiExample(
+                        "Admin update",
+                        value={
+                            "id": 1,
+                            "vin": "1HGCM82633A004352",
+                            "brand": "Honda",
+                            "model": "Accord",
+                            "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
+                            "v_type": {"id": 1, "name": "Sedan"},
+                            "container_number": "CONT1234567",
+                            "arrival_date": "2024-06-01",
+                            "openning_date": "2024-06-02",
+                            "transporter": "TransCo",
+                            "recipient": "Jane Smith",
+                            "approved_by_inspector": True,
+                            "approved_by_title": True,
+                            "approved_by_re_export": True,
+                            "transit_method": "t1",
+                            "location": "Warehouse 1",
+                            "requested_title": True,
+                            "notified_parking": True,
+                            "notified_inspector": True,
+                            "logistician_comment": "Admin updated comment",
+                            "approved_by_logistician": True,
+                            "status": "ready_for_transport",
+                            "status_changed": "2024-06-05T10:00:00Z",
+                        },
+                    ),
+                    OpenApiExample(
+                        "Logistician update",
+                        value={
+                            "id": 2,
+                            "vin": "2HGCM82633A004353",
+                            "brand": "Toyota",
+                            "model": "Camry",
+                            "client": {"id": 3, "full_name": "Jane Smith", "email": "jane@example.com"},
+                            "v_type": {"id": 2, "name": "Sedan"},
+                            "container_number": "CONT7654321",
+                            "arrival_date": "2024-06-03",
+                            "openning_date": "2024-06-04",
+                            "transporter": "MoveIt",
+                            "recipient": "John Doe",
+                            "approved_by_inspector": False,
+                            "approved_by_title": False,
+                            "approved_by_re_export": False,
+                            "transit_method": "re_export",
+                            "location": "Warehouse 2",
+                            "requested_title": False,
+                            "notified_parking": False,
+                            "notified_inspector": True,
+                            "logistician_comment": "Logistician updated comment",
+                            "approved_by_logistician": True,
+                            "status": "loading",
+                            "status_changed": "2024-06-06T11:00:00Z",
+                        },
+                    ),
+                ],
+            )
+        },
+    ),
+)
+class VehicleBidViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet
+):
+    queryset = VehicleInfo.objects.select_related("client", "v_type").order_by("-id")
+    permission_classes = (VehicleBidAccessPermission,)
+    http_method_names = ["get", "put"]
 
+    def get_serializer_class(self) -> Any:  # noqa: ANN401
+        role = self.request.user.role
+        return get_vehicle_bid_serializer(role)
+
+    def get_queryset(self) -> QuerySet:
+        role = self.request.user.role
+        qs = super().get_queryset()
+        if role in {User.Roles.ADMIN, User.Roles.LOGISTICIAN}:
+            return qs
+        return qs.none()
+
+    def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+        role = request.user.role
+
+        if role == "admin":
+            return self.get_admin_list(request, *args, **kwargs)
+
+        if role == "logistician":
+            return self.get_logistician_grouped_list(request, *args, **kwargs)
+
+        raise PermissionDenied("You do not have permission to view bids.")
+
+    def get_admin_list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+        return super().list(request, *args, **kwargs)
+
+    def get_logistician_grouped_list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
         status_param = request.query_params.get("status", "initial")
         base_qs = self.get_queryset().filter(status=status_param)
         group_param = LOGISTICIAN_GROUPS.get(status_param, {})
@@ -136,5 +301,4 @@ class VehicleBidViewSet(viewsets.ModelViewSet):
         for group_name, group_filter in group_param.items():
             qs = base_qs.filter(**group_filter)
             data[group_name] = self.get_serializer(qs, many=True).data
-
         return Response(data)
