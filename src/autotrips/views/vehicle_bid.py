@@ -9,7 +9,8 @@ from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
 )
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -19,7 +20,7 @@ from autotrips.serializers.vehicle_bid import (
     LogisticianVehicleBidSerializer,
     get_vehicle_bid_serializer,
 )
-from project.permissions import VehicleBidAccessPermission
+from project.permissions import AdminLogistianVehicleBidAccessPermission, VehicleBidAccessPermission
 
 User = get_user_model()
 
@@ -302,3 +303,64 @@ class VehicleBidViewSet(
             qs = base_qs.filter(**group_filter)
             data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
+
+    @extend_schema(
+        summary="Reject a vehicle bid",
+        description="Mark the status of a particular bid as 'rejected'."
+        " Only admins and logisticians can perform this action. A 'logistician_comment' is required before rejection.",
+        request=OpenApiExample("Reject bid", value={"logistician_comment": "Reason for rejection."}),
+        responses={
+            200: OpenApiResponse(
+                description="Bid marked as rejected.",
+                response=LogisticianVehicleBidSerializer,
+                examples=[
+                    OpenApiExample(
+                        "Rejected bid",
+                        value={
+                            "id": 1,
+                            "vin": "1HGCM82633A004352",
+                            "brand": "Honda",
+                            "model": "Accord",
+                            "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
+                            "container_number": "CONT1234567",
+                            "arrival_date": "2024-06-01",
+                            "openning_date": "2024-06-02",
+                            "transporter": "TransCo",
+                            "recipient": "Jane Smith",
+                            "approved_by_inspector": False,
+                            "approved_by_title": False,
+                            "approved_by_re_export": False,
+                            "transit_method": "t1",
+                            "location": "Warehouse 1",
+                            "requested_title": False,
+                            "notified_parking": False,
+                            "notified_inspector": False,
+                            "logistician_comment": "Reason for rejection.",
+                            "approved_by_logistician": False,
+                            "status": "rejected",
+                            "status_changed": "2024-06-10T12:00:00Z",
+                        },
+                    )
+                ],
+            )
+        },
+    )
+    @action(
+        detail=True, methods=["put"], url_path="reject", permission_classes=(AdminLogistianVehicleBidAccessPermission,)
+    )
+    def reject(self, request: Request, pk: int | None = None) -> Response:
+        comment = request.data.get("logistician_comment")
+        if not comment:
+            return Response(
+                {"logistician_comment": "This field is required before rejection."}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        bid = self.get_object()
+        if bid.approved_by_logistician:
+            return Response({"detail": "You can't reject approved bid."}, status=status.HTTP_400_BAD_REQUEST)
+
+        bid.status = VehicleInfo.Statuses.REJECTED
+        bid.logistician_comment = comment
+        bid.save(update_fields=["status", "logistician_comment", "status_changed"])
+        serializer = self.get_serializer(bid)
+        return Response(serializer.data)

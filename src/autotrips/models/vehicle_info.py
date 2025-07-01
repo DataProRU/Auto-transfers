@@ -1,5 +1,5 @@
 import re
-from typing import cast
+from typing import Any, cast
 
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
@@ -88,3 +88,10 @@ class VehicleInfo(models.Model):
 
     def __str__(self) -> str:
         return f"{self.client.full_name}_{self.model}_{self.v_type}"
+
+    def save(self, *args: tuple[Any], **kwargs: dict[str, Any]) -> None:
+        if self.pk is not None:
+            original = type(self).objects.get(pk=self.pk)
+            if original.status != self.status:
+                self.status_changed = timezone.now()
+        super().save(*args, **kwargs)
