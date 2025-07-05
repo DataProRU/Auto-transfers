@@ -115,13 +115,34 @@ class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
         return super().update(instance, validated_data)
 
 
-class RejectBidSerializer(serializers.Serializer):
-    logistician_comment = serializers.CharField(required=True, allow_blank=False)
+class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
+    read_only_fields = [
+        "container_number",
+        "arrival_date",
+        "transporter",
+        "recipient",
+        "transit_method",
+    ]
+    required_fields = ["openning_date", "opened", "manager_comment"]
+    protected_fields = ["openning_date"]
+
+    def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
+        if "openning_date" in validated_data:
+            old_value = instance.openning_date
+            new_value = validated_data["openning_date"]
+            if not old_value and new_value:
+                validated_data["approved_by_manager"] = True
+        return super().update(instance, validated_data)
 
 
 def get_vehicle_bid_serializer(user_role: str) -> type[serializers.ModelSerializer]:
     role_serializers = {
         "logistician": LogisticianVehicleBidSerializer,
         "admin": AdminVehicleBidSerialiser,
+        "opening_manager": ManagerVehicleBidSerializer,
     }
     return role_serializers.get(user_role, BaseVehicleBidSerializer)
+
+
+class RejectBidSerializer(serializers.Serializer):
+    logistician_comment = serializers.CharField(required=True, allow_blank=False)
