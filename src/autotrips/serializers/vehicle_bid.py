@@ -25,6 +25,7 @@ class BaseVehicleBidSerializer(serializers.ModelSerializer):
     read_only_fields: list[str] = []
     required_fields: list[str] = []
     protected_fields: list[str] = []
+    optional_fields: list[str] = []
 
     class Meta:
         model = VehicleInfo
@@ -43,6 +44,10 @@ class BaseVehicleBidSerializer(serializers.ModelSerializer):
             if field_name in self.fields:
                 self.fields[field_name].required = True
                 self.fields[field_name].allow_null = False
+        for field_name in self.optional_fields:
+            if field_name in self.fields:
+                self.fields[field_name].required = False
+                self.fields[field_name].allow_null = True
 
     def to_representation(self, instance: VehicleInfo) -> Any:  # noqa: ANN401
         rep = super().to_representation(instance)
@@ -51,6 +56,7 @@ class BaseVehicleBidSerializer(serializers.ModelSerializer):
             | set(self.read_only_fields)
             | set(self.required_fields)
             | set(self.protected_fields)
+            | set(self.optional_fields)
         )
         return {k: v for k, v in rep.items() if k in field_names}
 
@@ -78,8 +84,9 @@ class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
         "approved_by_title",
         "approved_by_re_export",
     ]
-    required_fields = ["transit_method", "location", "requested_title", "notified_parking", "notified_inspector"]
+    required_fields = ["transit_method", "requested_title", "notified_parking", "notified_inspector"]
     protected_fields = ["transit_method"]
+    optional_fields = ["location"]
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
         if "transit_method" in validated_data:
