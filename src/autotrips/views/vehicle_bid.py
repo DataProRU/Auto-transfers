@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from autotrips.models.vehicle_info import VehicleInfo
 from autotrips.serializers.vehicle_bid import (
     LogisticianVehicleBidSerializer,
+    RejectBidSerializer,
     get_vehicle_bid_serializer,
 )
 from project.permissions import AdminLogistianVehicleBidAccessPermission, VehicleBidAccessPermission
@@ -308,7 +309,7 @@ class VehicleBidViewSet(
         summary="Reject a vehicle bid",
         description="Mark the status of a particular bid as 'rejected'."
         " Only admins and logisticians can perform this action. A 'logistician_comment' is required before rejection.",
-        request=OpenApiExample("Reject bid", value={"logistician_comment": "Reason for rejection."}),
+        request=RejectBidSerializer,
         responses={
             200: OpenApiResponse(
                 description="Bid marked as rejected.",
@@ -349,11 +350,9 @@ class VehicleBidViewSet(
         detail=True, methods=["put"], url_path="reject", permission_classes=(AdminLogistianVehicleBidAccessPermission,)
     )
     def reject(self, request: Request, pk: int | None = None) -> Response:
-        comment = request.data.get("logistician_comment")
-        if not comment:
-            return Response(
-                {"logistician_comment": "This field is required before rejection."}, status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer = RejectBidSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        comment = serializer.data.get("logistician_comment")
 
         bid = self.get_object()
         if bid.approved_by_logistician:

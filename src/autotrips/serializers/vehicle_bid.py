@@ -1,5 +1,6 @@
 from typing import Any
 
+from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
 
 from accounts.serializers.user import ClientSerializer
@@ -16,6 +17,23 @@ class AdminVehicleBidSerialiser(serializers.ModelSerializer):
         fields = "__all__"
 
 
+@extend_schema_serializer(
+    examples=[
+        OpenApiExample(
+            "Logistician Update",
+            summary="How logisticians update vehicles",
+            value={
+                "transit_method": "t1",
+                "location": "Some location",
+                "requested_title": False,
+                "notified_parking": False,
+                "notified_inspector": False,
+            },
+            request_only=True,
+            description="Logisticians can set transit method and location",
+        ),
+    ]
+)
 class BaseVehicleBidSerializer(serializers.ModelSerializer):
     client = ClientSerializer(read_only=True)
     v_type = VehicleTypeSerializer(read_only=True)
@@ -95,6 +113,10 @@ class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
             if not old_value and new_value:
                 validated_data["approved_by_logistician"] = True
         return super().update(instance, validated_data)
+
+
+class RejectBidSerializer(serializers.Serializer):
+    logistician_comment = serializers.CharField(required=True, allow_blank=False)
 
 
 def get_vehicle_bid_serializer(user_role: str) -> type[serializers.ModelSerializer]:
