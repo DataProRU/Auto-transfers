@@ -36,7 +36,7 @@ LOGISTICIAN_GROUPS = {
 }
 
 MANAGER_GROUPS = {
-    "untouched": {"approved_by_manager": False, "arrival_date__lte": timezone.now() + timedelta(days=7)},
+    "untouched": {"approved_by_manager": False},
     "in_progress": {"approved_by_manager": True},
 }
 
@@ -211,7 +211,7 @@ MANAGER_GROUPS = {
                 response=LogisticianVehicleBidSerializer,
                 examples=[
                     OpenApiExample(
-                        "Single bid",
+                        "Logistician single bid",
                         value={
                             "id": 1,
                             "vin": "1HGCM82633A004352",
@@ -232,7 +232,24 @@ MANAGER_GROUPS = {
                             "notified_parking": True,
                             "notified_inspector": False,
                         },
-                    )
+                    ),
+                    OpenApiExample(
+                        "Manager single bid",
+                        value={
+                            "id": 2,
+                            "vin": "2HGCM82633A004353",
+                            "brand": "Toyota",
+                            "model": "Camry",
+                            "container_number": "CONT7654321",
+                            "arrival_date": "2024-06-03",
+                            "transporter": "MoveIt",
+                            "recipient": "John Doe",
+                            "transit_method": "re_export",
+                            "openning_date": "2024-06-04",
+                            "opened": True,
+                            "manager_comment": "Container opened and inspected",
+                        },
+                    ),
                 ],
             )
         },
@@ -353,7 +370,10 @@ class VehicleBidViewSet(
         if role in {User.Roles.ADMIN, User.Roles.LOGISTICIAN}:
             return qs
         if role == User.Roles.OPENING_MANAGER:
-            return qs.filter(status=VehicleInfo.Statuses.INITIAL, approved_by_logistician=True)
+            allowed_date = timezone.now() + timedelta(days=7)
+            return qs.filter(
+                status=VehicleInfo.Statuses.INITIAL, approved_by_logistician=True, arrival_date__lte=allowed_date
+            )
         return qs.none()
 
     def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
@@ -422,10 +442,6 @@ class VehicleBidViewSet(
                             "requested_title": False,
                             "notified_parking": False,
                             "notified_inspector": False,
-                            "logistician_comment": "Reason for rejection.",
-                            "approved_by_logistician": False,
-                            "status": "rejected",
-                            "status_changed": "2024-06-10T12:00:00Z",
                         },
                     )
                 ],
@@ -436,9 +452,9 @@ class VehicleBidViewSet(
         detail=True, methods=["put"], url_path="reject", permission_classes=(AdminLogistianVehicleBidAccessPermission,)
     )
     def reject(self, request: Request, pk: int | None = None) -> Response:
-        serializer = RejectBidSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        comment = serializer.data.get("logistician_comment")
+        req_serializer = RejectBidSerializer(data=request.data)
+        req_serializer.is_valid(raise_exception=True)
+        comment = req_serializer.data.get("logistician_comment")
 
         bid = self.get_object()
         if bid.approved_by_logistician:
@@ -447,5 +463,5 @@ class VehicleBidViewSet(
         bid.status = VehicleInfo.Statuses.REJECTED
         bid.logistician_comment = comment
         bid.save(update_fields=["status", "logistician_comment", "status_changed"])
-        serializer = self.get_serializer(bid)
-        return Response(serializer.data)
+        resp_serializer = self.get_serializer(bid)
+        return Response(resp_serializer.data)

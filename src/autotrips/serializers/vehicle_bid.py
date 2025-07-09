@@ -32,6 +32,13 @@ class AdminVehicleBidSerialiser(serializers.ModelSerializer):
             request_only=True,
             description="Logisticians can set transit method and location",
         ),
+        OpenApiExample(
+            "Manager Update",
+            summary="How opening managers update vehicles",
+            value={"openning_date": "2025-11-11", "opened": False, "manager_comment": "comment"},
+            request_only=True,
+            description="Managers can set openning date, opened and manager comment",
+        ),
     ]
 )
 class BaseVehicleBidSerializer(serializers.ModelSerializer):
@@ -123,8 +130,9 @@ class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
         "recipient",
         "transit_method",
     ]
-    required_fields = ["openning_date", "opened", "manager_comment"]
+    required_fields = ["openning_date", "opened"]
     protected_fields = ["openning_date"]
+    optional_fields = ["manager_comment"]
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
         if "openning_date" in validated_data:
