@@ -71,6 +71,8 @@ class VehicleInfoAdmin(admin.ModelAdmin):
         "status",
         "status_changed",
         "creation_time",
+        "logistician_comment",
+        "manager_comment",
     )
     list_filter = (
         "v_type",
