@@ -124,6 +124,7 @@ class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
 
 class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
     read_only_fields = [
+        "client",
         "container_number",
         "arrival_date",
         "transporter",
