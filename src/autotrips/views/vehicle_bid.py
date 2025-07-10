@@ -40,12 +40,19 @@ MANAGER_GROUPS = {
     "in_progress": {"approved_by_manager": True},
 }
 
+TITLE_GROUPS = {
+    "untouched": {"pickup_address__isnull": True},
+    "in_progress": {"pickup_address__isnull": False, "approved_by_title": False},
+    "completed": {"approved_by_title": True},
+}
+
 
 @extend_schema_view(
     list=extend_schema(
-        summary="List vehicle bids (admin: flat list, logistician: grouped, opening_manager: grouped)",
-        description="Admins receive a flat list of all vehicle bids. Logisticians receive grouped bids by status "
-        "and approval. Opening managers receive grouped bids by approval status and arrival date.",
+        summary="List vehicle bids (admin: flat list, logistician: grouped, opening_manager: grouped, title: grouped)",
+        description="Admins receive a flat list of all vehicle bids. Logisticians receive grouped bids by "
+        "status and approval. Opening managers receive grouped bids by approval status and arrival date. "
+        "Title role receives grouped bids by pickup address and approval.",
         parameters=[
             OpenApiParameter(
                 name="status",
@@ -63,7 +70,7 @@ MANAGER_GROUPS = {
         ],
         responses={
             200: OpenApiResponse(
-                description="Flat list for admin or grouped for logistician/opening_manager.",
+                description="Flat list for admin or grouped for logistician/opening_manager/title.",
                 response=LogisticianVehicleBidSerializer(many=True),
                 examples=[
                     OpenApiExample(
@@ -200,6 +207,44 @@ MANAGER_GROUPS = {
                             ],
                         },
                     ),
+                    OpenApiExample(
+                        "Title grouped list",
+                        value={
+                            "untouched": [
+                                {
+                                    "id": 1,
+                                    "vin": "1HGCM82633A004352",
+                                    "brand": "Honda",
+                                    "model": "Accord",
+                                    "pickup_address": None,
+                                    "took_title": None,
+                                    "title_collection_date": None,
+                                },
+                            ],
+                            "in_progress": [
+                                {
+                                    "id": 2,
+                                    "vin": "2HGCM82633A004353",
+                                    "brand": "Toyota",
+                                    "model": "Camry",
+                                    "pickup_address": "123 Main St",
+                                    "took_title": "yes",
+                                    "title_collection_date": None,
+                                },
+                            ],
+                            "completed": [
+                                {
+                                    "id": 3,
+                                    "vin": "3HGCM82633A004354",
+                                    "brand": "BMW",
+                                    "model": "X5",
+                                    "pickup_address": "456 Elm St",
+                                    "took_title": "yes",
+                                    "title_collection_date": "2024-06-10",
+                                },
+                            ],
+                        },
+                    ),
                 ],
             )
         },
@@ -253,6 +298,18 @@ MANAGER_GROUPS = {
                             "manager_comment": "Container opened and inspected",
                         },
                     ),
+                    OpenApiExample(
+                        "Title single bid",
+                        value={
+                            "id": 3,
+                            "vin": "3HGCM82633A004354",
+                            "brand": "BMW",
+                            "model": "X5",
+                            "pickup_address": "456 Elm St",
+                            "took_title": "yes",
+                            "title_collection_date": "2024-06-10",
+                        },
+                    ),
                 ],
             )
         },
@@ -260,7 +317,7 @@ MANAGER_GROUPS = {
     update=extend_schema(
         summary="Update a vehicle bid",
         description="Update a vehicle bid by ID. Only fields allowed by the serializer and role can be updated."
-        " The example shows admin, logistician, and opening_manager update payloads.",
+        "The example shows admin, logistician, opening_manager, and title update payloads.",
         request=LogisticianVehicleBidSerializer,
         responses={
             200: OpenApiResponse(
@@ -352,6 +409,18 @@ MANAGER_GROUPS = {
                             "manager_comment": "Container opened and contents verified",
                         },
                     ),
+                    OpenApiExample(
+                        "Title update",
+                        value={
+                            "id": 4,
+                            "vin": "4HGCM82633A004355",
+                            "brand": "Audi",
+                            "model": "A4",
+                            "pickup_address": "789 Oak Ave",
+                            "took_title": "yes",
+                            "title_collection_date": "2024-06-15",
+                        },
+                    ),
                 ],
             )
         },
@@ -381,6 +450,8 @@ class VehicleBidViewSet(
                 arrival_date__lte=allowed_date,
                 transit_method__in=[VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT],
             )
+        if role == User.Roles.TITLE:
+            return qs.filter(approved_by_logistician=True, approved_by_manager=True)
         return qs.none()
 
     def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
@@ -394,6 +465,9 @@ class VehicleBidViewSet(
 
         if role == User.Roles.OPENING_MANAGER:
             return self.get_manager_grouped_list()
+
+        if role == User.Roles.TITLE:
+            return self.get_title_grouped_list()
 
         raise PermissionDenied("You do not have permission to view bids.")
 
@@ -414,6 +488,14 @@ class VehicleBidViewSet(
         base_qs = self.get_queryset()
         data = {}
         for group_name, group_filter in MANAGER_GROUPS.items():
+            qs = base_qs.filter(**group_filter)
+            data[group_name] = self.get_serializer(qs, many=True).data
+        return Response(data)
+
+    def get_title_grouped_list(self) -> Response:
+        base_qs = self.get_queryset()
+        data = {}
+        for group_name, group_filter in TITLE_GROUPS.items():
             qs = base_qs.filter(**group_filter)
             data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
