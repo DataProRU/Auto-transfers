@@ -376,7 +376,10 @@ class VehicleBidViewSet(
         if role == User.Roles.OPENING_MANAGER:
             allowed_date = timezone.now() + timedelta(days=7)
             return qs.filter(
-                status=VehicleInfo.Statuses.INITIAL, approved_by_logistician=True, arrival_date__lte=allowed_date
+                status=VehicleInfo.Statuses.INITIAL,
+                approved_by_logistician=True,
+                arrival_date__lte=allowed_date,
+                transit_method__in=[VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT],
             )
         return qs.none()
 
