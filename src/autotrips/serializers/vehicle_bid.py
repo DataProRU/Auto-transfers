@@ -48,7 +48,21 @@ class AdminVehicleBidSerialiser(serializers.ModelSerializer):
                 "title_collection_date": "2025-11-11",
             },
             request_only=True,
-            description="Ttitle can set pickup address, took title and title collection date",
+            description="Title can set pickup address, took title and title collection date",
+        ),
+        OpenApiExample(
+            "Inspector Update",
+            value={
+                "transit_number": "TN789012",
+                "inspection_done": "yes",
+                "number_sent": True,
+                "inspection_paid": True,
+                "inspection_date": "2024-06-15",
+                "number_sent_date": "2024-06-16",
+                "inspector_comment": "Updated inspection notes",
+            },
+            request_only=True,
+            description="Inspector can set inspection data",
         ),
     ]
 )
@@ -144,15 +158,13 @@ class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
         "transit_method",
     ]
     required_fields = ["openning_date", "opened"]
-    protected_fields = ["openning_date"]
+    protected_fields = ["opened"]
     optional_fields = ["manager_comment"]
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
-        if "openning_date" in validated_data:
-            old_value = instance.openning_date
-            new_value = validated_data["openning_date"]
-            if not old_value and new_value:
-                validated_data["approved_by_manager"] = True
+        opened = validated_data.get("opened")
+        if opened and not instance.opened:
+            validated_data["approved_by_manager"] = True
         return super().update(instance, validated_data)
 
 
@@ -180,6 +192,33 @@ class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
         new_title_date = validated_data.get("title_collection_date")
         if new_title_date and not instance.title_collection_date:
             validated_data["approved_by_title"] = True
+
+        return super().update(instance, validated_data)
+
+
+class InspectorVehicleBidSerializer(BaseVehicleBidSerializer):
+    read_only_fields = ["location"]
+    required_fields = ["transit_number", "inspection_done", "number_sent", "inspection_paid"]
+    protected_fields = ["inspection_done"]
+    optional_fields = ["inspection_date", "number_sent_date", "inspector_comment"]
+
+    def validate(self, attrs: dict[str, Any]) -> Any:  # noqa: ANN401
+        inspection_done = attrs.get("inspection_done")
+        inspection_date = attrs.get("inspection_date")
+        if inspection_done == VehicleInfo.InspectionDone.YES and not inspection_date:
+            raise serializers.ValidationError({"inspection_date": "Required if 'inspection_done' is 'yes'."})
+
+        number_sent = attrs.get("number_sent")
+        number_sent_date = attrs.get("number_sent_date")
+        if number_sent and not number_sent_date:
+            raise serializers.ValidationError({"number_sent_date": "Required if 'number_sent' is true."})
+
+        return super().validate(attrs)
+
+    def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
+        new_inspection_date = validated_data.get("inspection_date")
+        if new_inspection_date and not instance.inspection_date:
+            validated_data["approved_by_inspector"] = True
 
         return super().update(instance, validated_data)
 

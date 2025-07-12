@@ -36,8 +36,8 @@ LOGISTICIAN_GROUPS = {
 }
 
 MANAGER_GROUPS = {
-    "untouched": {"approved_by_manager": False},
-    "in_progress": {"approved_by_manager": True},
+    "untouched": {"openning_date__isnull": True},
+    "in_progress": {"openning_date__isnull": False},
 }
 
 TITLE_GROUPS = {
@@ -46,13 +46,21 @@ TITLE_GROUPS = {
     "completed": {"approved_by_title": True},
 }
 
+INSPECTOR_GROUPS = {
+    "untouched": {"inspection_done__isnull": True},
+    "in_progress": {"inspection_done__isnull": False},
+}
+
 
 @extend_schema_view(
     list=extend_schema(
-        summary="List vehicle bids (admin: flat list, logistician: grouped, opening_manager: grouped, title: grouped)",
-        description="Admins receive a flat list of all vehicle bids. Logisticians receive grouped bids by "
-        "status and approval. Opening managers receive grouped bids by approval status and arrival date. "
-        "Title role receives grouped bids by pickup address and approval.",
+        summary="List vehicle bids (admin: flat list, logistician: grouped, opening_manager: grouped, "
+        "title: grouped, inspector: grouped)",
+        description="Admins receive a flat list of all vehicle bids. "
+        "Logisticians receive grouped bids by status and approval. "
+        "Opening managers receive grouped bids by approval status and arrival date. "
+        "Title role receives grouped bids by pickup address and approval. "
+        "Inspectors receive grouped bids by inspection status.",
         parameters=[
             OpenApiParameter(
                 name="status",
@@ -70,7 +78,7 @@ TITLE_GROUPS = {
         ],
         responses={
             200: OpenApiResponse(
-                description="Flat list for admin or grouped for logistician/opening_manager/title.",
+                description="Flat list for admin or grouped for logistician/opening_manager/title/inspector.",
                 response=LogisticianVehicleBidSerializer(many=True),
                 examples=[
                     OpenApiExample(
@@ -245,6 +253,43 @@ TITLE_GROUPS = {
                             ],
                         },
                     ),
+                    OpenApiExample(
+                        "Inspector grouped list",
+                        value={
+                            "untouched": [
+                                {
+                                    "id": 1,
+                                    "vin": "1HGCM82633A004352",
+                                    "brand": "Honda",
+                                    "model": "Accord",
+                                    "location": "Warehouse 1",
+                                    "transit_number": None,
+                                    "inspection_done": None,
+                                    "number_sent": False,
+                                    "inspection_paid": False,
+                                    "inspection_date": None,
+                                    "number_sent_date": None,
+                                    "inspector_comment": None,
+                                },
+                            ],
+                            "in_progress": [
+                                {
+                                    "id": 2,
+                                    "vin": "2HGCM82633A004353",
+                                    "brand": "Toyota",
+                                    "model": "Camry",
+                                    "location": "Warehouse 2",
+                                    "transit_number": "TN123456",
+                                    "inspection_done": "yes",
+                                    "number_sent": True,
+                                    "inspection_paid": True,
+                                    "inspection_date": "2024-06-10",
+                                    "number_sent_date": "2024-06-11",
+                                    "inspector_comment": "Passed inspection",
+                                },
+                            ],
+                        },
+                    ),
                 ],
             )
         },
@@ -310,14 +355,31 @@ TITLE_GROUPS = {
                             "title_collection_date": "2024-06-10",
                         },
                     ),
+                    OpenApiExample(
+                        "Inspector single bid",
+                        value={
+                            "id": 2,
+                            "vin": "2HGCM82633A004353",
+                            "brand": "Toyota",
+                            "model": "Camry",
+                            "location": "Warehouse 2",
+                            "transit_number": "TN123456",
+                            "inspection_done": "yes",
+                            "number_sent": True,
+                            "inspection_paid": True,
+                            "inspection_date": "2024-06-10",
+                            "number_sent_date": "2024-06-11",
+                            "inspector_comment": "Passed inspection",
+                        },
+                    ),
                 ],
             )
         },
     ),
     update=extend_schema(
         summary="Update a vehicle bid",
-        description="Update a vehicle bid by ID. Only fields allowed by the serializer and role can be updated."
-        "The example shows admin, logistician, opening_manager, and title update payloads.",
+        description="Update a vehicle bid by ID. Only fields allowed by the serializer and role can be updated. "
+        "The example shows admin, logistician, opening_manager, title and inspector update payloads.",
         request=LogisticianVehicleBidSerializer,
         responses={
             200: OpenApiResponse(
@@ -421,6 +483,23 @@ TITLE_GROUPS = {
                             "title_collection_date": "2024-06-15",
                         },
                     ),
+                    OpenApiExample(
+                        "Inspector update response",
+                        value={
+                            "id": 3,
+                            "vin": "3HGCM82633A004354",
+                            "brand": "BMW",
+                            "model": "X5",
+                            "location": "Warehouse 3",
+                            "transit_number": "TN789012",
+                            "inspection_done": "yes",
+                            "number_sent": True,
+                            "inspection_paid": True,
+                            "inspection_date": "2024-06-15",
+                            "number_sent_date": "2024-06-16",
+                            "inspector_comment": "Updated inspection notes",
+                        },
+                    ),
                 ],
             )
         },
@@ -452,6 +531,13 @@ class VehicleBidViewSet(
             )
         if role == User.Roles.TITLE:
             return qs.filter(approved_by_logistician=True, approved_by_manager=True)
+        if role == User.Roles.INSPECTOR:
+            return qs.filter(
+                status=VehicleInfo.Statuses.INITIAL,
+                approved_by_logistician=True,
+                approved_by_manager=True,
+                transit_method=VehicleInfo.TransitMethod.RE_EXPORT,
+            )
         return qs.none()
 
     def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
@@ -468,6 +554,9 @@ class VehicleBidViewSet(
 
         if role == User.Roles.TITLE:
             return self.get_title_grouped_list()
+
+        if role == User.Roles.INSPECTOR:
+            return self.get_inspector_grouped_list()
 
         raise PermissionDenied("You do not have permission to view bids.")
 
@@ -496,6 +585,14 @@ class VehicleBidViewSet(
         base_qs = self.get_queryset()
         data = {}
         for group_name, group_filter in TITLE_GROUPS.items():
+            qs = base_qs.filter(**group_filter)
+            data[group_name] = self.get_serializer(qs, many=True).data
+        return Response(data)
+
+    def get_inspector_grouped_list(self) -> Response:
+        base_qs = self.get_queryset()
+        data = {}
+        for group_name, group_filter in INSPECTOR_GROUPS.items():
             qs = base_qs.filter(**group_filter)
             data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
