@@ -4,6 +4,7 @@ from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
 
 from accounts.serializers.user import ClientSerializer
+from autotrips.models.acceptance_report import AcceptenceReport
 from autotrips.models.vehicle_info import VehicleInfo
 from autotrips.serializers.vehicle_info import VehicleTypeSerializer
 
@@ -54,7 +55,7 @@ class AdminVehicleBidSerialiser(serializers.ModelSerializer):
             "Inspector Update",
             value={
                 "transit_number": "TN789012",
-                "inspection_done": "yes",
+                "inspection_done": "yes/no/required_inspection/required_expertise",
                 "number_sent": True,
                 "inspection_paid": True,
                 "inspection_date": "2024-06-15",
@@ -222,6 +223,14 @@ class InspectorVehicleBidSerializer(BaseVehicleBidSerializer):
 
         return super().update(instance, validated_data)
 
+    def to_representation(self, instance: VehicleInfo) -> Any:  # noqa: ANN401
+        response_data = super().to_representation(instance)
+        acceptance_date = (
+            AcceptenceReport.objects.filter(vin=instance.vin).values_list("acceptance_date", flat=True).first()
+        )
+        response_data["acceptance_date"] = acceptance_date
+        return response_data
+
 
 def get_vehicle_bid_serializer(user_role: str) -> type[serializers.ModelSerializer]:
     role_serializers = {
@@ -229,6 +238,7 @@ def get_vehicle_bid_serializer(user_role: str) -> type[serializers.ModelSerializ
         "admin": AdminVehicleBidSerialiser,
         "opening_manager": ManagerVehicleBidSerializer,
         "title": TitleVehicleBidSerializer,
+        "inspector": InspectorVehicleBidSerializer,
     }
     return role_serializers.get(user_role, BaseVehicleBidSerializer)
 
