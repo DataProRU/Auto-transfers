@@ -47,6 +47,7 @@ class AdminVehicleBidSerialiser(serializers.ModelSerializer):
                 "pickup_address": "Address",
                 "took_title": "yes/no/consignment",
                 "title_collection_date": "2025-11-11",
+                "notified_logistician_by_title": True,
             },
             request_only=True,
             description="Title can set pickup address, took title and title collection date",
@@ -61,6 +62,7 @@ class AdminVehicleBidSerialiser(serializers.ModelSerializer):
                 "inspection_date": "2024-06-15",
                 "number_sent_date": "2024-06-16",
                 "inspector_comment": "Updated inspection notes",
+                "notified_logistician_by_inspector": True,
             },
             request_only=True,
             description="Inspector can set inspection data",
@@ -169,7 +171,7 @@ class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
 
 class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
     read_only_fields = ["manager_comment", "transit_method"]
-    required_fields = ["pickup_address"]
+    required_fields = ["pickup_address", "notified_logistician_by_title"]
     protected_fields = ["pickup_address"]
     optional_fields = ["took_title", "title_collection_date"]
 
@@ -180,6 +182,7 @@ class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
             raise serializers.ValidationError(
                 {"title_collection_date": "Required if 'took_title' in the request body."}
             )
+            
         return super().validate(attrs)
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
@@ -189,15 +192,22 @@ class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
             )
 
         new_title_date = validated_data.get("title_collection_date")
+        notified_logistician_by_title = validated_data.get("notified_logistician_by_title")
+
+        if new_title_date and not notified_logistician_by_title:
+            raise serializers.ValidationError(
+                {"detail": "Cannot take title without logistician notification."}
+            )
+        
         if new_title_date and not instance.title_collection_date:
             validated_data["approved_by_title"] = True
-
+        
         return super().update(instance, validated_data)
 
 
 class InspectorVehicleBidSerializer(BaseVehicleBidSerializer):
     read_only_fields = ["location", "transit_method"]
-    required_fields = ["transit_number", "inspection_done", "number_sent", "inspection_paid"]
+    required_fields = ["transit_number", "inspection_done", "number_sent", "inspection_paid", "notified_logistician_by_inspector"]
     protected_fields = ["inspection_done"]
     optional_fields = ["inspection_date", "number_sent_date", "inspector_comment"]
 
@@ -224,7 +234,7 @@ class InspectorVehicleBidSerializer(BaseVehicleBidSerializer):
     def to_representation(self, instance: VehicleInfo) -> Any:  # noqa: ANN401
         response_data = super().to_representation(instance)
         acceptance_date = (
-            AcceptenceReport.objects.filter(vin=instance.vin).values_list("acceptance_date", flat=True).first()
+            AcceptenceReport.objects.filter(vin=instance.vin).values_list("acceptance_date", flat=True).last()
         )
         response_data["acceptance_date"] = acceptance_date
         return response_data

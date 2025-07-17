@@ -41,14 +41,14 @@ MANAGER_GROUPS = {
 }
 
 TITLE_GROUPS = {
-    "untouched": {"pickup_address__isnull": True},
-    "in_progress": {"pickup_address__isnull": False, "approved_by_title": False},
+    "untouched": {"notified_logistician_by_title": False},
+    "in_progress": {"notified_logistician_by_title": True, "approved_by_title": False},
     "completed": {"approved_by_title": True},
 }
 
 INSPECTOR_GROUPS = {
-    "untouched": {"inspection_done__isnull": True},
-    "in_progress": {"inspection_done__isnull": False},
+    "untouched": {"opened": True, "notified_logistician_by_inspector": False},
+    "in_progress": {"opened": True, "notified_logistician_by_inspector": True},
 }
 
 

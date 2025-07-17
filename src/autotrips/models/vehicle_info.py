@@ -82,6 +82,8 @@ class VehicleInfo(models.Model):
     approved_by_title = models.BooleanField(default=False)
     approved_by_re_export = models.BooleanField(default=False)
     approved_by_receiver = models.BooleanField(default=False)
+    notified_logistician_by_title = models.BooleanField(default=False)
+    notified_logistician_by_inspector = models.BooleanField(default=False)
     creation_time = models.DateTimeField(default=timezone.now)
 
     objects = VehicleInfoManager()
