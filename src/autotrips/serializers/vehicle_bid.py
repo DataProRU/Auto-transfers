@@ -32,6 +32,13 @@ class AdminVehicleBidSerialiser(serializers.ModelSerializer):
             request_only=True,
             description="Logisticians can set transit method and location",
         ),
+        OpenApiExample(
+            "Manager Update",
+            summary="How opening managers update vehicles",
+            value={"openning_date": "2025-11-11", "opened": False, "manager_comment": "comment"},
+            request_only=True,
+            description="Managers can set openning date, opened and manager comment",
+        ),
     ]
 )
 class BaseVehicleBidSerializer(serializers.ModelSerializer):
@@ -115,13 +122,36 @@ class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
         return super().update(instance, validated_data)
 
 
-class RejectBidSerializer(serializers.Serializer):
-    logistician_comment = serializers.CharField(required=True, allow_blank=False)
+class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
+    read_only_fields = [
+        "client",
+        "container_number",
+        "arrival_date",
+        "transporter",
+        "recipient",
+        "transit_method",
+    ]
+    required_fields = ["openning_date", "opened"]
+    protected_fields = ["openning_date"]
+    optional_fields = ["manager_comment"]
+
+    def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
+        if "openning_date" in validated_data:
+            old_value = instance.openning_date
+            new_value = validated_data["openning_date"]
+            if not old_value and new_value:
+                validated_data["approved_by_manager"] = True
+        return super().update(instance, validated_data)
 
 
 def get_vehicle_bid_serializer(user_role: str) -> type[serializers.ModelSerializer]:
     role_serializers = {
         "logistician": LogisticianVehicleBidSerializer,
         "admin": AdminVehicleBidSerialiser,
+        "opening_manager": ManagerVehicleBidSerializer,
     }
     return role_serializers.get(user_role, BaseVehicleBidSerializer)
+
+
+class RejectBidSerializer(serializers.Serializer):
+    logistician_comment = serializers.CharField(required=True, allow_blank=False)
