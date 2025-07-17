@@ -71,7 +71,7 @@ class BaseVehicleBidSerializer(serializers.ModelSerializer):
     client = ClientSerializer(read_only=True)
     v_type = VehicleTypeSerializer(read_only=True)
 
-    always_read_only_fields = ["id", "vin", "brand", "model"]
+    always_read_only_fields = ["id", "vin", "brand", "model", "client"]
 
     read_only_fields: list[str] = []
     required_fields: list[str] = []
@@ -126,7 +126,6 @@ class BaseVehicleBidSerializer(serializers.ModelSerializer):
 
 class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
     read_only_fields = [
-        "client",
         "container_number",
         "arrival_date",
         "openning_date",
@@ -151,7 +150,6 @@ class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
 
 class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
     read_only_fields = [
-        "client",
         "container_number",
         "arrival_date",
         "transporter",
@@ -170,7 +168,7 @@ class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
 
 
 class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
-    read_only_fields = ["manager_comment"]
+    read_only_fields = ["manager_comment", "transit_method"]
     required_fields = ["pickup_address"]
     protected_fields = ["pickup_address"]
     optional_fields = ["took_title", "title_collection_date"]
@@ -198,7 +196,7 @@ class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
 
 
 class InspectorVehicleBidSerializer(BaseVehicleBidSerializer):
-    read_only_fields = ["location"]
+    read_only_fields = ["location", "transit_method"]
     required_fields = ["transit_number", "inspection_done", "number_sent", "inspection_paid"]
     protected_fields = ["inspection_done"]
     optional_fields = ["inspection_date", "number_sent_date", "inspector_comment"]
