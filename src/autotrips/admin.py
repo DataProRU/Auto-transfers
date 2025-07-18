@@ -132,6 +132,8 @@ class VehicleInfoAdmin(admin.ModelAdmin):
                     "number_sent_date",
                     "inspection_paid",
                     "inspector_comment",
+                    "notified_logistician_by_title",
+                    "notified_logistician_by_inspector",
                     "approved_by_logistician",
                     "approved_by_manager",
                     "approved_by_inspector",
