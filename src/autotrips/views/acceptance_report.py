@@ -102,7 +102,7 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
         queryset = self.queryset.filter(report_time__gte=three_months_ago)
         vin = request.query_params.get("vin")
         if vin:
-            queryset = queryset.filter(vin=vin)
+            queryset = queryset.filter(vehicle__vin=vin)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
