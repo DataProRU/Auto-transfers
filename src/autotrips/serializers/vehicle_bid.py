@@ -4,7 +4,6 @@ from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
 
 from accounts.serializers.user import ClientSerializer
-from autotrips.models.acceptance_report import AcceptenceReport
 from autotrips.models.vehicle_info import VehicleInfo
 from autotrips.serializers.vehicle_info import VehicleTypeSerializer
 
@@ -205,15 +204,17 @@ class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
 
 class InspectorVehicleBidSerializer(BaseVehicleBidSerializer):
     read_only_fields = ["location", "transit_method"]
-    required_fields = [
+    protected_fields = ["inspection_done"]
+    optional_fields = [
+        "inspection_date",
+        "number_sent_date",
+        "inspector_comment",
         "transit_number",
         "inspection_done",
         "number_sent",
         "inspection_paid",
         "notified_logistician_by_inspector",
     ]
-    protected_fields = ["inspection_done"]
-    optional_fields = ["inspection_date", "number_sent_date", "inspector_comment"]
 
     def validate(self, attrs: dict[str, Any]) -> Any:  # noqa: ANN401
         inspection_done = attrs.get("inspection_done")
@@ -238,7 +239,7 @@ class InspectorVehicleBidSerializer(BaseVehicleBidSerializer):
     def to_representation(self, instance: VehicleInfo) -> Any:  # noqa: ANN401
         response_data = super().to_representation(instance)
         acceptance_date = (
-            AcceptenceReport.objects.filter(vin=instance.vin).values_list("acceptance_date", flat=True).last()
+            instance.reports.order_by("-acceptance_date").values_list("acceptance_date", flat=True).first()
         )
         response_data["acceptance_date"] = acceptance_date
         return response_data
