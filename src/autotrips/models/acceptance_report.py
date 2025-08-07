@@ -1,10 +1,10 @@
-import re
 from typing import Any
 
 from django.contrib.auth import get_user_model
-from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
+
+from autotrips.models.vehicle_info import VehicleInfo
 
 User = get_user_model()
 
@@ -14,11 +14,8 @@ class AcceptenceReport(models.Model):
         SUCCESS = "Принят"
         FAILED = "Повреждён"
 
-    vin = models.CharField(
-        validators=[RegexValidator(regex=re.compile(r"^[A-HJ-NPR-Z0-9]{17}$"), message="Invalid vin format.")]
-    )
     reporter = models.ForeignKey(User, on_delete=models.RESTRICT, related_name="reports", null=False, blank=False)
-    model = models.CharField(max_length=100, null=False, blank=False)
+    vehicle = models.ForeignKey(VehicleInfo, on_delete=models.CASCADE, related_name="reports", null=False, blank=False)
     place = models.CharField(max_length=100, null=False, blank=False)
     comment = models.CharField(max_length=255, null=False, blank=False)
     report_number = models.IntegerField(null=False, blank=False, default=1)
@@ -27,11 +24,11 @@ class AcceptenceReport(models.Model):
     status = models.CharField(max_length=10, choices=Statuses.choices, default=Statuses.SUCCESS)
 
     def __str__(self) -> str:
-        return f"{self.reporter.full_name}_{self.model}_{self.acceptance_date}"
+        return f"{self.reporter.full_name}_{self.vehicle.brand}_{self.vehicle.model}_{self.acceptance_date}"
 
     def save(self, *args: tuple[Any], **kwargs: dict[str, Any]) -> None:
         if not self.pk:
-            last_report = AcceptenceReport.objects.filter(vin=self.vin).order_by("-report_number").first()
+            last_report = AcceptenceReport.objects.filter(vehicle=self.vehicle).order_by("-report_number").first()
             if last_report:
                 self.report_number = last_report.report_number + 1
 
@@ -44,7 +41,7 @@ class CarPhoto(models.Model):
     created = models.DateTimeField(default=timezone.now)
 
     def __str__(self) -> str:
-        return f"{self.report.model}_car_{self.created}"
+        return f"{self.report.vehicle.brand}_{self.report.vehicle.model}_car_{self.created}"
 
 
 class KeyPhoto(models.Model):
@@ -53,7 +50,7 @@ class KeyPhoto(models.Model):
     created = models.DateTimeField(default=timezone.now)
 
     def __str__(self) -> str:
-        return f"{self.report.model}_key_{self.created}"
+        return f"{self.report.vehicle.brand}_{self.report.vehicle.model}_key_{self.created}"
 
 
 class DocumentPhoto(models.Model):
@@ -62,4 +59,4 @@ class DocumentPhoto(models.Model):
     created = models.DateTimeField(default=timezone.now)
 
     def __str__(self) -> str:
-        return f"{self.report.model}_document_{self.created}"
+        return f"{self.report.vehicle.brand}_{self.report.vehicle.model}_document_{self.created}"

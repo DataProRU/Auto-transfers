@@ -24,6 +24,9 @@ class PostReportSaveSignalReciever:
         report_time = report_time_local.strftime("%d.%m.%Y %H:%M:%S")
         acceptance_date = report.acceptance_date.strftime("%d.%m.%Y")
         reporter = report.reporter
+        vehicle = report.vehicle
+
+        vehicle_model = f"{vehicle.brand} {vehicle.model}"
         car_photos = f"{self.URL}reports/{report.id}/car-photos"
         key_photos = f"{self.URL}reports/{report.id}/key-photos"
         doc_photos = f"{self.URL}reports/{report.id}/doc-photos"
@@ -34,8 +37,8 @@ class PostReportSaveSignalReciever:
             reporter.full_name,
             report.report_number,
             acceptance_date,
-            report.vin,
-            report.model,
+            vehicle.vin,
+            vehicle_model,
             car_photos,
             key_photos,
             doc_photos,
@@ -48,7 +51,7 @@ class PostReportSaveSignalReciever:
         message = (
             "<b>🚗 Зарегистрировано повреждённое авто</b>\n"
             f"📅 Дата принятия: {report.acceptance_date.strftime('%d.%m.%Y')}\n"
-            f"🔢 VIN номер: <code>{report.vin}</code>\n"
+            f"🔢 VIN номер: <code>{report.vehicle.vin}</code>\n"
             f"📸 Ссылка на фото авто:\n"
             f"   <a href='{self.URL}reports/{report.id}/car-photos/'>{self.URL}reports/{report.id}/car-photos/</a>\n"
             f"🔑 Ссылка на фото ключей:\n"

@@ -62,7 +62,7 @@ class VehicleBidAccessPermission(permissions.BasePermission):
         User.Roles.TITLE,
         User.Roles.INSPECTOR,
         User.Roles.RE_EXPORT,
-        User.Roles.RECIEVER,
+        User.Roles.USER,
     }
 
     def has_permission(self, request: Request, view: APIView) -> bool:

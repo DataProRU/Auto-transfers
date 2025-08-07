@@ -34,6 +34,7 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
         queryset=User.objects.filter(role=User.Roles.CLIENT), write_only=False, required=True
     )
     v_type = serializers.PrimaryKeyRelatedField(queryset=VehicleType.objects.all(), write_only=False, required=True)
+    price = serializers.DecimalField(max_digits=12, decimal_places=2, required=True)
 
     class Meta:
         model = VehicleInfo
@@ -52,6 +53,7 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
             "status",
             "status_changed",
             "creation_time",
+            "price",
         ]
         read_only_fields = [
             "status",

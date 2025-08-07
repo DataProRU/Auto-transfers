@@ -18,7 +18,6 @@ class User(AbstractUser):
         TITLE = "title"
         INSPECTOR = "inspector"
         RE_EXPORT = "re_export"
-        RECIEVER = "reciever"
 
     objects = CustomUserManager()
 

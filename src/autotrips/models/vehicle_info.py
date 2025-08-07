@@ -50,6 +50,7 @@ class VehicleInfo(models.Model):
         unique=True,
         validators=[RegexValidator(regex=re.compile(r"^[A-HJ-NPR-Z0-9]{17}$"), message="Invalid vin format.")],
     )
+    price = models.DecimalField(max_digits=12, decimal_places=2, default=0, null=False, blank=False)
     container_number = models.CharField(max_length=100, null=False, blank=False)
     arrival_date = models.DateField(null=False, blank=False)
     transporter = models.CharField(max_length=100, null=False, blank=False)

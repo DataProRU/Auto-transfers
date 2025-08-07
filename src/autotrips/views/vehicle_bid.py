@@ -47,8 +47,8 @@ TITLE_GROUPS = {
 }
 
 INSPECTOR_GROUPS = {
-    "untouched": {"opened": True, "notified_logistician_by_inspector": False},
-    "in_progress": {"opened": True, "notified_logistician_by_inspector": True},
+    "untouched": {"opened": True, "reports__isnull": True},
+    "in_progress": {"opened": True, "reports__isnull": False},
 }
 
 
@@ -614,7 +614,7 @@ class VehicleBidViewSet(
         base_qs = self.get_queryset()
         data = {}
         for group_name, group_filter in INSPECTOR_GROUPS.items():
-            qs = base_qs.filter(**group_filter)
+            qs = base_qs.filter(**group_filter).distinct()
             data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
 
