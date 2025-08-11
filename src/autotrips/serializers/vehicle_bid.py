@@ -157,9 +157,9 @@ class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
         "recipient",
         "transit_method",
     ]
-    required_fields = ["openning_date", "opened"]
+    required_fields = ["opened"]
     protected_fields = ["opened"]
-    optional_fields = ["manager_comment"]
+    optional_fields = ["manager_comment", "openning_date"]
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
         opened = validated_data.get("opened")
