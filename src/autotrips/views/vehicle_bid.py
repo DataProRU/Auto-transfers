@@ -557,7 +557,7 @@ class VehicleBidViewSet(
                 status=VehicleInfo.Statuses.INITIAL,
                 approved_by_logistician=True,
                 approved_by_manager=True,
-                transit_method=VehicleInfo.TransitMethod.RE_EXPORT,
+                transit_method__in=[VehicleInfo.TransitMethod.RE_EXPORT, VehicleInfo.TransitMethod.WITHOUT_OPENNING],
             )
         return qs.none()
 
