@@ -7,6 +7,7 @@ from rest_framework import serializers
 from accounts.serializers.custom_image import HEIFImageField
 from accounts.validators import FileMaxSizeValidator
 from autotrips.models.acceptance_report import AcceptenceReport, CarPhoto, DocumentPhoto, KeyPhoto
+from autotrips.models.vehicle_info import VehicleInfo
 
 User = get_user_model()
 
@@ -37,6 +38,7 @@ class DocumentPhotoSerializer(serializers.ModelSerializer):
 
 class AcceptanceReportSerializer(serializers.ModelSerializer):
     reporter = UserReportSerializer(read_only=True)
+    vin = serializers.CharField(write_only=True, required=True)
     car_photos = CarPhotoSerializer(many=True, read_only=True)
     uploaded_car_photos = serializers.ListField(
         child=HEIFImageField(
@@ -80,7 +82,6 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
             "id",
             "vin",
             "reporter",
-            "model",
             "place",
             "comment",
             "report_number",
@@ -100,8 +101,14 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
         uploaded_car_photos = validated_data.pop("uploaded_car_photos")
         uploaded_key_photos = validated_data.pop("uploaded_key_photos")
         uploaded_doc_photos = validated_data.pop("uploaded_document_photos")
+        vin = validated_data.pop("vin")
 
-        report = AcceptenceReport.objects.create(**validated_data)
+        try:
+            vehicle = VehicleInfo.objects.get(vin=vin)
+        except VehicleInfo.DoesNotExist as err:
+            raise serializers.ValidationError({"vin": "Vehicle with this VIN does not exist."}) from err
+
+        report = AcceptenceReport.objects.create(vehicle=vehicle, **validated_data)
 
         for car_photo in uploaded_car_photos:
             CarPhoto.objects.create(report=report, image=car_photo)
@@ -113,3 +120,9 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
             DocumentPhoto.objects.create(report=report, image=doc_photo)
 
         return report
+
+    def to_representation(self, instance: AcceptenceReport) -> Any:  # noqa: ANN401
+        data = super().to_representation(instance)
+        data["vin"] = instance.vehicle.vin
+        data["model"] = f"{instance.vehicle.brand} {instance.vehicle.model}"
+        return data

@@ -14,9 +14,9 @@ from autotrips.models.vehicle_info import VehicleInfo, VehicleType
 class AcceptenceReportAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "vin",
+        "vehicle_vin",
         "reporter",
-        "model",
+        "vehicle_model",
         "place",
         "status",
         "report_number",
@@ -24,32 +24,63 @@ class AcceptenceReportAdmin(admin.ModelAdmin):
         "acceptance_date",
     )
     list_filter = ("status", "reporter", "acceptance_date")
-    search_fields = ("vin", "model")
+    search_fields = ("vehicle__vin", "vehicle__model")
     readonly_fields = ("report_number", "report_time", "acceptance_date")
+
+    def vehicle_vin(self, obj: AcceptenceReport) -> str:
+        vin: str = obj.vehicle.vin
+        return vin
+
+    vehicle_vin.short_description = "VIN"  # type: ignore[attr-defined]
+    vehicle_vin.admin_order_field = "vehicle__vin"  # type: ignore[attr-defined]
+
+    def vehicle_model(self, obj: AcceptenceReport) -> str:
+        return f"{obj.vehicle.brand} {obj.vehicle.model}"
+
+    vehicle_model.short_description = "Model"  # type: ignore[attr-defined]
+    vehicle_model.admin_order_field = "vehicle__model"  # type: ignore[attr-defined]
 
 
 @admin.register(CarPhoto)
 class CarPhotoAdmin(admin.ModelAdmin):
-    list_display = ("id", "report", "image", "created")
+    list_display = ("id", "report", "vehicle_vin", "image", "created")
     list_filter = ("report", "created")
-    search_fields = ("report__vin",)
+    search_fields = ("report__vehicle__vin",)
     readonly_fields = ("created",)
+
+    def vehicle_vin(self, obj: CarPhoto) -> str:
+        vin: str = obj.report.vehicle.vin
+        return vin
+
+    vehicle_vin.short_description = "VIN"  # type: ignore[attr-defined]
 
 
 @admin.register(KeyPhoto)
 class KeyPhotoAdmin(admin.ModelAdmin):
-    list_display = ("id", "report", "image", "created")
+    list_display = ("id", "report", "vehicle_vin", "image", "created")
     list_filter = ("report", "created")
-    search_fields = ("report__vin",)
+    search_fields = ("report__vehicle__vin",)
     readonly_fields = ("created",)
+
+    def vehicle_vin(self, obj: KeyPhoto) -> str:
+        vin: str = obj.report.vehicle.vin
+        return vin
+
+    vehicle_vin.short_description = "VIN"  # type: ignore[attr-defined]
 
 
 @admin.register(DocumentPhoto)
 class DocumentPhotoAdmin(admin.ModelAdmin):
-    list_display = ("id", "report", "image", "created")
+    list_display = ("id", "report", "vehicle_vin", "image", "created")
     list_filter = ("report", "created")
-    search_fields = ("report__vin",)
+    search_fields = ("report__vehicle__vin",)
     readonly_fields = ("created",)
+
+    def vehicle_vin(self, obj: DocumentPhoto) -> str:
+        vin: str = obj.report.vehicle.vin
+        return vin
+
+    vehicle_vin.short_description = "VIN"  # type: ignore[attr-defined]
 
 
 @admin.register(VehicleType)
