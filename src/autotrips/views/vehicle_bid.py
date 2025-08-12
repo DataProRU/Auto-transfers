@@ -2,6 +2,7 @@ from datetime import timedelta
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from drf_spectacular.utils import (
@@ -44,11 +45,6 @@ TITLE_GROUPS = {
     "untouched": {"notified_logistician_by_title": False},
     "in_progress": {"notified_logistician_by_title": True, "approved_by_title": False},
     "completed": {"approved_by_title": True},
-}
-
-INSPECTOR_GROUPS = {
-    "untouched": {"opened": True, "reports__isnull": True},
-    "in_progress": {"opened": True, "reports__isnull": False},
 }
 
 
@@ -554,10 +550,12 @@ class VehicleBidViewSet(
             return qs.filter(approved_by_logistician=True, approved_by_manager=True)
         if role == User.Roles.INSPECTOR:
             return qs.filter(
+                Q(
+                    Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, approved_by_manager=True)
+                    | Q(transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING)
+                ),
                 status=VehicleInfo.Statuses.INITIAL,
                 approved_by_logistician=True,
-                approved_by_manager=True,
-                transit_method__in=[VehicleInfo.TransitMethod.RE_EXPORT, VehicleInfo.TransitMethod.WITHOUT_OPENNING],
             )
         return qs.none()
 
@@ -613,9 +611,21 @@ class VehicleBidViewSet(
     def get_inspector_grouped_list(self) -> Response:
         base_qs = self.get_queryset()
         data = {}
-        for group_name, group_filter in INSPECTOR_GROUPS.items():
-            qs = base_qs.filter(**group_filter).distinct()
-            data[group_name] = self.get_serializer(qs, many=True).data
+
+        re_export_vehicles = base_qs.filter(transit_method=VehicleInfo.TransitMethod.RE_EXPORT)
+        without_opening_vehicles = base_qs.filter(transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING)
+
+        untouched_vehicles = re_export_vehicles.filter(
+            reports__isnull=True
+        ).distinct() | without_opening_vehicles.filter(notified_logistician_by_inspector=False)
+
+        in_progress_vehicles = re_export_vehicles.filter(
+            reports__isnull=False
+        ).distinct() | without_opening_vehicles.filter(notified_logistician_by_inspector=True)
+
+        data["untouched"] = self.get_serializer(untouched_vehicles, many=True).data
+        data["in_progress"] = self.get_serializer(in_progress_vehicles, many=True).data
+
         return Response(data)
 
     @extend_schema(
