@@ -619,23 +619,35 @@ class VehicleBidViewSet(
 
     def get_inspector_grouped_list(self) -> Response:
         base_qs = self.get_queryset()
-        data = {}
-
-        re_export_vehicles = base_qs.filter(transit_method=VehicleInfo.TransitMethod.RE_EXPORT)
-        without_opening_vehicles = base_qs.filter(transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING)
-
-        untouched_vehicles = re_export_vehicles.filter(
-            reports__isnull=True
-        ).distinct() | without_opening_vehicles.filter(notified_logistician_by_inspector=False)
-
-        in_progress_vehicles = re_export_vehicles.filter(
-            reports__isnull=False
-        ).distinct() | without_opening_vehicles.filter(notified_logistician_by_inspector=True)
-
-        data["untouched"] = self.get_serializer(untouched_vehicles, many=True).data
-        data["in_progress"] = self.get_serializer(in_progress_vehicles, many=True).data
+        data = {
+            "untouched": self.get_serializer(
+                self._get_distinct_vehicles_by_condition(
+                    base_qs,
+                    Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=True)
+                    | Q(
+                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+                        notified_logistician_by_inspector=False,
+                    ),
+                ),
+                many=True,
+            ).data,
+            "in_progress": self.get_serializer(
+                self._get_distinct_vehicles_by_condition(
+                    base_qs,
+                    Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=False)
+                    | Q(
+                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+                        notified_logistician_by_inspector=True,
+                    ),
+                ),
+                many=True,
+            ).data,
+        }
 
         return Response(data)
+
+    def _get_distinct_vehicles_by_condition(self, base_qs: QuerySet, condition: Q) -> QuerySet:
+        return base_qs.filter(condition).distinct()
 
     @extend_schema(
         summary="Reject a vehicle bid",
