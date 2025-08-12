@@ -547,7 +547,16 @@ class VehicleBidViewSet(
                 transit_method__in=[VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT],
             )
         if role == User.Roles.TITLE:
-            return qs.filter(approved_by_logistician=True, approved_by_manager=True)
+            return qs.filter(
+                Q(
+                    Q(
+                        transit_method__in=[VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT],
+                        approved_by_manager=True,
+                    )
+                    | Q(transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING)
+                ),
+                approved_by_logistician=True,
+            )
         if role == User.Roles.INSPECTOR:
             return qs.filter(
                 Q(
