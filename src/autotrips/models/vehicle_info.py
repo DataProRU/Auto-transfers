@@ -94,6 +94,30 @@ class VehicleInfo(models.Model):
 
     def save(self, *args: tuple[Any], **kwargs: dict[str, Any]) -> None:
         if self.pk is not None:
+            approvals_map = {
+                type(self).TransitMethod.T1: [
+                    self.approved_by_logistician,
+                    self.approved_by_manager,
+                    self.approved_by_title,
+                ],
+                type(self).TransitMethod.RE_EXPORT: [
+                    self.approved_by_logistician,
+                    self.approved_by_manager,
+                    self.approved_by_title,
+                    self.approved_by_inspector,
+                ],
+                type(self).TransitMethod.WITHOUT_OPENNING: [
+                    self.approved_by_logistician,
+                    self.approved_by_title,
+                    self.approved_by_inspector,
+                ],
+            }
+
+            if self.status == type(self).Statuses.INITIAL:
+                required_approvals = approvals_map.get(self.transit_method)
+                if required_approvals and all(required_approvals):
+                    self.status = type(self).Statuses.LOADING
+
             original = type(self).objects.get(pk=self.pk)
             if original.status != self.status:
                 self.status_changed = timezone.now()
