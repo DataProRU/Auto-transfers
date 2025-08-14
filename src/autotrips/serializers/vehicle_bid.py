@@ -66,6 +66,15 @@ class AdminVehicleBidSerialiser(serializers.ModelSerializer):
             request_only=True,
             description="Inspector can set inspection data",
         ),
+        OpenApiExample(
+            "ReExport Update",
+            value={
+                "export": True,
+                "prepared_documents": True,
+            },
+            request_only=True,
+            description="ReExport can set export and prepared documents",
+        ),
     ]
 )
 class BaseVehicleBidSerializer(serializers.ModelSerializer):
@@ -245,6 +254,28 @@ class InspectorVehicleBidSerializer(BaseVehicleBidSerializer):
         return response_data
 
 
+class ReExportVehicleBidSerializer(BaseVehicleBidSerializer):
+    read_only_fields = ["transit_method", "recipient", "price", "title_collection_date"]
+    protected_fields = ["export", "prepared_documents"]
+    required_fields = ["export", "prepared_documents"]
+
+    def validate(self, attrs: dict[str, Any]) -> Any:  # noqa: ANN401
+        export = attrs.get("export")
+        prepared_documents = attrs.get("prepared_documents")
+        if export and not prepared_documents:
+            raise serializers.ValidationError({"prepared_documents": "Cannot export without prepared documents."})
+        return super().validate(attrs)
+
+    def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
+        if instance.export:
+            raise serializers.ValidationError({"detail": "Cannot update a vehicle that has already been exported."})
+
+        export = validated_data.get("export")
+        if export and not instance.export:
+            validated_data["approved_by_re_export"] = True
+        return super().update(instance, validated_data)
+
+
 def get_vehicle_bid_serializer(user_role: str) -> type[serializers.ModelSerializer]:
     role_serializers = {
         "logistician": LogisticianVehicleBidSerializer,
@@ -252,6 +283,7 @@ def get_vehicle_bid_serializer(user_role: str) -> type[serializers.ModelSerializ
         "opening_manager": ManagerVehicleBidSerializer,
         "title": TitleVehicleBidSerializer,
         "inspector": InspectorVehicleBidSerializer,
+        "re_export": ReExportVehicleBidSerializer,
     }
     return role_serializers.get(user_role, BaseVehicleBidSerializer)
 

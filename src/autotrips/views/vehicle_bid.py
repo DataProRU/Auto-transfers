@@ -47,16 +47,23 @@ TITLE_GROUPS = {
     "completed": {"approved_by_title": True},
 }
 
+RE_EXPORT_GROUPS = {
+    "untouched": {"export": False, "prepared_documents": False},
+    "in_progress": {"export": False, "prepared_documents": True},
+    "completed": {"approved_by_re_export": True},
+}
+
 
 @extend_schema_view(
     list=extend_schema(
         summary="List vehicle bids (admin: flat list, logistician: grouped, opening_manager: grouped, "
-        "title: grouped, inspector: grouped)",
+        "title: grouped, inspector: grouped, re_export: grouped)",
         description="Admins receive a flat list of all vehicle bids. "
         "Logisticians receive grouped bids by status and approval. "
         "Opening managers receive grouped bids by approval status and arrival date. "
         "Title role receives grouped bids by pickup address and approval. "
-        "Inspectors receive grouped bids by inspection status.",
+        "Inspectors receive grouped bids by inspection status. "
+        "Re-export role receives grouped bids by export status and document preparation.",
         parameters=[
             OpenApiParameter(
                 name="status",
@@ -74,7 +81,7 @@ TITLE_GROUPS = {
         ],
         responses={
             200: OpenApiResponse(
-                description="Flat list for admin or grouped for logistician/opening_manager/title/inspector.",
+                description="Flat list for admin or grouped for logistician/opening_manager/title/inspector/re_export.",
                 response=LogisticianVehicleBidSerializer(many=True),
                 examples=[
                     OpenApiExample(
@@ -297,6 +304,50 @@ TITLE_GROUPS = {
                             ],
                         },
                     ),
+                    OpenApiExample(
+                        "Re-export grouped list",
+                        value={
+                            "untouched": [
+                                {
+                                    "id": 10,
+                                    "vin": "5HGCM82633A004360",
+                                    "brand": "Mercedes",
+                                    "model": "C-Class",
+                                    "client": {"id": 6, "full_name": "Eva White", "email": "eva@example.com"},
+                                    "transit_method": "re_export",
+                                    "export": False,
+                                    "prepared_documents": False,
+                                    "title_collection_date": "2024-06-12",
+                                },
+                            ],
+                            "in_progress": [
+                                {
+                                    "id": 11,
+                                    "vin": "6HGCM82633A004361",
+                                    "brand": "Lexus",
+                                    "model": "RX",
+                                    "client": {"id": 7, "full_name": "Sam Blue", "email": "sam@example.com"},
+                                    "transit_method": "re_export",
+                                    "export": False,
+                                    "prepared_documents": True,
+                                    "title_collection_date": "2024-06-12",
+                                },
+                            ],
+                            "completed": [
+                                {
+                                    "id": 12,
+                                    "vin": "7HGCM82633A004362",
+                                    "brand": "Volvo",
+                                    "model": "XC90",
+                                    "client": {"id": 8, "full_name": "Tom Red", "email": "tom@example.com"},
+                                    "transit_method": "re_export",
+                                    "export": True,
+                                    "prepared_documents": True,
+                                    "title_collection_date": "2024-06-15",
+                                },
+                            ],
+                        },
+                    ),
                 ],
             )
         },
@@ -382,6 +433,20 @@ TITLE_GROUPS = {
                             "number_sent_date": "2024-06-11",
                             "inspector_comment": "Passed inspection",
                             "acceptance_date": "2024-06-12",
+                        },
+                    ),
+                    OpenApiExample(
+                        "Re-export single bid",
+                        value={
+                            "id": 10,
+                            "vin": "5HGCM82633A004360",
+                            "brand": "Mercedes",
+                            "model": "C-Class",
+                            "client": {"id": 6, "full_name": "Eva White", "email": "eva@example.com"},
+                            "transit_method": "re_export",
+                            "export": False,
+                            "prepared_documents": True,
+                            "title_collection_date": "2024-06-12",
                         },
                     ),
                 ],
@@ -517,6 +582,20 @@ TITLE_GROUPS = {
                             "acceptance_date": "2024-06-17",
                         },
                     ),
+                    OpenApiExample(
+                        "Re-export update response",
+                        value={
+                            "id": 10,
+                            "vin": "5HGCM82633A004360",
+                            "brand": "Mercedes",
+                            "model": "C-Class",
+                            "client": {"id": 6, "full_name": "Eva White", "email": "eva@example.com"},
+                            "transit_method": "re_export",
+                            "export": True,
+                            "prepared_documents": True,
+                            "title_collection_date": "2024-06-12",
+                        },
+                    ),
                 ],
             )
         },
@@ -566,6 +645,11 @@ class VehicleBidViewSet(
                 status=VehicleInfo.Statuses.INITIAL,
                 approved_by_logistician=True,
             )
+        if role == User.Roles.RE_EXPORT:
+            return qs.filter(
+                status=VehicleInfo.Statuses.LOADING,
+                transit_method__in=[VehicleInfo.TransitMethod.RE_EXPORT, VehicleInfo.TransitMethod.WITHOUT_OPENNING],
+            )
         return qs.none()
 
     def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
@@ -585,6 +669,9 @@ class VehicleBidViewSet(
 
         if role == User.Roles.INSPECTOR:
             return self.get_inspector_grouped_list()
+
+        if role == User.Roles.RE_EXPORT:
+            return self.get_re_export_grouped_list()
 
         raise PermissionDenied("You do not have permission to view bids.")
 
@@ -644,6 +731,14 @@ class VehicleBidViewSet(
             ).data,
         }
 
+        return Response(data)
+
+    def get_re_export_grouped_list(self) -> Response:
+        base_qs = self.get_queryset()
+        data = {}
+        for group_name, group_filter in RE_EXPORT_GROUPS.items():
+            qs = base_qs.filter(**group_filter)
+            data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
 
     def _get_distinct_vehicles_by_condition(self, base_qs: QuerySet, condition: Q) -> QuerySet:
