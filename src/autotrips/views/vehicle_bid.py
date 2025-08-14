@@ -2,6 +2,7 @@ from datetime import timedelta
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from drf_spectacular.utils import (
@@ -44,11 +45,6 @@ TITLE_GROUPS = {
     "untouched": {"notified_logistician_by_title": False},
     "in_progress": {"notified_logistician_by_title": True, "approved_by_title": False},
     "completed": {"approved_by_title": True},
-}
-
-INSPECTOR_GROUPS = {
-    "untouched": {"opened": True, "reports__isnull": True},
-    "in_progress": {"opened": True, "reports__isnull": False},
 }
 
 
@@ -551,13 +547,24 @@ class VehicleBidViewSet(
                 transit_method__in=[VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT],
             )
         if role == User.Roles.TITLE:
-            return qs.filter(approved_by_logistician=True, approved_by_manager=True)
+            return qs.filter(
+                Q(
+                    Q(
+                        transit_method__in=[VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT],
+                        approved_by_manager=True,
+                    )
+                    | Q(transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING)
+                ),
+                approved_by_logistician=True,
+            )
         if role == User.Roles.INSPECTOR:
             return qs.filter(
+                Q(
+                    Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, approved_by_manager=True)
+                    | Q(transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING)
+                ),
                 status=VehicleInfo.Statuses.INITIAL,
                 approved_by_logistician=True,
-                approved_by_manager=True,
-                transit_method__in=[VehicleInfo.TransitMethod.RE_EXPORT, VehicleInfo.TransitMethod.WITHOUT_OPENNING],
             )
         return qs.none()
 
@@ -612,11 +619,35 @@ class VehicleBidViewSet(
 
     def get_inspector_grouped_list(self) -> Response:
         base_qs = self.get_queryset()
-        data = {}
-        for group_name, group_filter in INSPECTOR_GROUPS.items():
-            qs = base_qs.filter(**group_filter).distinct()
-            data[group_name] = self.get_serializer(qs, many=True).data
+        data = {
+            "untouched": self.get_serializer(
+                self._get_distinct_vehicles_by_condition(
+                    base_qs,
+                    Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=True)
+                    | Q(
+                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+                        notified_logistician_by_inspector=False,
+                    ),
+                ),
+                many=True,
+            ).data,
+            "in_progress": self.get_serializer(
+                self._get_distinct_vehicles_by_condition(
+                    base_qs,
+                    Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=False)
+                    | Q(
+                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+                        notified_logistician_by_inspector=True,
+                    ),
+                ),
+                many=True,
+            ).data,
+        }
+
         return Response(data)
+
+    def _get_distinct_vehicles_by_condition(self, base_qs: QuerySet, condition: Q) -> QuerySet:
+        return base_qs.filter(condition).distinct()
 
     @extend_schema(
         summary="Reject a vehicle bid",
