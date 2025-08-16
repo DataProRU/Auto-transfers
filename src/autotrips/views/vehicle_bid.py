@@ -58,6 +58,19 @@ RE_EXPORT_GROUPS = {
     "completed": {"approved_by_re_export": True},
 }
 
+INSPECTOR_GROUPS = {
+    "untouched": Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=True)
+    | Q(
+        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+        notified_logistician_by_inspector=False,
+    ),
+    "in_progress": Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=False)
+    | Q(
+        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+        notified_logistician_by_inspector=True,
+    ),
+}
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -870,31 +883,10 @@ class VehicleBidViewSet(
 
     def get_inspector_grouped_list(self) -> Response:
         base_qs = self.get_queryset()
-        data = {
-            "untouched": self.get_serializer(
-                self._get_distinct_vehicles_by_condition(
-                    base_qs,
-                    Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=True)
-                    | Q(
-                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
-                        notified_logistician_by_inspector=False,
-                    ),
-                ),
-                many=True,
-            ).data,
-            "in_progress": self.get_serializer(
-                self._get_distinct_vehicles_by_condition(
-                    base_qs,
-                    Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=False)
-                    | Q(
-                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
-                        notified_logistician_by_inspector=True,
-                    ),
-                ),
-                many=True,
-            ).data,
-        }
-
+        data = {}
+        for group_name, group_filter in INSPECTOR_GROUPS.items():
+            qs = base_qs.filter(group_filter).distinct()
+            data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
 
     def get_re_export_grouped_list(self) -> Response:
@@ -904,9 +896,6 @@ class VehicleBidViewSet(
             qs = base_qs.filter(**group_filter)
             data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
-
-    def _get_distinct_vehicles_by_condition(self, base_qs: QuerySet, condition: Q) -> QuerySet:
-        return base_qs.filter(condition).distinct()
 
     @extend_schema(
         summary="Reject a vehicle bid",
