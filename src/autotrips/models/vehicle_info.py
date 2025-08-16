@@ -2,7 +2,7 @@ import re
 from typing import Any, cast
 
 from django.contrib.auth import get_user_model
-from django.core.validators import RegexValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.utils import timezone
 
@@ -87,6 +87,13 @@ class VehicleInfo(models.Model):
     notified_logistician_by_inspector = models.BooleanField(default=False)
     export = models.BooleanField(default=False)
     prepared_documents = models.BooleanField(default=False)
+    vehicle_transporter = models.ForeignKey(
+        "VehicleTransporter", on_delete=models.SET_NULL, null=True, blank=True, related_name="vehicles"
+    )
+    logistician_keys_number = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(3)], null=True, blank=True
+    )
+    ready_for_receiver = models.BooleanField(default=False)
     creation_time = models.DateTimeField(default=timezone.now)
 
     objects = VehicleInfoManager()
@@ -124,3 +131,10 @@ class VehicleInfo(models.Model):
             if original.status != self.status:
                 self.status_changed = timezone.now()
         super().save(*args, **kwargs)
+
+
+class VehicleTransporter(models.Model):
+    number = models.CharField(max_length=10, null=False, blank=False)
+
+    def __str__(self) -> str:
+        return f"transporter_{self.number}"

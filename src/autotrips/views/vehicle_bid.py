@@ -20,7 +20,7 @@ from rest_framework.response import Response
 
 from autotrips.models.vehicle_info import VehicleInfo
 from autotrips.serializers.vehicle_bid import (
-    LogisticianVehicleBidSerializer,
+    LogisticianInitialVehicleBidSerializer,
     RejectBidSerializer,
     get_vehicle_bid_serializer,
 )
@@ -33,6 +33,11 @@ LOGISTICIAN_GROUPS = {
     "initial": {
         "untouched": {"approved_by_logistician": False},
         "in_progress": {"approved_by_logistician": True},
+    },
+    "loading": {
+        "untouched": {"vehicle_transporter__isnull": True},
+        "in_progress": {"ready_for_receiver": True, "approved_by_receiver": False},
+        "completed": {"approved_by_receiver": True},
     },
 }
 
@@ -53,6 +58,19 @@ RE_EXPORT_GROUPS = {
     "completed": {"approved_by_re_export": True},
 }
 
+INSPECTOR_GROUPS = {
+    "untouched": Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=True)
+    | Q(
+        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+        notified_logistician_by_inspector=False,
+    ),
+    "in_progress": Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=False)
+    | Q(
+        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+        notified_logistician_by_inspector=True,
+    ),
+}
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -67,7 +85,8 @@ RE_EXPORT_GROUPS = {
         parameters=[
             OpenApiParameter(
                 name="status",
-                description="Vehicle status to filter by (e.g., 'initial'). Required for logisticians.",
+                description="Vehicle status to filter by (e.g., 'initial'). Required for logisticians."
+                "This parameter controls both filtering and serializer selection for GET requests.",
                 required=False,
                 type=str,
                 location=OpenApiParameter.QUERY,
@@ -82,7 +101,7 @@ RE_EXPORT_GROUPS = {
         responses={
             200: OpenApiResponse(
                 description="Flat list for admin or grouped for logistician/opening_manager/title/inspector/re_export.",
-                response=LogisticianVehicleBidSerializer(many=True),
+                response=LogisticianInitialVehicleBidSerializer(many=True),
                 examples=[
                     OpenApiExample(
                         "Admin flat list",
@@ -125,13 +144,13 @@ RE_EXPORT_GROUPS = {
                                 "approved_by_inspector": False,
                                 "approved_by_title": False,
                                 "approved_by_re_export": False,
-                                "approved_by_reciever": False,
+                                "approved_by_receiver": False,
                                 "creation_time": "2024-06-01T10:00:00Z",
                             },
                         ],
                     ),
                     OpenApiExample(
-                        "Logistician grouped list",
+                        "Logistician Initial grouped list",
                         value={
                             "untouched": [
                                 {
@@ -175,6 +194,86 @@ RE_EXPORT_GROUPS = {
                                     "requested_title": False,
                                     "notified_parking": False,
                                     "notified_inspector": True,
+                                },
+                            ],
+                        },
+                    ),
+                    OpenApiExample(
+                        "Logistician Loading grouped list",
+                        value={
+                            "untouched": [
+                                {
+                                    "id": 1,
+                                    "vin": "1HGCM82633A004352",
+                                    "brand": "Honda",
+                                    "model": "Accord",
+                                    "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
+                                    "container_number": "CONT1234567",
+                                    "arrival_date": "2024-06-01",
+                                    "openning_date": "2024-06-02",
+                                    "transporter": "TransCo",
+                                    "recipient": "Jane Smith",
+                                    "approved_by_inspector": False,
+                                    "approved_by_title": False,
+                                    "approved_by_re_export": False,
+                                    "transit_method": "t1",
+                                    "location": "Warehouse 1",
+                                    "requested_title": True,
+                                    "notified_parking": True,
+                                    "notified_inspector": False,
+                                    "logistician_keys_number": None,
+                                    "vehicle_transporter": None,
+                                    "v_type": {"id": 1, "name": "Sedan"},
+                                },
+                            ],
+                            "in_progress": [
+                                {
+                                    "id": 2,
+                                    "vin": "2HGCM82633A004353",
+                                    "brand": "Toyota",
+                                    "model": "Camry",
+                                    "client": {"id": 3, "full_name": "Jane Smith", "email": "jane@example.com"},
+                                    "container_number": "CONT7654321",
+                                    "arrival_date": "2024-06-03",
+                                    "openning_date": "2024-06-04",
+                                    "transporter": "MoveIt",
+                                    "recipient": "John Doe",
+                                    "approved_by_inspector": True,
+                                    "approved_by_title": False,
+                                    "approved_by_re_export": False,
+                                    "transit_method": "re_export",
+                                    "location": "Warehouse 2",
+                                    "requested_title": False,
+                                    "notified_parking": False,
+                                    "notified_inspector": True,
+                                    "logistician_keys_number": 1,
+                                    "vehicle_transporter": 1,
+                                    "v_type": {"id": 1, "name": "Sedan"},
+                                },
+                            ],
+                            "completed": [
+                                {
+                                    "id": 3,
+                                    "vin": "3HGCM82633A004354",
+                                    "brand": "BMW",
+                                    "model": "X5",
+                                    "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
+                                    "container_number": "CONT7654321",
+                                    "arrival_date": "2024-06-03",
+                                    "openning_date": "2024-06-04",
+                                    "transporter": "MoveIt",
+                                    "recipient": "John Doe",
+                                    "approved_by_inspector": True,
+                                    "approved_by_title": False,
+                                    "approved_by_re_export": False,
+                                    "transit_method": "re_export",
+                                    "location": "Warehouse 2",
+                                    "requested_title": False,
+                                    "notified_parking": False,
+                                    "notified_inspector": True,
+                                    "logistician_keys_number": 1,
+                                    "vehicle_transporter": 1,
+                                    "v_type": {"id": 1, "name": "Sedan"},
                                 },
                             ],
                         },
@@ -354,14 +453,28 @@ RE_EXPORT_GROUPS = {
     ),
     retrieve=extend_schema(
         summary="Retrieve a vehicle bid",
-        description="Retrieve a single vehicle bid by ID.",
+        description="Retrieve a single vehicle bid by ID."
+        "Use 'status' query parameter to select appropriate serializer.",
+        parameters=[
+            OpenApiParameter(
+                name="status",
+                description="Vehicle status for serializer selection. Use 'initial' or 'loading' for logisticians.",
+                required=False,
+                type=str,
+                location=OpenApiParameter.QUERY,
+                examples=[
+                    OpenApiExample("Initial Status", value="initial"),
+                    OpenApiExample("Loading Status", value="loading"),
+                ],
+            ),
+        ],
         responses={
             200: OpenApiResponse(
                 description="A vehicle bid instance.",
-                response=LogisticianVehicleBidSerializer,
+                response=LogisticianInitialVehicleBidSerializer,
                 examples=[
                     OpenApiExample(
-                        "Logistician single bid",
+                        "Logistician Initial single bid",
                         value={
                             "id": 1,
                             "vin": "1HGCM82633A004352",
@@ -381,6 +494,28 @@ RE_EXPORT_GROUPS = {
                             "requested_title": True,
                             "notified_parking": True,
                             "notified_inspector": False,
+                        },
+                    ),
+                    OpenApiExample(
+                        "Logistician Loading single bid",
+                        value={
+                            "id": 3,
+                            "container_number": "CONT7654321",
+                            "arrival_date": "2024-06-03",
+                            "openning_date": "2024-06-04",
+                            "transporter": "MoveIt",
+                            "recipient": "John Doe",
+                            "approved_by_inspector": True,
+                            "approved_by_title": False,
+                            "approved_by_re_export": False,
+                            "transit_method": "re_export",
+                            "location": "Warehouse 2",
+                            "requested_title": False,
+                            "notified_parking": False,
+                            "notified_inspector": True,
+                            "logistician_keys_number": 1,
+                            "vehicle_transporter": 1,
+                            "v_type": {"id": 1, "name": "Sedan"},
                         },
                     ),
                     OpenApiExample(
@@ -456,12 +591,26 @@ RE_EXPORT_GROUPS = {
     update=extend_schema(
         summary="Update a vehicle bid",
         description="Update a vehicle bid by ID. Only fields allowed by the serializer and role can be updated. "
-        "The example shows admin, logistician, opening_manager, title and inspector update payloads.",
-        request=LogisticianVehicleBidSerializer,
+        "The example shows admin, logistician, opening_manager, title and inspector update payloads. "
+        "Use X-Vehicle-Status header to select appropriate serializer for logisticians.",
+        parameters=[
+            OpenApiParameter(
+                name="X-Vehicle-Status",
+                description="Vehicle status for serializer selection. Use 'initial' or 'loading' for logisticians.",
+                required=False,
+                type=str,
+                location=OpenApiParameter.HEADER,
+                examples=[
+                    OpenApiExample("Initial Status", value="initial"),
+                    OpenApiExample("Loading Status", value="loading"),
+                ],
+            ),
+        ],
+        request=LogisticianInitialVehicleBidSerializer,
         responses={
             200: OpenApiResponse(
                 description="Updated vehicle bid instance.",
-                response=LogisticianVehicleBidSerializer,
+                response=LogisticianInitialVehicleBidSerializer,
                 examples=[
                     OpenApiExample(
                         "Admin update",
@@ -503,12 +652,12 @@ RE_EXPORT_GROUPS = {
                             "approved_by_inspector": False,
                             "approved_by_title": False,
                             "approved_by_re_export": False,
-                            "approved_by_reciever": False,
+                            "approved_by_receiver": False,
                             "creation_time": "2024-06-01T10:00:00Z",
                         },
                     ),
                     OpenApiExample(
-                        "Logistician update",
+                        "Logistician Initial update",
                         value={
                             "id": 2,
                             "vin": "2HGCM82633A004353",
@@ -528,6 +677,28 @@ RE_EXPORT_GROUPS = {
                             "requested_title": False,
                             "notified_parking": False,
                             "notified_inspector": True,
+                        },
+                    ),
+                    OpenApiExample(
+                        "Logistician Loading update",
+                        value={
+                            "id": 3,
+                            "container_number": "CONT7654321",
+                            "arrival_date": "2024-06-03",
+                            "openning_date": "2024-06-04",
+                            "transporter": "MoveIt",
+                            "recipient": "John Doe",
+                            "approved_by_inspector": True,
+                            "approved_by_title": False,
+                            "approved_by_re_export": False,
+                            "transit_method": "re_export",
+                            "location": "Warehouse 2",
+                            "requested_title": False,
+                            "notified_parking": False,
+                            "notified_inspector": True,
+                            "logistician_keys_number": 1,
+                            "vehicle_transporter": 1,
+                            "v_type": {"id": 1, "name": "Sedan"},
                         },
                     ),
                     OpenApiExample(
@@ -610,7 +781,13 @@ class VehicleBidViewSet(
 
     def get_serializer_class(self) -> Any:  # noqa: ANN401
         role = self.request.user.role
-        return get_vehicle_bid_serializer(role)
+
+        if self.request.method == "GET":
+            status = self.request.query_params.get("status")
+        else:
+            status = self.request.headers.get("X-Vehicle-Status")
+
+        return get_vehicle_bid_serializer(role, status)
 
     def get_queryset(self) -> QuerySet:
         role = self.request.user.role
@@ -684,7 +861,7 @@ class VehicleBidViewSet(
         group_param = LOGISTICIAN_GROUPS.get(status_param, {})
         data = {}
         for group_name, group_filter in group_param.items():
-            qs = base_qs.filter(**group_filter)
+            qs = base_qs.filter(**group_filter).distinct()
             data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
 
@@ -706,31 +883,10 @@ class VehicleBidViewSet(
 
     def get_inspector_grouped_list(self) -> Response:
         base_qs = self.get_queryset()
-        data = {
-            "untouched": self.get_serializer(
-                self._get_distinct_vehicles_by_condition(
-                    base_qs,
-                    Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=True)
-                    | Q(
-                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
-                        notified_logistician_by_inspector=False,
-                    ),
-                ),
-                many=True,
-            ).data,
-            "in_progress": self.get_serializer(
-                self._get_distinct_vehicles_by_condition(
-                    base_qs,
-                    Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=False)
-                    | Q(
-                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
-                        notified_logistician_by_inspector=True,
-                    ),
-                ),
-                many=True,
-            ).data,
-        }
-
+        data = {}
+        for group_name, group_filter in INSPECTOR_GROUPS.items():
+            qs = base_qs.filter(group_filter).distinct()
+            data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
 
     def get_re_export_grouped_list(self) -> Response:
@@ -741,9 +897,6 @@ class VehicleBidViewSet(
             data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
 
-    def _get_distinct_vehicles_by_condition(self, base_qs: QuerySet, condition: Q) -> QuerySet:
-        return base_qs.filter(condition).distinct()
-
     @extend_schema(
         summary="Reject a vehicle bid",
         description="Mark the status of a particular bid as 'rejected'."
@@ -752,7 +905,7 @@ class VehicleBidViewSet(
         responses={
             200: OpenApiResponse(
                 description="Bid marked as rejected.",
-                response=LogisticianVehicleBidSerializer,
+                response=LogisticianInitialVehicleBidSerializer,
                 examples=[
                     OpenApiExample(
                         "Rejected bid",

@@ -4,7 +4,7 @@ from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
 
 from accounts.serializers.user import ClientSerializer
-from autotrips.models.vehicle_info import VehicleInfo
+from autotrips.models.vehicle_info import VehicleInfo, VehicleTransporter
 from autotrips.serializers.vehicle_info import VehicleTypeSerializer
 
 
@@ -17,10 +17,16 @@ class AdminVehicleBidSerialiser(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class VehicleTransporterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehicleTransporter
+        fields = "__all__"
+
+
 @extend_schema_serializer(
     examples=[
         OpenApiExample(
-            "Logistician Update",
+            "Logistician Initial Update",
             summary="How logisticians update vehicles",
             value={
                 "transit_method": "t1",
@@ -30,7 +36,20 @@ class AdminVehicleBidSerialiser(serializers.ModelSerializer):
                 "notified_inspector": False,
             },
             request_only=True,
-            description="Logisticians can set transit method and location",
+            description="Logisticians can set transit method and location for initial vehicles."
+            "Use X-Vehicle-Status: initial header.",
+        ),
+        OpenApiExample(
+            "Logistician Loading Update",
+            summary="How logisticians update vehicles",
+            value={
+                "logistician_keys_number": 1,
+                "vehicle_transporter": 1,
+            },
+            request_only=True,
+            description="Logisticians can set logistician keys number and vehicle transporter to mark vehicle"
+            "as 'ready for receiver' for loading vehicles."
+            "Use X-Vehicle-Status: loading header.",
         ),
         OpenApiExample(
             "Manager Update",
@@ -134,7 +153,7 @@ class BaseVehicleBidSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
-class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
+class LogisticianInitialVehicleBidSerializer(BaseVehicleBidSerializer):
     read_only_fields = [
         "container_number",
         "arrival_date",
@@ -156,6 +175,45 @@ class LogisticianVehicleBidSerializer(BaseVehicleBidSerializer):
             if not old_value and new_value:
                 validated_data["approved_by_logistician"] = True
         return super().update(instance, validated_data)
+
+
+class LogisticianLoadingVehicleBidSerializer(BaseVehicleBidSerializer):
+    read_only_fields = [
+        "container_number",
+        "arrival_date",
+        "openning_date",
+        "transporter",
+        "recipient",
+        "transit_method",
+        "location",
+        "approved_by_inspector",
+        "approved_by_title",
+        "approved_by_re_export",
+        "requested_title",
+        "notified_parking",
+        "notified_inspector",
+        "v_type",
+    ]
+    required_fields = ["logistician_keys_number", "vehicle_transporter"]
+    protected_fields = ["logistician_keys_number", "vehicle_transporter"]
+
+    def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
+        if instance.logistician_keys_number and instance.vehicle_transporter and instance.approved_by_receiver:
+            raise serializers.ValidationError(
+                {"detail": "Cannot update a bid that has already been completed (approved by receiver)."}
+            )
+
+        if (instance.logistician_keys_number or validated_data.get("logistician_keys_number")) and (
+            instance.vehicle_transporter or validated_data.get("vehicle_transporter")
+        ):
+            validated_data["ready_for_receiver"] = True
+        return super().update(instance, validated_data)
+
+    def to_representation(self, instance: VehicleInfo) -> Any:  # noqa: ANN401
+        data = super().to_representation(instance)
+        if instance.vehicle_transporter:
+            data["vehicle_transporter"] = VehicleTransporterSerializer(instance.vehicle_transporter).data
+        return data
 
 
 class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
@@ -276,9 +334,16 @@ class ReExportVehicleBidSerializer(BaseVehicleBidSerializer):
         return super().update(instance, validated_data)
 
 
-def get_vehicle_bid_serializer(user_role: str) -> type[serializers.ModelSerializer]:
+def get_vehicle_bid_serializer(user_role: str, status: str | None) -> type[serializers.ModelSerializer]:
+    if user_role == "logistician" and status:
+        logistician_serializers = {
+            "initial": LogisticianInitialVehicleBidSerializer,
+            "loading": LogisticianLoadingVehicleBidSerializer,
+        }
+        return logistician_serializers.get(status, LogisticianInitialVehicleBidSerializer)
+
     role_serializers = {
-        "logistician": LogisticianVehicleBidSerializer,
+        "logistician": LogisticianInitialVehicleBidSerializer,
         "admin": AdminVehicleBidSerialiser,
         "opening_manager": ManagerVehicleBidSerializer,
         "title": TitleVehicleBidSerializer,
