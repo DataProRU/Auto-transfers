@@ -71,11 +71,17 @@ INSPECTOR_GROUPS = {
     ),
 }
 
+RECEIVER_GROUPS = {
+    "untouched": Q(vehicle_arrival_date__isnull=True) | Q(vehicle_arrival_date__gt=timezone.now() + timedelta(days=1)),
+    "in_progress": {"vehicle_arrival_date__lte": timezone.now() + timedelta(days=1), "full_acceptance": False},
+    "completed": {"full_acceptance": True},
+}
+
 
 @extend_schema_view(
     list=extend_schema(
         summary="List vehicle bids (admin: flat list, logistician: grouped, opening_manager: grouped, "
-        "title: grouped, inspector: grouped, re_export: grouped)",
+        "title: grouped, inspector: grouped, re_export: grouped, receiver: grouped)",
         description="Admins receive a flat list of all vehicle bids. "
         "Logisticians receive grouped bids by status and approval. "
         "Opening managers receive grouped bids by approval status and arrival date. "
@@ -447,6 +453,80 @@ INSPECTOR_GROUPS = {
                             ],
                         },
                     ),
+                    OpenApiExample(
+                        "Receiver grouped list",
+                        value={
+                            "untouched": [
+                                {
+                                    "id": 2,
+                                    "client": {
+                                        "id": 57,
+                                        "full_name": "John Doe",
+                                        "phone": "+79991234514",
+                                        "telegram": "johndup",
+                                        "company": "",
+                                        "address": "123 Main St, New York, NY",
+                                        "email": "",
+                                    },
+                                    "brand": "Toyota",
+                                    "model": "Camry",
+                                    "vin": "4T1BF1FKXEU123470",
+                                    "transit_method": "re_export",
+                                    "vehicle_arrival_date": "2025-08-22",
+                                    "receive_vehicle": False,
+                                    "receive_documents": False,
+                                    "full_acceptance": False,
+                                    "receiver_keys_number": 2,
+                                }
+                            ],
+                            "in_progress": [
+                                {
+                                    "id": 1,
+                                    "client": {
+                                        "id": 1,
+                                        "full_name": "test",
+                                        "phone": "+7111111111",
+                                        "telegram": "@test",
+                                        "company": None,
+                                        "address": None,
+                                        "email": "",
+                                    },
+                                    "brand": "Toyota",
+                                    "model": "Camry",
+                                    "vin": "4T1BF1FKXEU123469",
+                                    "transit_method": "t1",
+                                    "vehicle_arrival_date": "2025-08-18",
+                                    "receive_vehicle": True,
+                                    "receive_documents": True,
+                                    "full_acceptance": False,
+                                    "receiver_keys_number": 2,
+                                }
+                            ],
+                            "completed": [
+                                {
+                                    "id": 3,
+                                    "client": {
+                                        "id": 57,
+                                        "full_name": "John Doe",
+                                        "phone": "+79991234514",
+                                        "telegram": "johndup",
+                                        "company": "",
+                                        "address": "123 Main St, New York, NY",
+                                        "email": "",
+                                    },
+                                    "brand": "Toyota",
+                                    "model": "Camry",
+                                    "vin": "4T1BF1FKXEU123468",
+                                    "transit_method": "without_openning",
+                                    "vehicle_arrival_date": "2025-08-17",
+                                    "receive_vehicle": True,
+                                    "receive_documents": True,
+                                    "full_acceptance": True,
+                                    "receiver_keys_number": 3,
+                                }
+                            ],
+                        },
+                    ),
                 ],
             )
         },
@@ -582,6 +662,30 @@ INSPECTOR_GROUPS = {
                             "export": False,
                             "prepared_documents": True,
                             "title_collection_date": "2024-06-12",
+                        },
+                    ),
+                    OpenApiExample(
+                        "Receiver single bid",
+                        value={
+                            "id": 3,
+                            "client": {
+                                "id": 57,
+                                "full_name": "John Doe",
+                                "phone": "+79991234514",
+                                "telegram": "johndup",
+                                "company": "",
+                                "address": "123 Main St, New York, NY",
+                                "email": "",
+                            },
+                            "brand": "Toyota",
+                            "model": "Camry",
+                            "vin": "4T1BF1FKXEU123468",
+                            "transit_method": "without_openning",
+                            "vehicle_arrival_date": "2025-08-17",
+                            "receive_vehicle": True,
+                            "receive_documents": True,
+                            "full_acceptance": True,
+                            "receiver_keys_number": 3,
                         },
                     ),
                 ],
@@ -767,6 +871,30 @@ INSPECTOR_GROUPS = {
                             "title_collection_date": "2024-06-12",
                         },
                     ),
+                    OpenApiExample(
+                        "Receiver update response",
+                        value={
+                            "id": 3,
+                            "client": {
+                                "id": 57,
+                                "full_name": "John Doe",
+                                "phone": "+79991234514",
+                                "telegram": "johndup",
+                                "company": "",
+                                "address": "123 Main St, New York, NY",
+                                "email": "",
+                            },
+                            "brand": "Toyota",
+                            "model": "Camry",
+                            "vin": "4T1BF1FKXEU123468",
+                            "transit_method": "without_openning",
+                            "vehicle_arrival_date": "2025-08-17",
+                            "receive_vehicle": True,
+                            "receive_documents": True,
+                            "full_acceptance": True,
+                            "receiver_keys_number": 3,
+                        },
+                    ),
                 ],
             )
         },
@@ -792,18 +920,17 @@ class VehicleBidViewSet(
     def get_queryset(self) -> QuerySet:
         role = self.request.user.role
         qs = super().get_queryset()
-        if role in {User.Roles.ADMIN, User.Roles.LOGISTICIAN}:
-            return qs
-        if role == User.Roles.OPENING_MANAGER:
-            allowed_date = timezone.now() + timedelta(days=7)
-            return qs.filter(
+
+        role_filters = {
+            User.Roles.ADMIN: lambda qs: qs,
+            User.Roles.LOGISTICIAN: lambda qs: qs,
+            User.Roles.OPENING_MANAGER: lambda qs: qs.filter(
                 status=VehicleInfo.Statuses.INITIAL,
                 approved_by_logistician=True,
-                arrival_date__lte=allowed_date,
+                arrival_date__lte=timezone.now() + timedelta(days=7),
                 transit_method__in=[VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT],
-            )
-        if role == User.Roles.TITLE:
-            return qs.filter(
+            ),
+            User.Roles.TITLE: lambda qs: qs.filter(
                 Q(
                     Q(
                         transit_method__in=[VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT],
@@ -812,45 +939,44 @@ class VehicleBidViewSet(
                     | Q(transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING)
                 ),
                 approved_by_logistician=True,
-            )
-        if role == User.Roles.INSPECTOR:
-            return qs.filter(
+            ),
+            User.Roles.INSPECTOR: lambda qs: qs.filter(
                 Q(
                     Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, approved_by_manager=True)
                     | Q(transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING)
                 ),
                 status=VehicleInfo.Statuses.INITIAL,
                 approved_by_logistician=True,
-            )
-        if role == User.Roles.RE_EXPORT:
-            return qs.filter(
+            ),
+            User.Roles.RE_EXPORT: lambda qs: qs.filter(
                 status=VehicleInfo.Statuses.LOADING,
                 transit_method__in=[VehicleInfo.TransitMethod.RE_EXPORT, VehicleInfo.TransitMethod.WITHOUT_OPENNING],
-            )
-        return qs.none()
+            ),
+            User.Roles.USER: lambda qs: qs.filter(
+                status=VehicleInfo.Statuses.LOADING,
+                ready_for_receiver=True,
+            ),
+        }
+
+        filter_func = role_filters.get(role, lambda qs: qs.none())
+        return filter_func(qs)  # type: ignore[no-untyped-call]
 
     def list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
-        role = request.user.role
+        role_groupers = {
+            User.Roles.ADMIN: lambda: self.get_admin_list(request, *args, **kwargs),
+            User.Roles.LOGISTICIAN: lambda: self.get_logistician_grouped_list(request),
+            User.Roles.OPENING_MANAGER: lambda: self.get_manager_grouped_list(),
+            User.Roles.TITLE: lambda: self.get_title_grouped_list(),
+            User.Roles.INSPECTOR: lambda: self.get_inspector_grouped_list(),
+            User.Roles.RE_EXPORT: lambda: self.get_re_export_grouped_list(),
+            User.Roles.USER: lambda: self.get_receiver_grouped_list(),
+        }
 
-        if role == User.Roles.ADMIN:
-            return self.get_admin_list(request, *args, **kwargs)
+        grouper = role_groupers.get(request.user.role)
+        if grouper is None:
+            raise PermissionDenied("You do not have permission to view bids.")
 
-        if role == User.Roles.LOGISTICIAN:
-            return self.get_logistician_grouped_list(request)
-
-        if role == User.Roles.OPENING_MANAGER:
-            return self.get_manager_grouped_list()
-
-        if role == User.Roles.TITLE:
-            return self.get_title_grouped_list()
-
-        if role == User.Roles.INSPECTOR:
-            return self.get_inspector_grouped_list()
-
-        if role == User.Roles.RE_EXPORT:
-            return self.get_re_export_grouped_list()
-
-        raise PermissionDenied("You do not have permission to view bids.")
+        return grouper()  # type: ignore[no-untyped-call]
 
     def get_admin_list(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
         return super().list(request, *args, **kwargs)
@@ -894,6 +1020,14 @@ class VehicleBidViewSet(
         data = {}
         for group_name, group_filter in RE_EXPORT_GROUPS.items():
             qs = base_qs.filter(**group_filter)
+            data[group_name] = self.get_serializer(qs, many=True).data
+        return Response(data)
+
+    def get_receiver_grouped_list(self) -> Response:
+        base_qs = self.get_queryset()
+        data = {}
+        for group_name, group_filter in RECEIVER_GROUPS.items():
+            qs = base_qs.filter(group_filter) if isinstance(group_filter, Q) else base_qs.filter(**group_filter)
             data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
 
