@@ -477,6 +477,7 @@ RECEIVER_GROUPS = {
                                     "receive_documents": False,
                                     "full_acceptance": False,
                                     "receiver_keys_number": 2,
+                                    "vehicle_transporter": {"id": 1, "number": "CAN123OS"},
                                 }
                             ],
                             "in_progress": [
@@ -500,6 +501,7 @@ RECEIVER_GROUPS = {
                                     "receive_documents": True,
                                     "full_acceptance": False,
                                     "receiver_keys_number": 2,
+                                    "vehicle_transporter": {"id": 1, "number": "CAN123OS"},
                                 }
                             ],
                             "completed": [
@@ -523,6 +525,7 @@ RECEIVER_GROUPS = {
                                     "receive_documents": True,
                                     "full_acceptance": True,
                                     "receiver_keys_number": 3,
+                                    "vehicle_transporter": {"id": 1, "number": "CAN123OS"},
                                 }
                             ],
                         },
@@ -686,6 +689,7 @@ RECEIVER_GROUPS = {
                             "receive_documents": True,
                             "full_acceptance": True,
                             "receiver_keys_number": 3,
+                            "vehicle_transporter": {"id": 1, "number": "CAN123OS"},
                         },
                     ),
                 ],
@@ -893,6 +897,7 @@ RECEIVER_GROUPS = {
                             "receive_documents": True,
                             "full_acceptance": True,
                             "receiver_keys_number": 3,
+                            "vehicle_transporter": {"id": 1, "number": "CAN123OS"},
                         },
                     ),
                 ],

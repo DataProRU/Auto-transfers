@@ -351,7 +351,7 @@ class ReExportVehicleBidSerializer(BaseVehicleBidSerializer):
 class ReceiverVehicleBidSerializer(BaseVehicleBidSerializer):
     vehicle_transporter = VehicleTransporterSerializer(read_only=True)
 
-    read_only_fields = ["transit_method"]
+    read_only_fields = ["transit_method", "vehicle_transporter"]
     required_fields = [
         "vehicle_arrival_date",
         "receive_vehicle",
