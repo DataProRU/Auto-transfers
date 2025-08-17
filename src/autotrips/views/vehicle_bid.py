@@ -908,7 +908,7 @@ RECEIVER_GROUPS = {
 class VehicleBidViewSet(
     mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet
 ):
-    queryset = VehicleInfo.objects.select_related("client", "v_type").order_by("-id")
+    queryset = VehicleInfo.objects.select_related("client", "v_type", "vehicle_transporter").order_by("-id")
     permission_classes = (VehicleBidAccessPermission,)
     http_method_names = ["get", "put"]
 
