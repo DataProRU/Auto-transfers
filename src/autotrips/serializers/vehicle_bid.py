@@ -94,6 +94,20 @@ class VehicleTransporterSerializer(serializers.ModelSerializer):
             request_only=True,
             description="ReExport can set export and prepared documents",
         ),
+        OpenApiExample(
+            "Receiver Update",
+            summary="How receivers update vehicles",
+            value={
+                "vehicle_arrival_date": "2025-12-01",
+                "receive_vehicle": True,
+                "receive_documents": True,
+                "full_acceptance": False,
+                "receiver_keys_number": 2,
+            },
+            request_only=True,
+            description="Receiver can set vehicle arrival date, mark vehicle and documents as received, "
+            "indicate full acceptance, and specify the number of keys received.",
+        ),
     ]
 )
 class BaseVehicleBidSerializer(serializers.ModelSerializer):
@@ -334,6 +348,29 @@ class ReExportVehicleBidSerializer(BaseVehicleBidSerializer):
         return super().update(instance, validated_data)
 
 
+class ReceiverVehicleBidSerializer(BaseVehicleBidSerializer):
+    vehicle_transporter = VehicleTransporterSerializer(read_only=True)
+
+    read_only_fields = ["transit_method"]
+    required_fields = [
+        "vehicle_arrival_date",
+        "receive_vehicle",
+        "receive_documents",
+        "full_acceptance",
+        "receiver_keys_number",
+    ]
+    protected_fields = ["vehicle_arrival_date", "receiver_keys_number"]
+
+    def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
+        if instance.full_acceptance:
+            raise serializers.ValidationError({"detail": "Cannot update a vehicle that has already been accept."})
+
+        full_acceptance = validated_data.get("full_acceptance")
+        if full_acceptance and not instance.full_acceptance:
+            validated_data["approved_by_receiver"] = True
+        return super().update(instance, validated_data)
+
+
 def get_vehicle_bid_serializer(user_role: str, status: str | None) -> type[serializers.ModelSerializer]:
     if user_role == "logistician" and status:
         logistician_serializers = {
@@ -349,6 +386,7 @@ def get_vehicle_bid_serializer(user_role: str, status: str | None) -> type[seria
         "title": TitleVehicleBidSerializer,
         "inspector": InspectorVehicleBidSerializer,
         "re_export": ReExportVehicleBidSerializer,
+        "user": ReceiverVehicleBidSerializer,
     }
     return role_serializers.get(user_role, BaseVehicleBidSerializer)
 
