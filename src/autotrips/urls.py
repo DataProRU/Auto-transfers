@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views.acceptance_report import AcceptanceReportViewSet, CarPhotoViewSet, DocPhotoViewSet, KeyPhotoViewSet
-from .views.vehicle_bid import VehicleBidViewSet
+from .views.vehicle_bid import VehicleBidViewSet, VehicleTransporterViewset
 from .views.vehicle_info import VehicleInfoViewSet, VehicleTypeViewSet
 
 # Create a router and register the ViewSet
@@ -14,6 +14,7 @@ router.register(r"reports/(?P<report_id>\d+)/key-photos", KeyPhotoViewSet, basen
 router.register(r"vehicles", VehicleInfoViewSet, basename="vehicle_info")
 router.register(r"vehicles-types", VehicleTypeViewSet, basename="vehicle-type")
 router.register(r"bids", VehicleBidViewSet, basename="vehicle-bid")
+router.register(r"transporters", VehicleTransporterViewset, basename="vehicle-transpoter")
 
 urlpatterns = [
     # Include the router-generated URLs

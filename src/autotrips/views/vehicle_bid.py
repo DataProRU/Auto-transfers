@@ -18,13 +18,14 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from autotrips.models.vehicle_info import VehicleInfo
+from autotrips.models.vehicle_info import VehicleInfo, VehicleTransporter
 from autotrips.serializers.vehicle_bid import (
     LogisticianInitialVehicleBidSerializer,
     RejectBidSerializer,
+    VehicleTransporterSerializer,
     get_vehicle_bid_serializer,
 )
-from project.permissions import AdminLogistianVehicleBidAccessPermission, VehicleBidAccessPermission
+from project.permissions import AdminLogisticianVehicleBidAccessPermission, VehicleBidAccessPermission
 
 User = get_user_model()
 
@@ -1074,7 +1075,10 @@ class VehicleBidViewSet(
         },
     )
     @action(
-        detail=True, methods=["put"], url_path="reject", permission_classes=(AdminLogistianVehicleBidAccessPermission,)
+        detail=True,
+        methods=["put"],
+        url_path="reject",
+        permission_classes=(AdminLogisticianVehicleBidAccessPermission,),
     )
     def reject(self, request: Request, pk: int | None = None) -> Response:
         req_serializer = RejectBidSerializer(data=request.data)
@@ -1090,3 +1094,22 @@ class VehicleBidViewSet(
         bid.save(update_fields=["status", "logistician_comment", "status_changed"])
         resp_serializer = self.get_serializer(bid)
         return Response(resp_serializer.data)
+
+
+@extend_schema_view(
+    list=extend_schema(
+        summary="List all vehicle transporters",
+        description="""
+        Retrieve a complete list of all vehicle transporters in the system.
+        This endpoint is only accessible to users with Admin or Logistician roles.
+        """,
+        responses={
+            200: VehicleTransporterSerializer(many=True),
+        },
+    )
+)
+class VehicleTransporterViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = VehicleTransporter.objects.all()
+    serializer_class = VehicleTransporterSerializer
+    permission_classes = (AdminLogisticianVehicleBidAccessPermission,)
+    http_method_names = ["get"]
