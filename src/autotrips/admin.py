@@ -7,7 +7,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from autotrips.models.acceptance_report import AcceptenceReport, CarPhoto, DocumentPhoto, KeyPhoto
-from autotrips.models.vehicle_info import VehicleInfo, VehicleType
+from autotrips.models.vehicle_info import VehicleInfo, VehicleTransporter, VehicleType
 
 
 @admin.register(AcceptenceReport)
@@ -189,3 +189,11 @@ class VehicleInfoAdmin(admin.ModelAdmin):
 
     client_link.short_description = _("Client")  # type: ignore[attr-defined]
     client_link.admin_order_field = "client__full_name"  # type: ignore[attr-defined]
+
+
+@admin.register(VehicleTransporter)
+class VehicleTransporterAdmin(admin.ModelAdmin):
+    list_display = ("id", "number")
+    list_filter = ("number",)
+    search_fields = ("number",)
+    ordering = ("number",)
