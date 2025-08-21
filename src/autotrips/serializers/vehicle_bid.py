@@ -285,13 +285,13 @@ class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
 
 class InspectorVehicleBidSerializer(BaseVehicleBidSerializer):
     read_only_fields = ["location", "transit_method"]
-    protected_fields = ["inspection_done"]
+    required_fields = ["inspection_done"]
+    protected_fields = ["inspection_done", "inspection_date"]
     optional_fields = [
         "inspection_date",
         "number_sent_date",
         "inspector_comment",
         "transit_number",
-        "inspection_done",
         "number_sent",
         "inspection_paid",
         "notified_logistician_by_inspector",
