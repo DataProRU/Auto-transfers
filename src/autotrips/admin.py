@@ -150,6 +150,7 @@ class VehicleInfoAdmin(admin.ModelAdmin):
                     "notified_parking",
                     "notified_inspector",
                     "logistician_comment",
+                    "logistician_keys_number",
                     "openning_date",
                     "opened",
                     "manager_comment",
