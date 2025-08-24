@@ -37,7 +37,6 @@ class AcceptenceReport(models.Model):
         verbose_name = _("Acceptance report")
         verbose_name_plural = _("Acceptance reports")
 
-
     def __str__(self) -> str:
         return f"{self.reporter.full_name}_{self.vehicle.brand}_{self.vehicle.model}_{self.acceptance_date}"
 

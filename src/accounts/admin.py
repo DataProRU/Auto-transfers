@@ -26,7 +26,7 @@ class CustomUserAdmin(UserAdmin):
         (_("User"), {"fields": ("phone", "password")}),
         (_("Personal info"), {"fields": ("full_name", "telegram", "tg_user_id", "email", "address", "company")}),
         (
-            _( "Permissions"),
+            _("Permissions"),
             {
                 "fields": (
                     "role",
@@ -73,7 +73,7 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ("phone", "full_name", "telegram")
 
     # Define the fields to be used for filtering
-    list_filter = (_("role"), _( "is_approved"), _( "is_staff"))
+    list_filter = ("role", "is_approved", "is_staff")
 
     # Define the ordering of the list view
     ordering = ("full_name", "date_joined")
@@ -87,7 +87,7 @@ class DocumentImageAdmin(admin.ModelAdmin):
 
     search_fields = ("user__phone", "user__full_name")
 
-    list_filter = (_("created"), _("user__role"))
+    list_filter = ("created", "user__role")
 
     ordering = ("-created",)
 

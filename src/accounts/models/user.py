@@ -61,9 +61,9 @@ class DocumentImage(models.Model):
     image = models.ImageField(_("Image"), upload_to="documents/%Y/%m/%d/")
     created = models.DateTimeField(_("Created"), default=timezone.now)
 
-    def __str__(self) -> str:
-        return f"{self.user.full_name}_image_{self.id}"
-
     class Meta:
         verbose_name = _("Document photo")
         verbose_name_plural = _("Documents photos")
+
+    def __str__(self) -> str:
+        return f"{self.user.full_name}_image_{self.id}"
