@@ -42,6 +42,7 @@ class VehicleInfo(models.Model):
         REQUIRED_INSPECTION = "required_inspection"
         REQUIRED_EXPERTISE = "required_expertise"
 
+    ################# CLIENT FIELDS #################
     client = models.ForeignKey(User, on_delete=models.RESTRICT, related_name="vehicles", null=False, blank=False)
     brand = models.CharField(max_length=100, null=False, blank=False)
     model = models.CharField(max_length=100, null=False, blank=False)
@@ -56,20 +57,33 @@ class VehicleInfo(models.Model):
     transporter = models.CharField(max_length=100, null=False, blank=False)
     recipient = models.CharField(max_length=100, null=False, blank=False)
     comment = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
-    status = models.CharField(max_length=20, choices=Statuses.choices, default=Statuses.INITIAL)
-    status_changed = models.DateTimeField(default=timezone.now)
+
+    ################# LOGISTICIAN FIELDS #################
     transit_method = models.CharField(max_length=20, choices=TransitMethod.choices, null=True, blank=True)  # noqa: DJ001
     location = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
     requested_title = models.BooleanField(default=False)
     notified_parking = models.BooleanField(default=False)
     notified_inspector = models.BooleanField(default=False)
     logistician_comment = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
+    vehicle_transporter = models.ForeignKey(
+        "VehicleTransporter", on_delete=models.SET_NULL, null=True, blank=True, related_name="vehicles"
+    )
+    logistician_keys_number = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(3)], null=True, blank=True
+    )
+
+    ################# OPENNING MANAGER FIELDS #################
     openning_date = models.DateField(null=True, blank=True)
     opened = models.BooleanField(default=False)
     manager_comment = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
+
+    ################# TITLE FIELDS #################
     pickup_address = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
     took_title = models.CharField(max_length=20, choices=TookTitle.choices, null=True, blank=True)  # noqa: DJ001
     title_collection_date = models.DateField(null=True, blank=True)
+    notified_logistician_by_title = models.BooleanField(default=False)
+
+    ################# INSPECTOR FIELDS #################
     transit_number = models.CharField(max_length=20, null=True, blank=True)  # noqa: DJ001
     inspection_done = models.CharField(max_length=20, choices=InspectionDone.choices, null=True, blank=True)  # noqa: DJ001
     inspection_date = models.DateField(null=True, blank=True)
@@ -77,23 +91,31 @@ class VehicleInfo(models.Model):
     number_sent_date = models.DateField(null=True, blank=True)
     inspection_paid = models.BooleanField(default=False)
     inspector_comment = models.CharField(max_length=255, null=True, blank=True)  # noqa: DJ001
+    notified_logistician_by_inspector = models.BooleanField(default=False)
+
+    ################# RE-EXPORT FIELDS #################
+    export = models.BooleanField(default=False)
+    prepared_documents = models.BooleanField(default=False)
+
+    ################# RECEIVER (ROLE USER) FIELDS #################
+    vehicle_arrival_date = models.DateField(null=True, blank=True)
+    receive_vehicle = models.BooleanField(default=False)
+    receive_documents = models.BooleanField(default=False)
+    full_acceptance = models.BooleanField(default=False)
+    receiver_keys_number = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(3)], null=True, blank=True
+    )
+
+    ################# TECHNICAL FIELDS #################
     approved_by_logistician = models.BooleanField(default=False)
     approved_by_manager = models.BooleanField(default=False)
     approved_by_inspector = models.BooleanField(default=False)
     approved_by_title = models.BooleanField(default=False)
     approved_by_re_export = models.BooleanField(default=False)
     approved_by_receiver = models.BooleanField(default=False)
-    notified_logistician_by_title = models.BooleanField(default=False)
-    notified_logistician_by_inspector = models.BooleanField(default=False)
-    export = models.BooleanField(default=False)
-    prepared_documents = models.BooleanField(default=False)
-    vehicle_transporter = models.ForeignKey(
-        "VehicleTransporter", on_delete=models.SET_NULL, null=True, blank=True, related_name="vehicles"
-    )
-    logistician_keys_number = models.IntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(3)], null=True, blank=True
-    )
     ready_for_receiver = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=Statuses.choices, default=Statuses.INITIAL)
+    status_changed = models.DateTimeField(default=timezone.now)
     creation_time = models.DateTimeField(default=timezone.now)
 
     objects = VehicleInfoManager()

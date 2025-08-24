@@ -14,6 +14,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from corsheaders.defaults import default_headers
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -61,6 +62,10 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "https://localhost:5173",
 ]
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    "x-vehicle-status",
+)
 
 ROOT_URLCONF = "project.urls"
 
