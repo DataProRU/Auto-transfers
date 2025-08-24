@@ -51,6 +51,10 @@ class User(AbstractUser):
     def __str__(self) -> str:
         return str(self.full_name)
 
+    class Meta:
+        verbose_name = _("User")
+        verbose_name_plural = _("Users")
+
 
 class DocumentImage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="documents", verbose_name=_("User"))
@@ -59,3 +63,7 @@ class DocumentImage(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user.full_name}_image_{self.id}"
+
+    class Meta:
+        verbose_name = _("Document photo")
+        verbose_name_plural = _("Documents photos")

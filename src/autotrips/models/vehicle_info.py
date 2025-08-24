@@ -15,6 +15,10 @@ User = get_user_model()
 class VehicleType(models.Model):
     v_type = models.CharField(_("Vehicle type"), max_length=100, unique=True, null=False, blank=False)
 
+    class Meta:
+        verbose_name = _("Vehicle type")
+        verbose_name_plural = _("Vehicle types")
+
     def __str__(self) -> str:
         return cast(str, self.v_type)
 
@@ -138,6 +142,10 @@ class VehicleInfo(models.Model):
     status_changed = models.DateTimeField(_("Status changed"), default=timezone.now)
     creation_time = models.DateTimeField(_("Creation time"), default=timezone.now)
 
+    class Meta:
+        verbose_name = _("Vehicle info")
+        verbose_name_plural = _("Vehicle infos")
+
     objects = VehicleInfoManager()
 
     def __str__(self) -> str:
@@ -177,6 +185,10 @@ class VehicleInfo(models.Model):
 
 class VehicleTransporter(models.Model):
     number = models.CharField(_("Number"), max_length=10, null=False, blank=False)
+
+    class Meta:
+        verbose_name = _("Vehicle transporter")
+        verbose_name_plural = _("Vehicle transporters")
 
     def __str__(self) -> str:
         return f"transporter_{self.number}"
