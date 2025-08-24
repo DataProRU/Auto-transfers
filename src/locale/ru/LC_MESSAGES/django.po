@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-24 18:17+0300\n"
+"POT-Creation-Date: 2025-08-24 20:38+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,6 +36,10 @@ msgstr "Права"
 #: src/accounts/admin.py:43
 msgid "Important dates"
 msgstr "Системные даты"
+
+#: src/accounts/apps.py:8
+msgid "Accounts"
+msgstr "Аккаунты"
 
 #: src/accounts/models/user.py:12
 msgid "Admin"
@@ -175,6 +179,10 @@ msgstr "Системная информация"
 #: src/autotrips/admin.py:194 src/autotrips/models/acceptance_report.py:27
 msgid "Vehicle"
 msgstr "Автомобиль"
+
+#: src/autotrips/apps.py:8
+msgid "Autotrips"
+msgstr "Автоперевозки"
 
 #: src/autotrips/models/acceptance_report.py:15
 msgid "Accepted"
