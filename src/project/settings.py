@@ -48,6 +48,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -112,9 +113,15 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
 }
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ru"
+LANGUAGES = [
+    ("ru", "Russian"),
+    ("en", "English"),
+]
+
 TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
+USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
