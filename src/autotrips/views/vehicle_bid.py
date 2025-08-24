@@ -60,12 +60,12 @@ RE_EXPORT_GROUPS = {
 }
 
 INSPECTOR_GROUPS = {
-    "untouched": Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=True)
+    "untouched": Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, inspection_done__isnull=True)
     | Q(
         transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
         notified_logistician_by_inspector=False,
     ),
-    "in_progress": Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=False)
+    "in_progress": Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, inspection_done__isnull=False)
     | Q(
         transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
         notified_logistician_by_inspector=True,
