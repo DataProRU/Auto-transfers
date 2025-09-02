@@ -280,9 +280,9 @@ class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
 
 class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
     read_only_fields = ["manager_comment", "transit_method"]
-    required_fields = ["pickup_address", "notified_logistician_by_title"]
-    protected_fields = ["pickup_address"]
-    optional_fields = ["took_title", "title_collection_date"]
+    required_fields = ["took_title"]
+    protected_fields = ["took_title"]
+    optional_fields = ["pickup_address", "title_collection_date"]
 
     def validate(self, attrs: dict[str, Any]) -> Any:  # noqa: ANN401
         took_title = attrs.get("took_title")
@@ -300,13 +300,8 @@ class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
                 {"detail": "Cannot update a bid that has already been completed (title collected)."}
             )
 
-        new_title_date = validated_data.get("title_collection_date")
-        notified_logistician_by_title = validated_data.get("notified_logistician_by_title")
-
-        if new_title_date and not notified_logistician_by_title:
-            raise serializers.ValidationError({"detail": "Cannot take title without logistician notification."})
-
-        if new_title_date and not instance.title_collection_date:
+        title_collection_date = validated_data.get("title_collection_date")
+        if title_collection_date and not instance.title_collection_date:
             validated_data["approved_by_title"] = True
 
         return super().update(instance, validated_data)

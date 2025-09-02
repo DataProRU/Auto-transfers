@@ -110,7 +110,6 @@ class VehicleInfo(models.Model):
     pickup_address = models.CharField(_("Pickup address"), max_length=255, null=True, blank=True)  # noqa: DJ001
     took_title = models.CharField(_("Took title"), max_length=20, choices=TookTitle.choices, null=True, blank=True)  # noqa: DJ001
     title_collection_date = models.DateField(_("Title collection date"), null=True, blank=True)
-    notified_logistician_by_title = models.BooleanField(_("Notified logistician by title"), default=False)
 
     ################# INSPECTOR FIELDS #################
     transit_number = models.CharField(_("Transit number"), max_length=20, null=True, blank=True)  # noqa: DJ001
@@ -122,7 +121,6 @@ class VehicleInfo(models.Model):
     number_sent_date = models.DateField(_("Number sent date"), null=True, blank=True)
     inspection_paid = models.BooleanField(_("Inspection paid"), default=False)
     inspector_comment = models.CharField(_("Inspector comment"), max_length=255, null=True, blank=True)  # noqa: DJ001
-    notified_logistician_by_inspector = models.BooleanField(_("Notified logistician by inspector"), default=False)
 
     ################# RE-EXPORT FIELDS #################
     export = models.BooleanField(_("Export"), default=False)

@@ -48,8 +48,7 @@ MANAGER_GROUPS = {
 }
 
 TITLE_GROUPS = {
-    "untouched": {"notified_logistician_by_title": False},
-    "in_progress": {"notified_logistician_by_title": True, "approved_by_title": False},
+    "in_progress": {"approved_by_title": False},
     "completed": {"approved_by_title": True},
 }
 
@@ -331,19 +330,6 @@ RECEIVER_GROUPS = {
                     OpenApiExample(
                         "Title grouped list",
                         value={
-                            "untouched": [
-                                {
-                                    "id": 1,
-                                    "vin": "1HGCM82633A004352",
-                                    "brand": "Honda",
-                                    "model": "Accord",
-                                    "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
-                                    "transit_method": "re_export",
-                                    "pickup_address": None,
-                                    "took_title": None,
-                                    "title_collection_date": None,
-                                },
-                            ],
                             "in_progress": [
                                 {
                                     "id": 2,
@@ -352,7 +338,7 @@ RECEIVER_GROUPS = {
                                     "model": "Camry",
                                     "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
                                     "pickup_address": "123 Main St",
-                                    "took_title": "yes",
+                                    "took_title": "no",
                                     "title_collection_date": None,
                                 },
                             ],
@@ -949,9 +935,13 @@ class VehicleBidViewSet(
                         transit_method__in=[VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT],
                         approved_by_manager=True,
                     )
-                    | Q(transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING)
+                    | Q(
+                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+                        acceptance_type=VehicleInfo.AcceptanceType.WITH_RE_EXPORT,
+                    )
                 ),
                 approved_by_logistician=True,
+                requested_title=True,
             ),
             User.Roles.INSPECTOR: lambda qs: qs.filter(
                 Q(
