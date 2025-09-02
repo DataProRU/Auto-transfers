@@ -173,6 +173,7 @@ class LogisticianInitialVehicleBidSerializer(BaseVehicleBidSerializer):
         "container_number",
         "arrival_date",
         "openning_date",
+        "opened",
         "transporter",
         "recipient",
         "approved_by_inspector",
@@ -202,11 +203,19 @@ class LogisticianInitialVehicleBidSerializer(BaseVehicleBidSerializer):
         return super().validate(attrs)
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
-        if "transit_method" in validated_data:
-            old_value = instance.transit_method
-            new_value = validated_data["transit_method"]
-            if not old_value and new_value:
-                validated_data["approved_by_logistician"] = True
+        transit_method = validated_data.get("transit_method")
+        requested_title = validated_data.get("requested_title")
+        if transit_method and not instance.transit_method:
+            validated_data["approved_by_logistician"] = True
+
+        if (
+            transit_method in {VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT}
+            and instance.opened
+            and not requested_title
+        ):
+            raise serializers.ValidationError(
+                {"requested_title": "Required if 'transit_method' is 't1' or 're_export' and container was opened."}
+            )
         return super().update(instance, validated_data)
 
 
