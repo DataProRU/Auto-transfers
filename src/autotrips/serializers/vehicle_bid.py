@@ -257,13 +257,14 @@ class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
         "recipient",
         "transit_method",
     ]
-    required_fields = ["opened"]
-    protected_fields = ["opened"]
-    optional_fields = ["manager_comment", "openning_date"]
+    required_fields = ["opened", "openning_date"]
+    protected_fields = ["opened", "openning_date"]
+    optional_fields = ["manager_comment"]
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
         opened = validated_data.get("opened")
-        if opened and not instance.opened:
+        openning_date = validated_data.get("openning_date")
+        if all([opened, openning_date]) and not instance.approved_by_manager:
             validated_data["approved_by_manager"] = True
         return super().update(instance, validated_data)
 

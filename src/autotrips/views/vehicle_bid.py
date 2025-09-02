@@ -43,8 +43,8 @@ LOGISTICIAN_GROUPS = {
 }
 
 MANAGER_GROUPS = {
-    "untouched": {"openning_date__isnull": True},
-    "in_progress": {"openning_date__isnull": False},
+    "untouched": {"approved_by_manager": False},
+    "in_progress": {"approved_by_manager": True},
 }
 
 TITLE_GROUPS = {
@@ -937,7 +937,6 @@ class VehicleBidViewSet(
             User.Roles.OPENING_MANAGER: lambda qs: qs.filter(
                 status=VehicleInfo.Statuses.INITIAL,
                 approved_by_logistician=True,
-                arrival_date__lte=timezone.now() + timedelta(days=7),
                 transit_method__in=[VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT],
             ),
             User.Roles.TITLE: lambda qs: qs.filter(
