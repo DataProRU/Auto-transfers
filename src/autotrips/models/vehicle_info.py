@@ -36,6 +36,10 @@ class VehicleInfo(models.Model):
         RE_EXPORT = "re_export", _("Re-Export")
         WITHOUT_OPENNING = "without_openning", _("Without opening")
 
+    class AcceptanceType(models.TextChoices):
+        WITH_RE_EXPORT = "with_re_export", _("With re-export")
+        WITHOUT_RE_EXPORT = "without_re_export", _("Without re-export")
+
     class TookTitle(models.TextChoices):
         YES = "yes", _("Yes")
         NO = "no", _("No")
@@ -76,6 +80,9 @@ class VehicleInfo(models.Model):
     ################# LOGISTICIAN FIELDS #################
     transit_method = models.CharField(  # noqa: DJ001
         _("Transit method"), max_length=20, choices=TransitMethod.choices, null=True, blank=True
+    )
+    acceptance_type = models.CharField(  # noqa: DJ001
+        _("Acceptance type"), max_length=20, choices=AcceptanceType.choices, null=True, blank=True
     )
     location = models.CharField(_("Location"), max_length=255, null=True, blank=True)  # noqa: DJ001
     requested_title = models.BooleanField(_("Requested title"), default=False)

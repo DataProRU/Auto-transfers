@@ -30,6 +30,7 @@ class VehicleTransporterSerializer(serializers.ModelSerializer):
             summary="How logisticians update vehicles",
             value={
                 "transit_method": "t1",
+                "acceptance_type": None,
                 "location": "Some location",
                 "requested_title": False,
                 "notified_parking": False,
@@ -178,9 +179,27 @@ class LogisticianInitialVehicleBidSerializer(BaseVehicleBidSerializer):
         "approved_by_title",
         "approved_by_re_export",
     ]
-    required_fields = ["transit_method", "requested_title", "notified_parking", "notified_inspector"]
-    protected_fields = ["transit_method"]
-    optional_fields = ["location"]
+    required_fields = ["transit_method", "notified_parking", "notified_inspector"]
+    protected_fields = ["transit_method", "requested_title"]
+    optional_fields = ["location", "acceptance_type", "requested_title"]
+
+    def validate(self, attrs: dict[str, Any]) -> Any:  # noqa: ANN401
+        acceptance_type = attrs.get("acceptance_type")
+        transit_method = attrs.get("transit_method")
+        if transit_method == VehicleInfo.TransitMethod.WITHOUT_OPENNING and not acceptance_type:
+            raise serializers.ValidationError(
+                {"acceptance_type": "Required if 'transit_method' is 'without_openning'."}
+            )
+
+        requested_title = attrs.get("requested_title")
+        if (
+            transit_method == VehicleInfo.TransitMethod.WITHOUT_OPENNING
+            and acceptance_type == VehicleInfo.AcceptanceType.WITH_RE_EXPORT
+            and not requested_title
+        ):
+            raise serializers.ValidationError({"requested_title": "Required if 'acceptance_type' is 'with_re_export'."})
+
+        return super().validate(attrs)
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
         if "transit_method" in validated_data:
