@@ -59,16 +59,8 @@ RE_EXPORT_GROUPS = {
 }
 
 INSPECTOR_GROUPS = {
-    "untouched": Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, inspection_done__isnull=True)
-    | Q(
-        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
-        notified_logistician_by_inspector=False,
-    ),
-    "in_progress": Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, inspection_done__isnull=False)
-    | Q(
-        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
-        notified_logistician_by_inspector=True,
-    ),
+    "untouched": {"approved_by_inspector": False},
+    "in_progress": {"approved_by_inspector": True},
 }
 
 RECEIVER_GROUPS = {
@@ -946,7 +938,10 @@ class VehicleBidViewSet(
             User.Roles.INSPECTOR: lambda qs: qs.filter(
                 Q(
                     Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, approved_by_manager=True)
-                    | Q(transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING)
+                    | Q(
+                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+                        acceptance_type=VehicleInfo.AcceptanceType.WITH_RE_EXPORT,
+                    )
                 ),
                 status=VehicleInfo.Statuses.INITIAL,
                 approved_by_logistician=True,
@@ -1014,7 +1009,7 @@ class VehicleBidViewSet(
         base_qs = self.get_queryset()
         data = {}
         for group_name, group_filter in INSPECTOR_GROUPS.items():
-            qs = base_qs.filter(group_filter).distinct()
+            qs = base_qs.filter(**group_filter).distinct()
             data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
 

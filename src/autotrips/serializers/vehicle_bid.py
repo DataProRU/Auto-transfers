@@ -318,7 +318,6 @@ class InspectorVehicleBidSerializer(BaseVehicleBidSerializer):
         "transit_number",
         "number_sent",
         "inspection_paid",
-        "notified_logistician_by_inspector",
     ]
 
     def validate(self, attrs: dict[str, Any]) -> Any:  # noqa: ANN401
