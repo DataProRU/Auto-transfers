@@ -157,35 +157,46 @@ class VehicleInfo(models.Model):
         return f"{self.client.full_name}_{self.model}_{self.v_type}"
 
     def save(self, *args: tuple[Any], **kwargs: dict[str, Any]) -> None:
+        base_cls = type(self)
         if self.pk is not None:
-            approvals_map = {
-                type(self).TransitMethod.T1: [
-                    self.approved_by_logistician,
-                    self.approved_by_manager,
-                    self.approved_by_title,
-                ],
-                type(self).TransitMethod.RE_EXPORT: [
+            if self.status == base_cls.Statuses.INITIAL and self._has_all_required_approvals():
+                self.status = base_cls.Statuses.LOADING
+
+            self._track_status_change()
+
+        super().save(*args, **kwargs)
+
+    def _has_all_required_approvals(self) -> bool:
+        base_cls = type(self)
+
+        if self.transit_method == base_cls.TransitMethod.T1:
+            return all([self.approved_by_logistician, self.approved_by_manager, self.approved_by_title])
+
+        if self.transit_method == base_cls.TransitMethod.RE_EXPORT:
+            return all(
+                [
                     self.approved_by_logistician,
                     self.approved_by_manager,
                     self.approved_by_title,
                     self.approved_by_inspector,
-                ],
-                type(self).TransitMethod.WITHOUT_OPENNING: [
-                    self.approved_by_logistician,
-                    self.approved_by_title,
-                    self.approved_by_inspector,
-                ],
-            }
+                ]
+            )
 
-            if self.status == type(self).Statuses.INITIAL:
-                required_approvals = approvals_map.get(self.transit_method)
-                if required_approvals and all(required_approvals):
-                    self.status = type(self).Statuses.LOADING
+        if self.transit_method == base_cls.TransitMethod.WITHOUT_OPENNING:
+            if self.acceptance_type == base_cls.AcceptanceType.WITH_RE_EXPORT:
+                return all([self.approved_by_logistician, self.approved_by_title, self.approved_by_inspector])
+            if self.acceptance_type == base_cls.AcceptanceType.WITHOUT_RE_EXPORT:
+                return bool(self.approved_by_logistician)
 
+        return False
+
+    def _track_status_change(self) -> None:
+        try:
             original = type(self).objects.get(pk=self.pk)
             if original.status != self.status:
                 self.status_changed = timezone.now()
-        super().save(*args, **kwargs)
+        except type(self).DoesNotExist:
+            pass
 
 
 class VehicleTransporter(models.Model):
