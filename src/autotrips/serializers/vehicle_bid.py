@@ -227,6 +227,7 @@ class LogisticianLoadingVehicleBidSerializer(BaseVehicleBidSerializer):
         "transporter",
         "recipient",
         "transit_method",
+        "acceptance_type",
         "location",
         "approved_by_inspector",
         "approved_by_title",

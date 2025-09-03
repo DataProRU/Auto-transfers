@@ -219,6 +219,7 @@ RECEIVER_GROUPS = {
                                     "approved_by_title": False,
                                     "approved_by_re_export": False,
                                     "transit_method": "t1",
+                                    "acceptance_type": None,
                                     "location": "Warehouse 1",
                                     "requested_title": True,
                                     "notified_parking": True,
@@ -244,6 +245,7 @@ RECEIVER_GROUPS = {
                                     "approved_by_title": False,
                                     "approved_by_re_export": False,
                                     "transit_method": "re_export",
+                                    "acceptance_type": None,
                                     "location": "Warehouse 2",
                                     "requested_title": False,
                                     "notified_parking": False,
@@ -269,6 +271,7 @@ RECEIVER_GROUPS = {
                                     "approved_by_title": False,
                                     "approved_by_re_export": False,
                                     "transit_method": "re_export",
+                                    "acceptance_type": None,
                                     "location": "Warehouse 2",
                                     "requested_title": False,
                                     "notified_parking": False,
@@ -577,6 +580,7 @@ RECEIVER_GROUPS = {
                             "approved_by_title": False,
                             "approved_by_re_export": False,
                             "transit_method": "re_export",
+                            "acceptance_type": None,
                             "location": "Warehouse 2",
                             "requested_title": False,
                             "notified_parking": False,
@@ -787,6 +791,7 @@ RECEIVER_GROUPS = {
                             "approved_by_title": False,
                             "approved_by_re_export": False,
                             "transit_method": "re_export",
+                            "acceptance_type": None,
                             "location": "Warehouse 2",
                             "requested_title": False,
                             "notified_parking": False,
@@ -947,8 +952,14 @@ class VehicleBidViewSet(
                 approved_by_logistician=True,
             ),
             User.Roles.RE_EXPORT: lambda qs: qs.filter(
+                Q(
+                    Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT)
+                    | Q(
+                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+                        acceptance_type=VehicleInfo.AcceptanceType.WITH_RE_EXPORT,
+                    )
+                ),
                 status=VehicleInfo.Statuses.LOADING,
-                transit_method__in=[VehicleInfo.TransitMethod.RE_EXPORT, VehicleInfo.TransitMethod.WITHOUT_OPENNING],
             ),
             User.Roles.USER: lambda qs: qs.filter(
                 status=VehicleInfo.Statuses.LOADING,
