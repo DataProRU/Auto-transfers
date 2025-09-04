@@ -1,10 +1,8 @@
-from datetime import timedelta
 from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.db.models.query import QuerySet
-from django.utils import timezone
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
@@ -64,9 +62,9 @@ INSPECTOR_GROUPS = {
 }
 
 RECEIVER_GROUPS = {
-    "untouched": Q(vehicle_arrival_date__isnull=True) | Q(vehicle_arrival_date__gt=timezone.now() + timedelta(days=1)),
-    "in_progress": {"vehicle_arrival_date__lte": timezone.now() + timedelta(days=1), "full_acceptance": False},
-    "completed": {"full_acceptance": True},
+    "untouched": {"vehicle_arrival_date__isnull": True},
+    "in_progress": {"vehicle_arrival_date__isnull": False},
+    "completed": {"approved_by_receiver": True},
 }
 
 

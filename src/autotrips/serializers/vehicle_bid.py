@@ -380,19 +380,28 @@ class ReceiverVehicleBidSerializer(BaseVehicleBidSerializer):
         "vehicle_arrival_date",
         "receive_vehicle",
         "receive_documents",
-        "full_acceptance",
         "receiver_keys_number",
     ]
     protected_fields = ["vehicle_arrival_date", "receiver_keys_number"]
+    optional_fields = ["full_acceptance"]
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
         if instance.full_acceptance:
-            raise serializers.ValidationError({"detail": "Cannot update a vehicle that has already been accept."})
+            raise serializers.ValidationError({"detail": "Cannot update a vehicle that has already been accepted."})
 
-        full_acceptance = validated_data.get("full_acceptance")
-        if full_acceptance and not instance.full_acceptance:
+        if self._should_set_full_acceptance(instance, validated_data):
+            validated_data["full_acceptance"] = True
             validated_data["approved_by_receiver"] = True
+
         return super().update(instance, validated_data)
+
+    def _should_set_full_acceptance(self, instance: VehicleInfo, data: dict[str, Any]) -> bool:
+        receive_vehicle = bool(data.get("receive_vehicle"))
+        receive_documents = bool(data.get("receive_documents"))
+        receiver_keys_number = data.get("receiver_keys_number")
+        return (
+            not instance.full_acceptance and receive_vehicle and receive_documents and receiver_keys_number is not None
+        )
 
 
 def get_vehicle_bid_serializer(user_role: str, status: str | None) -> type[serializers.ModelSerializer]:
