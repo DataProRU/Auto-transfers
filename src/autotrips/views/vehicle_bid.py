@@ -63,7 +63,7 @@ INSPECTOR_GROUPS = {
 
 RECEIVER_GROUPS = {
     "untouched": {"vehicle_arrival_date__isnull": True},
-    "in_progress": {"vehicle_arrival_date__isnull": False},
+    "in_progress": {"vehicle_arrival_date__isnull": False, "full_acceptance": False},
     "completed": {"approved_by_receiver": True},
 }
 
