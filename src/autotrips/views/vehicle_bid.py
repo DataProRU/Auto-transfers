@@ -46,8 +46,8 @@ MANAGER_GROUPS = {
 }
 
 TITLE_GROUPS = {
-    "in_progress": {"approved_by_title": False},
-    "completed": {"approved_by_title": True},
+    "untouched": {"approved_by_title": False},
+    "in_progress": {"approved_by_title": True},
 }
 
 RE_EXPORT_GROUPS = {
@@ -323,7 +323,7 @@ RECEIVER_GROUPS = {
                     OpenApiExample(
                         "Title grouped list",
                         value={
-                            "in_progress": [
+                            "untouched": [
                                 {
                                     "id": 2,
                                     "vin": "2HGCM82633A004353",
@@ -335,7 +335,7 @@ RECEIVER_GROUPS = {
                                     "title_collection_date": None,
                                 },
                             ],
-                            "completed": [
+                            "in_progress": [
                                 {
                                     "id": 3,
                                     "vin": "3HGCM82633A004354",
