@@ -145,6 +145,7 @@ class VehicleInfoAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "transit_method",
+                    "acceptance_type",
                     "location",
                     "requested_title",
                     "notified_parking",
