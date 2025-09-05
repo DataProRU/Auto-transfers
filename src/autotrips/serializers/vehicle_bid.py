@@ -30,6 +30,7 @@ class VehicleTransporterSerializer(serializers.ModelSerializer):
             summary="How logisticians update vehicles",
             value={
                 "transit_method": "t1",
+                "acceptance_type": None,
                 "location": "Some location",
                 "requested_title": False,
                 "notified_parking": False,
@@ -65,7 +66,6 @@ class VehicleTransporterSerializer(serializers.ModelSerializer):
                 "pickup_address": "Address",
                 "took_title": "yes/no/consignment",
                 "title_collection_date": "2025-11-11",
-                "notified_logistician_by_title": True,
             },
             request_only=True,
             description="Title can set pickup address, took title and title collection date",
@@ -80,7 +80,6 @@ class VehicleTransporterSerializer(serializers.ModelSerializer):
                 "inspection_date": "2024-06-15",
                 "number_sent_date": "2024-06-16",
                 "inspector_comment": "Updated inspection notes",
-                "notified_logistician_by_inspector": True,
             },
             request_only=True,
             description="Inspector can set inspection data",
@@ -172,22 +171,49 @@ class LogisticianInitialVehicleBidSerializer(BaseVehicleBidSerializer):
         "container_number",
         "arrival_date",
         "openning_date",
+        "opened",
         "transporter",
         "recipient",
         "approved_by_inspector",
         "approved_by_title",
         "approved_by_re_export",
     ]
-    required_fields = ["transit_method", "requested_title", "notified_parking", "notified_inspector"]
-    protected_fields = ["transit_method"]
-    optional_fields = ["location"]
+    required_fields = ["transit_method", "notified_parking", "notified_inspector"]
+    protected_fields = ["transit_method", "requested_title"]
+    optional_fields = ["location", "acceptance_type", "requested_title"]
+
+    def validate(self, attrs: dict[str, Any]) -> Any:  # noqa: ANN401
+        acceptance_type = attrs.get("acceptance_type")
+        transit_method = attrs.get("transit_method")
+        if transit_method == VehicleInfo.TransitMethod.WITHOUT_OPENNING and not acceptance_type:
+            raise serializers.ValidationError(
+                {"acceptance_type": "Required if 'transit_method' is 'without_openning'."}
+            )
+
+        requested_title = attrs.get("requested_title")
+        if (
+            transit_method == VehicleInfo.TransitMethod.WITHOUT_OPENNING
+            and acceptance_type == VehicleInfo.AcceptanceType.WITH_RE_EXPORT
+            and not requested_title
+        ):
+            raise serializers.ValidationError({"requested_title": "Required if 'acceptance_type' is 'with_re_export'."})
+
+        return super().validate(attrs)
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
-        if "transit_method" in validated_data:
-            old_value = instance.transit_method
-            new_value = validated_data["transit_method"]
-            if not old_value and new_value:
-                validated_data["approved_by_logistician"] = True
+        transit_method = validated_data.get("transit_method")
+        requested_title = validated_data.get("requested_title")
+        if transit_method and not instance.transit_method:
+            validated_data["approved_by_logistician"] = True
+
+        if (
+            transit_method in {VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT}
+            and instance.opened
+            and not requested_title
+        ):
+            raise serializers.ValidationError(
+                {"requested_title": "Required if 'transit_method' is 't1' or 're_export' and container was opened."}
+            )
         return super().update(instance, validated_data)
 
 
@@ -199,6 +225,7 @@ class LogisticianLoadingVehicleBidSerializer(BaseVehicleBidSerializer):
         "transporter",
         "recipient",
         "transit_method",
+        "acceptance_type",
         "location",
         "approved_by_inspector",
         "approved_by_title",
@@ -238,22 +265,23 @@ class ManagerVehicleBidSerializer(BaseVehicleBidSerializer):
         "recipient",
         "transit_method",
     ]
-    required_fields = ["opened"]
-    protected_fields = ["opened"]
-    optional_fields = ["manager_comment", "openning_date"]
+    required_fields = ["opened", "openning_date"]
+    protected_fields = ["opened", "openning_date"]
+    optional_fields = ["manager_comment"]
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
         opened = validated_data.get("opened")
-        if opened and not instance.opened:
+        openning_date = validated_data.get("openning_date")
+        if all([opened, openning_date]) and not instance.approved_by_manager:
             validated_data["approved_by_manager"] = True
         return super().update(instance, validated_data)
 
 
 class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
     read_only_fields = ["manager_comment", "transit_method"]
-    required_fields = ["pickup_address", "notified_logistician_by_title"]
-    protected_fields = ["pickup_address"]
-    optional_fields = ["took_title", "title_collection_date"]
+    required_fields = ["took_title"]
+    protected_fields = ["took_title"]
+    optional_fields = ["pickup_address", "title_collection_date"]
 
     def validate(self, attrs: dict[str, Any]) -> Any:  # noqa: ANN401
         took_title = attrs.get("took_title")
@@ -271,13 +299,8 @@ class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
                 {"detail": "Cannot update a bid that has already been completed (title collected)."}
             )
 
-        new_title_date = validated_data.get("title_collection_date")
-        notified_logistician_by_title = validated_data.get("notified_logistician_by_title")
-
-        if new_title_date and not notified_logistician_by_title:
-            raise serializers.ValidationError({"detail": "Cannot take title without logistician notification."})
-
-        if new_title_date and not instance.title_collection_date:
+        title_collection_date = validated_data.get("title_collection_date")
+        if title_collection_date and not instance.title_collection_date:
             validated_data["approved_by_title"] = True
 
         return super().update(instance, validated_data)
@@ -285,16 +308,15 @@ class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
 
 class InspectorVehicleBidSerializer(BaseVehicleBidSerializer):
     read_only_fields = ["location", "transit_method"]
-    protected_fields = ["inspection_done"]
+    required_fields = ["inspection_done"]
+    protected_fields = ["inspection_done", "inspection_date"]
     optional_fields = [
         "inspection_date",
         "number_sent_date",
         "inspector_comment",
         "transit_number",
-        "inspection_done",
         "number_sent",
         "inspection_paid",
-        "notified_logistician_by_inspector",
     ]
 
     def validate(self, attrs: dict[str, Any]) -> Any:  # noqa: ANN401
@@ -356,19 +378,28 @@ class ReceiverVehicleBidSerializer(BaseVehicleBidSerializer):
         "vehicle_arrival_date",
         "receive_vehicle",
         "receive_documents",
-        "full_acceptance",
         "receiver_keys_number",
     ]
     protected_fields = ["vehicle_arrival_date", "receiver_keys_number"]
+    optional_fields = ["full_acceptance"]
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
         if instance.full_acceptance:
-            raise serializers.ValidationError({"detail": "Cannot update a vehicle that has already been accept."})
+            raise serializers.ValidationError({"detail": "Cannot update a vehicle that has already been accepted."})
 
-        full_acceptance = validated_data.get("full_acceptance")
-        if full_acceptance and not instance.full_acceptance:
+        if self._should_set_full_acceptance(instance, validated_data):
+            validated_data["full_acceptance"] = True
             validated_data["approved_by_receiver"] = True
+
         return super().update(instance, validated_data)
+
+    def _should_set_full_acceptance(self, instance: VehicleInfo, data: dict[str, Any]) -> bool:
+        receive_vehicle = bool(data.get("receive_vehicle"))
+        receive_documents = bool(data.get("receive_documents"))
+        receiver_keys_number = data.get("receiver_keys_number")
+        return (
+            not instance.full_acceptance and receive_vehicle and receive_documents and receiver_keys_number is not None
+        )
 
 
 def get_vehicle_bid_serializer(user_role: str, status: str | None) -> type[serializers.ModelSerializer]:

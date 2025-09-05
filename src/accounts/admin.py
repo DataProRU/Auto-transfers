@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.utils.translation import gettext_lazy as _
 
 from .models.user import DocumentImage, User
 
@@ -22,10 +23,10 @@ class CustomUserAdmin(UserAdmin):
     list_editable = ("is_approved", "is_onboarded")
 
     fieldsets = (
-        ("User", {"fields": ("phone", "password")}),
-        ("Personal info", {"fields": ("full_name", "telegram", "tg_user_id", "email", "address", "company")}),
+        (_("User"), {"fields": ("phone", "password")}),
+        (_("Personal info"), {"fields": ("full_name", "telegram", "tg_user_id", "email", "address", "company")}),
         (
-            "Permissions",
+            _("Permissions"),
             {
                 "fields": (
                     "role",
@@ -39,7 +40,7 @@ class CustomUserAdmin(UserAdmin):
                 ),
             },
         ),
-        ("Important dates", {"fields": ("last_login", "date_joined")}),
+        (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
 
     # Define the fields to be used when adding a new user

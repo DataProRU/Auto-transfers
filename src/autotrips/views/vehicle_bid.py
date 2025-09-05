@@ -1,10 +1,8 @@
-from datetime import timedelta
 from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.db.models.query import QuerySet
-from django.utils import timezone
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
@@ -43,14 +41,13 @@ LOGISTICIAN_GROUPS = {
 }
 
 MANAGER_GROUPS = {
-    "untouched": {"openning_date__isnull": True},
-    "in_progress": {"openning_date__isnull": False},
+    "untouched": {"approved_by_manager": False},
+    "in_progress": {"approved_by_manager": True},
 }
 
 TITLE_GROUPS = {
-    "untouched": {"notified_logistician_by_title": False},
-    "in_progress": {"notified_logistician_by_title": True, "approved_by_title": False},
-    "completed": {"approved_by_title": True},
+    "untouched": {"approved_by_title": False},
+    "in_progress": {"approved_by_title": True},
 }
 
 RE_EXPORT_GROUPS = {
@@ -60,22 +57,14 @@ RE_EXPORT_GROUPS = {
 }
 
 INSPECTOR_GROUPS = {
-    "untouched": Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=True)
-    | Q(
-        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
-        notified_logistician_by_inspector=False,
-    ),
-    "in_progress": Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, reports__isnull=False)
-    | Q(
-        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
-        notified_logistician_by_inspector=True,
-    ),
+    "untouched": {"approved_by_inspector": False},
+    "in_progress": {"approved_by_inspector": True},
 }
 
 RECEIVER_GROUPS = {
-    "untouched": Q(vehicle_arrival_date__isnull=True) | Q(vehicle_arrival_date__gt=timezone.now() + timedelta(days=1)),
-    "in_progress": {"vehicle_arrival_date__lte": timezone.now() + timedelta(days=1), "full_acceptance": False},
-    "completed": {"full_acceptance": True},
+    "untouched": {"vehicle_arrival_date__isnull": True},
+    "in_progress": {"vehicle_arrival_date__isnull": False, "full_acceptance": False},
+    "completed": {"approved_by_receiver": True},
 }
 
 
@@ -169,12 +158,14 @@ RECEIVER_GROUPS = {
                                     "container_number": "CONT1234567",
                                     "arrival_date": "2024-06-01",
                                     "openning_date": "2024-06-02",
+                                    "opened": False,
                                     "transporter": "TransCo",
                                     "recipient": "Jane Smith",
                                     "approved_by_inspector": False,
                                     "approved_by_title": False,
                                     "approved_by_re_export": False,
                                     "transit_method": "t1",
+                                    "acceptance_type": None,
                                     "location": "Warehouse 1",
                                     "requested_title": True,
                                     "notified_parking": True,
@@ -191,12 +182,14 @@ RECEIVER_GROUPS = {
                                     "container_number": "CONT7654321",
                                     "arrival_date": "2024-06-03",
                                     "openning_date": "2024-06-04",
+                                    "opened": False,
                                     "transporter": "MoveIt",
                                     "recipient": "John Doe",
                                     "approved_by_inspector": True,
                                     "approved_by_title": False,
                                     "approved_by_re_export": False,
                                     "transit_method": "re_export",
+                                    "acceptance_type": None,
                                     "location": "Warehouse 2",
                                     "requested_title": False,
                                     "notified_parking": False,
@@ -224,6 +217,7 @@ RECEIVER_GROUPS = {
                                     "approved_by_title": False,
                                     "approved_by_re_export": False,
                                     "transit_method": "t1",
+                                    "acceptance_type": None,
                                     "location": "Warehouse 1",
                                     "requested_title": True,
                                     "notified_parking": True,
@@ -249,6 +243,7 @@ RECEIVER_GROUPS = {
                                     "approved_by_title": False,
                                     "approved_by_re_export": False,
                                     "transit_method": "re_export",
+                                    "acceptance_type": None,
                                     "location": "Warehouse 2",
                                     "requested_title": False,
                                     "notified_parking": False,
@@ -274,6 +269,7 @@ RECEIVER_GROUPS = {
                                     "approved_by_title": False,
                                     "approved_by_re_export": False,
                                     "transit_method": "re_export",
+                                    "acceptance_type": None,
                                     "location": "Warehouse 2",
                                     "requested_title": False,
                                     "notified_parking": False,
@@ -329,30 +325,17 @@ RECEIVER_GROUPS = {
                         value={
                             "untouched": [
                                 {
-                                    "id": 1,
-                                    "vin": "1HGCM82633A004352",
-                                    "brand": "Honda",
-                                    "model": "Accord",
-                                    "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
-                                    "transit_method": "re_export",
-                                    "pickup_address": None,
-                                    "took_title": None,
-                                    "title_collection_date": None,
-                                },
-                            ],
-                            "in_progress": [
-                                {
                                     "id": 2,
                                     "vin": "2HGCM82633A004353",
                                     "brand": "Toyota",
                                     "model": "Camry",
                                     "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
                                     "pickup_address": "123 Main St",
-                                    "took_title": "yes",
+                                    "took_title": "no",
                                     "title_collection_date": None,
                                 },
                             ],
-                            "completed": [
+                            "in_progress": [
                                 {
                                     "id": 3,
                                     "vin": "3HGCM82633A004354",
@@ -568,12 +551,14 @@ RECEIVER_GROUPS = {
                             "container_number": "CONT1234567",
                             "arrival_date": "2024-06-01",
                             "openning_date": "2024-06-02",
+                            "opened": False,
                             "transporter": "TransCo",
                             "recipient": "Jane Smith",
                             "approved_by_inspector": False,
                             "approved_by_title": False,
                             "approved_by_re_export": False,
                             "transit_method": "t1",
+                            "acceptance_type": None,
                             "location": "Warehouse 1",
                             "requested_title": True,
                             "notified_parking": True,
@@ -593,6 +578,7 @@ RECEIVER_GROUPS = {
                             "approved_by_title": False,
                             "approved_by_re_export": False,
                             "transit_method": "re_export",
+                            "acceptance_type": None,
                             "location": "Warehouse 2",
                             "requested_title": False,
                             "notified_parking": False,
@@ -776,12 +762,14 @@ RECEIVER_GROUPS = {
                             "container_number": "CONT7654321",
                             "arrival_date": "2024-06-03",
                             "openning_date": "2024-06-04",
+                            "opened": False,
                             "transporter": "MoveIt",
                             "recipient": "John Doe",
                             "approved_by_inspector": False,
                             "approved_by_title": False,
                             "approved_by_re_export": False,
                             "transit_method": "re_export",
+                            "acceptance_type": None,
                             "location": "Warehouse 2",
                             "requested_title": False,
                             "notified_parking": False,
@@ -801,6 +789,7 @@ RECEIVER_GROUPS = {
                             "approved_by_title": False,
                             "approved_by_re_export": False,
                             "transit_method": "re_export",
+                            "acceptance_type": None,
                             "location": "Warehouse 2",
                             "requested_title": False,
                             "notified_parking": False,
@@ -933,7 +922,6 @@ class VehicleBidViewSet(
             User.Roles.OPENING_MANAGER: lambda qs: qs.filter(
                 status=VehicleInfo.Statuses.INITIAL,
                 approved_by_logistician=True,
-                arrival_date__lte=timezone.now() + timedelta(days=7),
                 transit_method__in=[VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT],
             ),
             User.Roles.TITLE: lambda qs: qs.filter(
@@ -942,21 +930,34 @@ class VehicleBidViewSet(
                         transit_method__in=[VehicleInfo.TransitMethod.T1, VehicleInfo.TransitMethod.RE_EXPORT],
                         approved_by_manager=True,
                     )
-                    | Q(transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING)
+                    | Q(
+                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+                        acceptance_type=VehicleInfo.AcceptanceType.WITH_RE_EXPORT,
+                    )
                 ),
                 approved_by_logistician=True,
+                requested_title=True,
             ),
             User.Roles.INSPECTOR: lambda qs: qs.filter(
                 Q(
                     Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT, approved_by_manager=True)
-                    | Q(transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING)
+                    | Q(
+                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+                        acceptance_type=VehicleInfo.AcceptanceType.WITH_RE_EXPORT,
+                    )
                 ),
                 status=VehicleInfo.Statuses.INITIAL,
                 approved_by_logistician=True,
             ),
             User.Roles.RE_EXPORT: lambda qs: qs.filter(
+                Q(
+                    Q(transit_method=VehicleInfo.TransitMethod.RE_EXPORT)
+                    | Q(
+                        transit_method=VehicleInfo.TransitMethod.WITHOUT_OPENNING,
+                        acceptance_type=VehicleInfo.AcceptanceType.WITH_RE_EXPORT,
+                    )
+                ),
                 status=VehicleInfo.Statuses.LOADING,
-                transit_method__in=[VehicleInfo.TransitMethod.RE_EXPORT, VehicleInfo.TransitMethod.WITHOUT_OPENNING],
             ),
             User.Roles.USER: lambda qs: qs.filter(
                 status=VehicleInfo.Statuses.LOADING,
@@ -1017,7 +1018,7 @@ class VehicleBidViewSet(
         base_qs = self.get_queryset()
         data = {}
         for group_name, group_filter in INSPECTOR_GROUPS.items():
-            qs = base_qs.filter(group_filter).distinct()
+            qs = base_qs.filter(**group_filter).distinct()
             data[group_name] = self.get_serializer(qs, many=True).data
         return Response(data)
 

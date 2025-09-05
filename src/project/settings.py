@@ -21,6 +21,10 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+LOCALE_PATHS = [
+    BASE_DIR / "locale",
+]
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "1") == "1"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",") if not DEBUG else []  # type: ignore[union-attr]
@@ -48,6 +52,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -112,9 +117,15 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
 }
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ru"
+LANGUAGES = [
+    ("ru", "Russian"),
+    ("en", "English"),
+]
+
 TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
+USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = "static/"

@@ -31,13 +31,13 @@ class AcceptenceReportAdmin(admin.ModelAdmin):
         vin: str = obj.vehicle.vin
         return vin
 
-    vehicle_vin.short_description = "VIN"  # type: ignore[attr-defined]
+    vehicle_vin.short_description = _("VIN")  # type: ignore[attr-defined]
     vehicle_vin.admin_order_field = "vehicle__vin"  # type: ignore[attr-defined]
 
     def vehicle_model(self, obj: AcceptenceReport) -> str:
         return f"{obj.vehicle.brand} {obj.vehicle.model}"
 
-    vehicle_model.short_description = "Model"  # type: ignore[attr-defined]
+    vehicle_model.short_description = _("Model")  # type: ignore[attr-defined]
     vehicle_model.admin_order_field = "vehicle__model"  # type: ignore[attr-defined]
 
 
@@ -52,7 +52,7 @@ class CarPhotoAdmin(admin.ModelAdmin):
         vin: str = obj.report.vehicle.vin
         return vin
 
-    vehicle_vin.short_description = "VIN"  # type: ignore[attr-defined]
+    vehicle_vin.short_description = _("VIN")  # type: ignore[attr-defined]
 
 
 @admin.register(KeyPhoto)
@@ -66,7 +66,7 @@ class KeyPhotoAdmin(admin.ModelAdmin):
         vin: str = obj.report.vehicle.vin
         return vin
 
-    vehicle_vin.short_description = "VIN"  # type: ignore[attr-defined]
+    vehicle_vin.short_description = _("VIN")  # type: ignore[attr-defined]
 
 
 @admin.register(DocumentPhoto)
@@ -80,7 +80,7 @@ class DocumentPhotoAdmin(admin.ModelAdmin):
         vin: str = obj.report.vehicle.vin
         return vin
 
-    vehicle_vin.short_description = "VIN"  # type: ignore[attr-defined]
+    vehicle_vin.short_description = _("VIN")  # type: ignore[attr-defined]
 
 
 @admin.register(VehicleType)
@@ -145,6 +145,7 @@ class VehicleInfoAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "transit_method",
+                    "acceptance_type",
                     "location",
                     "requested_title",
                     "notified_parking",
@@ -164,8 +165,6 @@ class VehicleInfoAdmin(admin.ModelAdmin):
                     "number_sent_date",
                     "inspection_paid",
                     "inspector_comment",
-                    "notified_logistician_by_title",
-                    "notified_logistician_by_inspector",
                     "approved_by_logistician",
                     "approved_by_manager",
                     "approved_by_inspector",
