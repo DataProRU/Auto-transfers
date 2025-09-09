@@ -207,4 +207,4 @@ class VehicleTransporter(models.Model):
         verbose_name_plural = _("Vehicle transporters")
 
     def __str__(self) -> str:
-        return f"transporter_{self.number}"
+        return str(self.number)
