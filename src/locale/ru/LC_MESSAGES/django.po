@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-04 13:33+0300\n"
+"POT-Creation-Date: 2025-10-08 20:23+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,7 +49,7 @@ msgstr "Администратор"
 msgid "Manager"
 msgstr "Менеджер"
 
-#: src/accounts/models/user.py:15 src/autotrips/admin.py:201
+#: src/accounts/models/user.py:15 src/autotrips/admin.py:200
 #: src/autotrips/models/vehicle_info.py:56
 msgid "Client"
 msgstr "Клиент"
@@ -146,6 +146,49 @@ msgstr "Фото документа"
 msgid "Documents photos"
 msgstr "Фото документов"
 
+#: src/accounts/serializers/register.py:27
+#: src/accounts/serializers/register.py:114
+msgid ""
+"Password must contain at least one uppercase letter, one lowercase letter, "
+"one digit, and one special character."
+msgstr ""
+"Пароль должен содержать как минимум одну заглавную букву, одну строчную "
+"букву, одну цифру и один специальный символ."
+
+#: src/accounts/serializers/register.py:39
+#: src/accounts/serializers/register.py:125
+msgid "Number should be in format: '+79991234567'."
+msgstr "Номер должен быть в формате: '+79991234567'."
+
+#: src/accounts/serializers/register.py:44
+msgid "User with this phone already exists."
+msgstr "Пользователь с таким номером телефона уже существует."
+
+#: src/accounts/serializers/register.py:66
+#: src/accounts/serializers/register.py:140
+msgid ""
+"Telegram username must be 5-32 characters long, contain only letters, "
+"numbers and underscores."
+msgstr ""
+"Имя пользователя в телеграм должно быть длиной от 5 до 32 символов и "
+"содержать только буквы, цифры и символы подчеркивания."
+
+#: src/accounts/serializers/register.py:72
+msgid "User with this telegram already exists."
+msgstr "Пользователь с таким именем в телеграм уже существует."
+
+#: src/accounts/serializers/register.py:130
+msgid "Client with this phone already exists."
+msgstr "Клиент с таким номером телефона уже существует."
+
+#: src/accounts/serializers/register.py:146
+msgid "Client with this telegram already exists."
+msgstr "Клиент с таким именем в телеграм уже существует."
+
+#: src/accounts/serializers/register.py:156
+msgid "Client with this email already exists."
+msgstr "Клиент с такой электронной почтой уже существует."
+
 #: src/autotrips/admin.py:34 src/autotrips/admin.py:55
 #: src/autotrips/admin.py:69 src/autotrips/admin.py:83
 #: src/autotrips/models/vehicle_info.py:69
@@ -172,11 +215,11 @@ msgstr "Клиент и статус"
 msgid "CRM Information"
 msgstr "Информация CRM"
 
-#: src/autotrips/admin.py:188
+#: src/autotrips/admin.py:187
 msgid "System Information"
 msgstr "Системная информация"
 
-#: src/autotrips/admin.py:194 src/autotrips/models/acceptance_report.py:27
+#: src/autotrips/admin.py:193 src/autotrips/models/acceptance_report.py:27
 msgid "Vehicle"
 msgstr "Автомобиль"
 
@@ -520,6 +563,17 @@ msgstr "Номер"
 #: src/autotrips/models/vehicle_info.py:207
 msgid "Vehicle transporters"
 msgstr "Автовозы"
+
+#, fuzzy
+#~| msgid ""
+#~| "Password must contain at least one uppercase letter, one lowercase "
+#~| "letter, one digit, and one special character."
+#~ msgid ""
+#~ "password must contain at least one uppercase letter, one lowercase "
+#~ "letter, one digit, and one special character"
+#~ msgstr ""
+#~ "Пароль должен содержать как минимум одну заглавную букву, одну строчную "
+#~ "букву, одну цифру и один специальный символ."
 
 #~ msgid "Notified logistician by title"
 #~ msgstr "Логист уведомлен тайтлом"
