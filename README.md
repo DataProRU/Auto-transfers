@@ -36,3 +36,7 @@ poetry run python src/manage.py runserver
 ```
 poetry run python src/manage.py start_bot
 ```
+9. Импортировать VIN номера (опционально)
+```
+python manage.py import_vehicles /path/to/file.xlsx --sheet-name "Sheet name" --skip-rows 1
+```
