@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-08 20:23+0300\n"
+"POT-Creation-Date: 2025-10-26 11:46+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,7 +50,7 @@ msgid "Manager"
 msgstr "Менеджер"
 
 #: src/accounts/models/user.py:15 src/autotrips/admin.py:200
-#: src/autotrips/models/vehicle_info.py:56
+#: src/autotrips/models/vehicle_info.py:55
 msgid "Client"
 msgstr "Клиент"
 
@@ -70,7 +70,7 @@ msgstr "Тайтл"
 msgid "Inspector"
 msgstr "Осмотр"
 
-#: src/accounts/models/user.py:20 src/autotrips/models/vehicle_info.py:36
+#: src/accounts/models/user.py:20 src/autotrips/models/vehicle_info.py:35
 msgid "Re-Export"
 msgstr "Реэкспорт"
 
@@ -191,11 +191,11 @@ msgstr "Клиент с такой электронной почтой уже с
 
 #: src/autotrips/admin.py:34 src/autotrips/admin.py:55
 #: src/autotrips/admin.py:69 src/autotrips/admin.py:83
-#: src/autotrips/models/vehicle_info.py:69
+#: src/autotrips/models/vehicle_info.py:67
 msgid "VIN"
 msgstr "VIN"
 
-#: src/autotrips/admin.py:40 src/autotrips/models/vehicle_info.py:59
+#: src/autotrips/admin.py:40 src/autotrips/models/vehicle_info.py:58
 msgid "Model"
 msgstr "Модель"
 
@@ -244,7 +244,7 @@ msgid "Place"
 msgstr "Местонахождение"
 
 #: src/autotrips/models/acceptance_report.py:30
-#: src/autotrips/models/vehicle_info.py:78
+#: src/autotrips/models/vehicle_info.py:73
 msgid "Comment"
 msgstr "Комментарий"
 
@@ -261,7 +261,7 @@ msgid "Acceptance date"
 msgstr "Дата приёмки"
 
 #: src/autotrips/models/acceptance_report.py:34
-#: src/autotrips/models/vehicle_info.py:146
+#: src/autotrips/models/vehicle_info.py:141
 msgid "Status"
 msgstr "Статус"
 
@@ -303,264 +303,264 @@ msgstr "Фото документов автомобиля"
 msgid "Vehicle document photos"
 msgstr "Фото документов автомобилей"
 
-#: src/autotrips/models/vehicle_info.py:16
-#: src/autotrips/models/vehicle_info.py:19
-#: src/autotrips/models/vehicle_info.py:66
+#: src/autotrips/models/vehicle_info.py:15
+#: src/autotrips/models/vehicle_info.py:18
+#: src/autotrips/models/vehicle_info.py:65
 msgid "Vehicle type"
 msgstr "Тип автомобиля"
 
-#: src/autotrips/models/vehicle_info.py:20
+#: src/autotrips/models/vehicle_info.py:19
 msgid "Vehicle types"
 msgstr "Типы автомобилей"
 
-#: src/autotrips/models/vehicle_info.py:28
+#: src/autotrips/models/vehicle_info.py:27
 msgid "Initial"
 msgstr "Начальный этап"
 
-#: src/autotrips/models/vehicle_info.py:29
+#: src/autotrips/models/vehicle_info.py:28
 msgid "Loading"
 msgstr "Погрузка"
 
-#: src/autotrips/models/vehicle_info.py:30
+#: src/autotrips/models/vehicle_info.py:29
 msgid "Ready for Transport"
 msgstr "Готов к перевозке"
 
-#: src/autotrips/models/vehicle_info.py:31
+#: src/autotrips/models/vehicle_info.py:30
 msgid "Requires Approval"
 msgstr "Требует одобрения"
 
-#: src/autotrips/models/vehicle_info.py:32
+#: src/autotrips/models/vehicle_info.py:31
 msgid "Rejected"
 msgstr "Отклонён"
 
-#: src/autotrips/models/vehicle_info.py:35
+#: src/autotrips/models/vehicle_info.py:34
 msgid "T1"
 msgstr "T1"
 
-#: src/autotrips/models/vehicle_info.py:37
+#: src/autotrips/models/vehicle_info.py:36
 msgid "Without opening"
 msgstr "Без открытия"
 
-#: src/autotrips/models/vehicle_info.py:40
+#: src/autotrips/models/vehicle_info.py:39
 msgid "With re-export"
 msgstr "С реэкспортом"
 
-#: src/autotrips/models/vehicle_info.py:41
+#: src/autotrips/models/vehicle_info.py:40
 msgid "Without re-export"
 msgstr "Без реэкспорта"
 
-#: src/autotrips/models/vehicle_info.py:44
-#: src/autotrips/models/vehicle_info.py:49
+#: src/autotrips/models/vehicle_info.py:43
+#: src/autotrips/models/vehicle_info.py:48
 msgid "Yes"
 msgstr "Да"
 
-#: src/autotrips/models/vehicle_info.py:45
-#: src/autotrips/models/vehicle_info.py:50
+#: src/autotrips/models/vehicle_info.py:44
+#: src/autotrips/models/vehicle_info.py:49
 msgid "No"
 msgstr "Нет"
 
-#: src/autotrips/models/vehicle_info.py:46
+#: src/autotrips/models/vehicle_info.py:45
 msgid "Consignment"
 msgstr "Коносамент"
 
-#: src/autotrips/models/vehicle_info.py:51
+#: src/autotrips/models/vehicle_info.py:50
 msgid "Required inspection"
 msgstr "Требуется осмотр"
 
-#: src/autotrips/models/vehicle_info.py:52
+#: src/autotrips/models/vehicle_info.py:51
 msgid "Required expertise"
 msgstr "Требуется экспертиза"
 
-#: src/autotrips/models/vehicle_info.py:58
+#: src/autotrips/models/vehicle_info.py:57
 msgid "Brand"
 msgstr "Марка"
 
-#: src/autotrips/models/vehicle_info.py:73
+#: src/autotrips/models/vehicle_info.py:68
 msgid "Price"
 msgstr "Цена"
 
-#: src/autotrips/models/vehicle_info.py:74
+#: src/autotrips/models/vehicle_info.py:69
 msgid "Container number"
 msgstr "Номер контейнера"
 
-#: src/autotrips/models/vehicle_info.py:75
+#: src/autotrips/models/vehicle_info.py:70
 msgid "Arrival date"
 msgstr "Дата прибытия контейнера"
 
-#: src/autotrips/models/vehicle_info.py:76
+#: src/autotrips/models/vehicle_info.py:71
 msgid "Transporter"
 msgstr "Перевозчик"
 
-#: src/autotrips/models/vehicle_info.py:77
+#: src/autotrips/models/vehicle_info.py:72
 msgid "Recipient"
 msgstr "Получатель"
 
-#: src/autotrips/models/vehicle_info.py:82
+#: src/autotrips/models/vehicle_info.py:77
 msgid "Transit method"
 msgstr "Метод транзита"
 
-#: src/autotrips/models/vehicle_info.py:85
+#: src/autotrips/models/vehicle_info.py:80
 msgid "Acceptance type"
 msgstr "Тип приёмки"
 
-#: src/autotrips/models/vehicle_info.py:87
+#: src/autotrips/models/vehicle_info.py:82
 msgid "Location"
 msgstr "Местоположение"
 
-#: src/autotrips/models/vehicle_info.py:88
+#: src/autotrips/models/vehicle_info.py:83
 msgid "Requested title"
 msgstr "Запросил тайтл"
 
-#: src/autotrips/models/vehicle_info.py:89
+#: src/autotrips/models/vehicle_info.py:84
 msgid "Notified parking"
 msgstr "Уведомил стоянку"
 
-#: src/autotrips/models/vehicle_info.py:90
+#: src/autotrips/models/vehicle_info.py:85
 msgid "Notified inspector"
 msgstr "Уведомил осмотр"
 
-#: src/autotrips/models/vehicle_info.py:91
+#: src/autotrips/models/vehicle_info.py:86
 msgid "Logistician comment"
 msgstr "Комментарий логиста"
 
-#: src/autotrips/models/vehicle_info.py:98
-#: src/autotrips/models/vehicle_info.py:206
+#: src/autotrips/models/vehicle_info.py:93
+#: src/autotrips/models/vehicle_info.py:201
 msgid "Vehicle transporter"
 msgstr "Автовоз"
 
-#: src/autotrips/models/vehicle_info.py:101
+#: src/autotrips/models/vehicle_info.py:96
 msgid "Logistician keys number"
 msgstr "Количество ключей у логиста"
 
-#: src/autotrips/models/vehicle_info.py:105
+#: src/autotrips/models/vehicle_info.py:100
 msgid "Opening date"
 msgstr "Дата открытия"
 
-#: src/autotrips/models/vehicle_info.py:106
+#: src/autotrips/models/vehicle_info.py:101
 msgid "Opened"
 msgstr "Открыто"
 
-#: src/autotrips/models/vehicle_info.py:107
+#: src/autotrips/models/vehicle_info.py:102
 msgid "Manager comment"
 msgstr "Комментарий менеджера"
 
-#: src/autotrips/models/vehicle_info.py:110
+#: src/autotrips/models/vehicle_info.py:105
 msgid "Pickup address"
 msgstr "Адрес забора"
 
-#: src/autotrips/models/vehicle_info.py:111
+#: src/autotrips/models/vehicle_info.py:106
 msgid "Took title"
 msgstr "Забрал тайтл"
 
-#: src/autotrips/models/vehicle_info.py:112
+#: src/autotrips/models/vehicle_info.py:107
 msgid "Title collection date"
 msgstr "Дата забора тайтла"
 
-#: src/autotrips/models/vehicle_info.py:115
+#: src/autotrips/models/vehicle_info.py:110
 msgid "Transit number"
 msgstr "Транзитный номер"
 
-#: src/autotrips/models/vehicle_info.py:117
+#: src/autotrips/models/vehicle_info.py:112
 msgid "Inspection done"
 msgstr "Осмотр проведён"
 
-#: src/autotrips/models/vehicle_info.py:119
+#: src/autotrips/models/vehicle_info.py:114
 msgid "Inspection date"
 msgstr "Дата осмотра"
 
-#: src/autotrips/models/vehicle_info.py:120
+#: src/autotrips/models/vehicle_info.py:115
 msgid "Number sent"
 msgstr "Номер отправлен"
 
-#: src/autotrips/models/vehicle_info.py:121
+#: src/autotrips/models/vehicle_info.py:116
 msgid "Number sent date"
 msgstr "Дата отправки номера"
 
-#: src/autotrips/models/vehicle_info.py:122
+#: src/autotrips/models/vehicle_info.py:117
 msgid "Inspection paid"
 msgstr "Оплата осмотра"
 
-#: src/autotrips/models/vehicle_info.py:123
+#: src/autotrips/models/vehicle_info.py:118
 msgid "Inspector comment"
 msgstr "Комментарий инспектора"
 
-#: src/autotrips/models/vehicle_info.py:126
+#: src/autotrips/models/vehicle_info.py:121
 msgid "Export"
 msgstr "Экспорт"
 
-#: src/autotrips/models/vehicle_info.py:127
+#: src/autotrips/models/vehicle_info.py:122
 msgid "Prepared documents"
 msgstr "Документы подготовлены"
 
-#: src/autotrips/models/vehicle_info.py:130
+#: src/autotrips/models/vehicle_info.py:125
 msgid "Vehicle arrival date"
 msgstr "Дата прибытия автомобиля"
 
-#: src/autotrips/models/vehicle_info.py:131
+#: src/autotrips/models/vehicle_info.py:126
 msgid "Receive vehicle"
 msgstr "Автомобиль получен"
 
-#: src/autotrips/models/vehicle_info.py:132
+#: src/autotrips/models/vehicle_info.py:127
 msgid "Receive documents"
 msgstr "Документы получены"
 
-#: src/autotrips/models/vehicle_info.py:133
+#: src/autotrips/models/vehicle_info.py:128
 msgid "Full acceptance"
 msgstr "Полное принятие"
 
-#: src/autotrips/models/vehicle_info.py:135
+#: src/autotrips/models/vehicle_info.py:130
 msgid "Receiver keys number"
 msgstr "Количество ключей у приёмщика"
 
-#: src/autotrips/models/vehicle_info.py:139
+#: src/autotrips/models/vehicle_info.py:134
 msgid "Approved by logistician"
 msgstr "Одобрено логистом"
 
-#: src/autotrips/models/vehicle_info.py:140
+#: src/autotrips/models/vehicle_info.py:135
 msgid "Approved by manager"
 msgstr "Одобрено менеджером"
 
-#: src/autotrips/models/vehicle_info.py:141
+#: src/autotrips/models/vehicle_info.py:136
 msgid "Approved by inspector"
 msgstr "Одобрено осмотром"
 
-#: src/autotrips/models/vehicle_info.py:142
+#: src/autotrips/models/vehicle_info.py:137
 msgid "Approved by title"
 msgstr "Одобрено тайтлом"
 
-#: src/autotrips/models/vehicle_info.py:143
+#: src/autotrips/models/vehicle_info.py:138
 msgid "Approved by re-export"
 msgstr "Одобрено реэкспортом"
 
-#: src/autotrips/models/vehicle_info.py:144
+#: src/autotrips/models/vehicle_info.py:139
 msgid "Approved by receiver"
 msgstr "Одобрено приёмщиком"
 
-#: src/autotrips/models/vehicle_info.py:145
+#: src/autotrips/models/vehicle_info.py:140
 msgid "Ready for receiver"
 msgstr "Готово для приёмщика"
 
-#: src/autotrips/models/vehicle_info.py:147
+#: src/autotrips/models/vehicle_info.py:142
 msgid "Status changed"
 msgstr "Статус изменён"
 
-#: src/autotrips/models/vehicle_info.py:148
+#: src/autotrips/models/vehicle_info.py:143
 msgid "Creation time"
 msgstr "Время создания"
 
-#: src/autotrips/models/vehicle_info.py:153
+#: src/autotrips/models/vehicle_info.py:148
 msgid "Vehicle info"
 msgstr "Информация об автомобиле"
 
-#: src/autotrips/models/vehicle_info.py:154
+#: src/autotrips/models/vehicle_info.py:149
 msgid "Vehicle infos"
 msgstr "Информация об автомобилях"
 
-#: src/autotrips/models/vehicle_info.py:203
+#: src/autotrips/models/vehicle_info.py:198
 msgid "Number"
 msgstr "Номер"
 
-#: src/autotrips/models/vehicle_info.py:207
+#: src/autotrips/models/vehicle_info.py:202
 msgid "Vehicle transporters"
 msgstr "Автовозы"
 

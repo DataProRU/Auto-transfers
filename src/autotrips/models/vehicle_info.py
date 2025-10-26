@@ -64,10 +64,7 @@ class VehicleInfo(models.Model):
         blank=False,
         verbose_name=_("Vehicle type"),
     )
-    vin = models.CharField(
-        _("VIN"),
-        unique=True,
-    )
+    vin = models.CharField(_("VIN"), unique=True, null=False, blank=False)
     price = models.DecimalField(_("Price"), max_digits=12, decimal_places=2, default=0, null=False, blank=False)
     container_number = models.CharField(_("Container number"), max_length=100, null=False, blank=False)
     arrival_date = models.DateField(_("Arrival date"), null=False, blank=False)
