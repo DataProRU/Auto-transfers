@@ -1,8 +1,7 @@
-import re
 from typing import Any, cast
 
 from django.contrib.auth import get_user_model
-from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -65,11 +64,7 @@ class VehicleInfo(models.Model):
         blank=False,
         verbose_name=_("Vehicle type"),
     )
-    vin = models.CharField(
-        _("VIN"),
-        unique=True,
-        validators=[RegexValidator(regex=re.compile(r"^[A-HJ-NPR-Z0-9]{17}$"), message="Invalid vin format.")],
-    )
+    vin = models.CharField(_("VIN"), unique=True, null=False, blank=False)
     price = models.DecimalField(_("Price"), max_digits=12, decimal_places=2, default=0, null=False, blank=False)
     container_number = models.CharField(_("Container number"), max_length=100, null=False, blank=False)
     arrival_date = models.DateField(_("Arrival date"), null=False, blank=False)
