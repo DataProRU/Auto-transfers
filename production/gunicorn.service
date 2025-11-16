@@ -10,8 +10,8 @@ Environment="PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr
 ExecStart=/root/.local/bin/poetry run gunicorn project.wsgi:application --config production/gunicorn_conf.py
 Restart=always
 RestartSec=3
-StandardOutput=file:/root/Auto-transfers/gunicorn.log
-StandardError=file:/root/Auto-transfers/gunicorn.error.log
+StandardOutput=append:/root/Auto-transfers/gunicorn.access.log
+StandardError=append:/root/Auto-transfers/gunicorn.error.log
 
 [Install]
 WantedBy=multi-user.target

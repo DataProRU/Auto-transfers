@@ -10,7 +10,3 @@ accesslog = "/root/Auto-transfers/gunicorn.access.log"
 errorlog = "/root/Auto-transfers/gunicorn.error.log"
 loglevel = "info"
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s" %(D)s'
-
-capture_output = True
-enable_stdio_inheritance = True
-
