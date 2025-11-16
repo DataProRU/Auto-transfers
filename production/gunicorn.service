@@ -7,7 +7,7 @@ User=root
 Group=www-data
 WorkingDirectory=/root/Auto-transfers
 Environment="PATH=/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/root/.local/bin/poetry run gunicorn project.wsgi:application --bind 127.0.0.1:8000
+ExecStart=/root/.local/bin/poetry run gunicorn project.wsgi:application --config production/gunicorn_conf.py
 Restart=always
 RestartSec=3
 StandardOutput=file:/root/Auto-transfers/gunicorn.log
