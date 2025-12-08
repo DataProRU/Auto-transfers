@@ -113,7 +113,7 @@ class BaseVehicleBidSerializer(serializers.ModelSerializer):
     client = ClientSerializer(read_only=True)
     v_type = VehicleTypeSerializer(read_only=True)
 
-    always_read_only_fields = ["id", "vin", "brand", "model", "client"]
+    always_read_only_fields = ["id", "vin", "year_brand_model", "client"]
 
     read_only_fields: list[str] = []
     required_fields: list[str] = []

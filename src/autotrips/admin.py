@@ -111,7 +111,7 @@ class VehicleInfoAdmin(admin.ModelAdmin):
         ("creation_time", admin.DateFieldListFilter),
         ("status_changed", admin.DateFieldListFilter),
     )
-    search_fields = ("brand", "model", "vin", "client__full_name", "client__phone")
+    search_fields = ("year_brand_model", "vin", "client__full_name", "client__phone")
     raw_id_fields = ("client",)
     date_hierarchy = "arrival_date"
     ordering = ("-arrival_date", "-creation_time")
@@ -188,10 +188,10 @@ class VehicleInfoAdmin(admin.ModelAdmin):
     )
 
     def brand_model_type(self, obj: models.Model) -> str:
-        return f"{obj.brand} {obj.model} ({obj.v_type})"
+        return f"{obj.year_brand_model} ({obj.v_type})"
 
     brand_model_type.short_description = _("Vehicle")  # type: ignore[attr-defined]
-    brand_model_type.admin_order_field = "brand"  # type: ignore[attr-defined]
+    brand_model_type.admin_order_field = "year_brand_model"  # type: ignore[attr-defined]
 
     def client_link(self, obj: models.Model) -> Any:  # noqa: ANN401
         url = reverse("admin:accounts_user_change", args=[obj.client.id])

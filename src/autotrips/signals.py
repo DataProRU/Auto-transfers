@@ -26,7 +26,7 @@ class PostReportSaveSignalReciever:
         reporter = report.reporter
         vehicle = report.vehicle
 
-        vehicle_model = f"{vehicle.brand} {vehicle.model}"
+        vehicle_model = vehicle.year_brand_model
         car_photos = f"{self.URL}reports/{report.id}/car-photos"
         key_photos = f"{self.URL}reports/{report.id}/key-photos"
         doc_photos = f"{self.URL}reports/{report.id}/doc-photos"

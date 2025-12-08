@@ -15,8 +15,7 @@ class Command(BaseCommand):
 
     EXCEL_COLUMNS = {
         "client_phone": "Номер телефона клиента",
-        "brand": "Марка",
-        "model": "Модель",
+        "year_brand_model": "Год Марка Модель",
         "v_type": "Тип ТС",
         "vin": "VIN номер",
         "price": "Цена",
@@ -77,8 +76,7 @@ class Command(BaseCommand):
 
                         vehicle_data = {
                             "client": client,
-                            "brand": str(row[self.EXCEL_COLUMNS["brand"]]).strip(),
-                            "model": str(row[self.EXCEL_COLUMNS["model"]]).strip(),
+                            "year_brand_model": str(row[self.EXCEL_COLUMNS["year_brand_model"]]).strip(),
                             "v_type": v_type,
                             "vin": str(row[self.EXCEL_COLUMNS["vin"]]).strip(),
                             "price": float(row[self.EXCEL_COLUMNS["price"]])
@@ -95,7 +93,7 @@ class Command(BaseCommand):
                         success_count += 1
 
                         self.stdout.write(
-                            f"Row {index + 1}: Created vehicle {vehicle.brand} {vehicle.model} (VIN: {vehicle.vin})"
+                            f"Row {index + 1}: Created vehicle {vehicle.year_brand_model} (VIN: {vehicle.vin})"
                         )
 
                 except Exception as e:  # noqa: BLE001

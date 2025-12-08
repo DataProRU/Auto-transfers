@@ -41,8 +41,7 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "client",
-            "brand",
-            "model",
+            "year_brand_model",
             "v_type",
             "vin",
             "container_number",

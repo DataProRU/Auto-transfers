@@ -197,8 +197,8 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
     )
     @action(methods=["GET"], detail=False, url_path="cars", url_name="get_cars")
     def get_vins(self, request: Request) -> Response:
-        vehicles = VehicleInfo.objects.values("vin", "brand", "model").all()
-        vins_mapping = {vehicle["vin"]: f"{vehicle['brand']} {vehicle['model']}" for vehicle in vehicles}
+        vehicles = VehicleInfo.objects.values("vin", "year_brand_model").all()
+        vins_mapping = {vehicle["vin"]: vehicle["year_brand_model"] for vehicle in vehicles}
 
         return Response({"vins": vins_mapping})
 

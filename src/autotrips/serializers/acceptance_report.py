@@ -124,5 +124,5 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
     def to_representation(self, instance: AcceptenceReport) -> Any:  # noqa: ANN401
         data = super().to_representation(instance)
         data["vin"] = instance.vehicle.vin
-        data["model"] = f"{instance.vehicle.brand} {instance.vehicle.model}"
+        data["model"] = instance.vehicle.year_brand_model
         return data

@@ -38,7 +38,7 @@ class AcceptenceReport(models.Model):
         verbose_name_plural = _("Acceptance reports")
 
     def __str__(self) -> str:
-        return f"{self.reporter.full_name}_{self.vehicle.brand}_{self.vehicle.model}_{self.acceptance_date}"
+        return f"{self.reporter.full_name}_{self.vehicle.year_brand_model}_{self.acceptance_date}"
 
     def save(self, *args: tuple[Any], **kwargs: dict[str, Any]) -> None:
         if not self.pk:
@@ -61,7 +61,7 @@ class CarPhoto(models.Model):
         verbose_name_plural = _("Car photos")
 
     def __str__(self) -> str:
-        return f"{self.report.vehicle.brand}_{self.report.vehicle.model}_car_{self.created}"
+        return f"{self.report.vehicle.year_brand_model}_car_{self.created}"
 
 
 class KeyPhoto(models.Model):
@@ -76,7 +76,7 @@ class KeyPhoto(models.Model):
         verbose_name_plural = _("Key photos")
 
     def __str__(self) -> str:
-        return f"{self.report.vehicle.brand}_{self.report.vehicle.model}_key_{self.created}"
+        return f"{self.report.vehicle.year_brand_model}_key_{self.created}"
 
 
 class DocumentPhoto(models.Model):
@@ -91,4 +91,4 @@ class DocumentPhoto(models.Model):
         verbose_name_plural = _("Vehicle document photos")
 
     def __str__(self) -> str:
-        return f"{self.report.vehicle.brand}_{self.report.vehicle.model}_document_{self.created}"
+        return f"{self.report.vehicle.year_brand_model}_document_{self.created}"
