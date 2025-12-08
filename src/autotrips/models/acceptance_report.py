@@ -26,8 +26,8 @@ class AcceptenceReport(models.Model):
         blank=False,
         verbose_name=_("Vehicle"),
     )
-    place = models.CharField(_("Place"), max_length=100, null=False, blank=False)
-    comment = models.CharField(_("Comment"), max_length=255, null=False, blank=False)
+    place = models.CharField(_("Place"), max_length=100, blank=True, default="")
+    comment = models.CharField(_("Comment"), max_length=255, blank=True, default="")
     report_number = models.IntegerField(_("Report number"), null=False, blank=False, default=1)
     report_time = models.DateTimeField(_("Report time"), default=timezone.now)
     acceptance_date = models.DateField(_("Acceptance date"), default=timezone.localdate)
