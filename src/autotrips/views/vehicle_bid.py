@@ -591,8 +591,7 @@ RECEIVER_GROUPS = {
                         value={
                             "id": 3,
                             "vin": "3HGCM82633A004354",
-                            "brand": "BMW",
-                            "model": "X5",
+                            "year_brand_model": "2022 BMW X5",
                             "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
                             "transit_method": "re_export",
                             "pickup_address": "456 Elm St",
@@ -624,8 +623,7 @@ RECEIVER_GROUPS = {
                         value={
                             "id": 10,
                             "vin": "5HGCM82633A004360",
-                            "brand": "Mercedes",
-                            "model": "C-Class",
+                            "year_brand_model": "2023 Mercedes C-Class",
                             "client": {"id": 6, "full_name": "Eva White", "email": "eva@example.com"},
                             "transit_method": "re_export",
                             "export": False,
@@ -780,8 +778,7 @@ RECEIVER_GROUPS = {
                         value={
                             "id": 3,
                             "vin": "3HGCM82633A004354",
-                            "brand": "BMW",
-                            "model": "X5",
+                            "year_brand_model": "2022 BMW X5",
                             "client": {"id": 4, "full_name": "Alice Brown", "email": "alice@example.com"},
                             "container_number": "CONT9876543",
                             "arrival_date": "2024-06-05",
@@ -811,8 +808,7 @@ RECEIVER_GROUPS = {
                         value={
                             "id": 3,
                             "vin": "3HGCM82633A004354",
-                            "brand": "BMW",
-                            "model": "X5",
+                            "year_brand_model": "2022 BMW X5",
                             "client": {"id": 2, "full_name": "John Doe", "email": "john@example.com"},
                             "transit_method": "re_export",
                             "location": "Warehouse 3",
@@ -831,8 +827,7 @@ RECEIVER_GROUPS = {
                         value={
                             "id": 10,
                             "vin": "5HGCM82633A004360",
-                            "brand": "Mercedes",
-                            "model": "C-Class",
+                            "year_brand_model": "2023 Mercedes C-Class",
                             "client": {"id": 6, "full_name": "Eva White", "email": "eva@example.com"},
                             "transit_method": "re_export",
                             "export": True,

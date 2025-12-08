@@ -6,7 +6,6 @@ from rest_framework.validators import UniqueValidator
 
 from accounts.serializers.user import ClientSerializer
 from autotrips.models.vehicle_info import VehicleInfo, VehicleType
-from autotrips.validators import CustomRegexValidator
 
 User = get_user_model()
 
@@ -33,8 +32,10 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
     client = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.filter(role=User.Roles.CLIENT), write_only=False, required=True
     )
-    v_type = serializers.PrimaryKeyRelatedField(queryset=VehicleType.objects.all(), write_only=False, required=True)
-    price = serializers.DecimalField(max_digits=12, decimal_places=2, required=True)
+    v_type = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleType.objects.all(), write_only=False, required=False, allow_null=True
+    )
+    price = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True)
 
     class Meta:
         model = VehicleInfo
@@ -63,9 +64,6 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
             "arrival_date": {"error_messages": {"invalid": "Enter a valid date in YYYY-MM-DD format."}},
             "vin": {
                 "validators": [
-                    CustomRegexValidator(
-                        regex=r"^[A-HJ-NPR-Z0-9]{17}$", message="Invalid VIN format.", error_type="vin_invalid"
-                    ),
                     UniqueValidator(
                         queryset=VehicleInfo.objects.all(),
                         message={"message": "Vehicle with this VIN already exists.", "error_type": "vin_exists"},
@@ -83,7 +81,7 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
     def to_representation(self, instance: VehicleInfo) -> Any:  # noqa: ANN401
         representation = super().to_representation(instance)
         representation["client"] = ClientSerializer(instance.client).data
-        representation["v_type"] = VehicleTypeSerializer(instance.v_type).data
+        representation["v_type"] = VehicleTypeSerializer(instance.v_type).data if instance.v_type else None
         return representation
 
 

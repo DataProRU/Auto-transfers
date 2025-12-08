@@ -24,7 +24,7 @@ class AcceptenceReportAdmin(admin.ModelAdmin):
         "acceptance_date",
     )
     list_filter = ("status", "reporter", "acceptance_date")
-    search_fields = ("vehicle__vin", "vehicle__model")
+    search_fields = ("vehicle__vin", "vehicle__year_brand_model")
     readonly_fields = ("report_number", "report_time", "acceptance_date")
 
     def vehicle_vin(self, obj: AcceptenceReport) -> str:
@@ -35,10 +35,10 @@ class AcceptenceReportAdmin(admin.ModelAdmin):
     vehicle_vin.admin_order_field = "vehicle__vin"  # type: ignore[attr-defined]
 
     def vehicle_model(self, obj: AcceptenceReport) -> str:
-        return f"{obj.vehicle.brand} {obj.vehicle.model}"
+        return str(obj.vehicle.year_brand_model)
 
     vehicle_model.short_description = _("Model")  # type: ignore[attr-defined]
-    vehicle_model.admin_order_field = "vehicle__model"  # type: ignore[attr-defined]
+    vehicle_model.admin_order_field = "vehicle__year_brand_model"  # type: ignore[attr-defined]
 
 
 @admin.register(CarPhoto)
@@ -121,8 +121,7 @@ class VehicleInfoAdmin(admin.ModelAdmin):
             _("Vehicle Information"),
             {
                 "fields": (
-                    "brand",
-                    "model",
+                    "year_brand_model",
                     "v_type",
                     "vin",
                 )
