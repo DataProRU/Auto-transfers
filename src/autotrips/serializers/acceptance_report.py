@@ -127,3 +127,54 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
         data["vin"] = instance.vehicle.vin
         data["year_brand_model"] = instance.vehicle.year_brand_model
         return data
+
+
+class AcceptanceReportPartialUpdateSerializer(serializers.Serializer):
+    uploaded_car_photos = serializers.ListField(
+        child=HEIFImageField(
+            allow_empty_file=False,
+            use_url=False,
+            validators=[
+                FileMaxSizeValidator(settings.MAX_UPLOAD_SIZE),
+            ],
+        ),
+        write_only=True,
+        required=False,
+    )
+    uploaded_key_photos = serializers.ListField(
+        child=HEIFImageField(
+            allow_empty_file=False,
+            use_url=False,
+            validators=[
+                FileMaxSizeValidator(settings.MAX_UPLOAD_SIZE),
+            ],
+        ),
+        write_only=True,
+        required=False,
+    )
+    uploaded_document_photos = serializers.ListField(
+        child=HEIFImageField(
+            allow_empty_file=False,
+            use_url=False,
+            validators=[
+                FileMaxSizeValidator(settings.MAX_UPLOAD_SIZE),
+            ],
+        ),
+        write_only=True,
+        required=False,
+    )
+
+    def update(self, instance: AcceptenceReport, validated_data: dict[str, Any]) -> AcceptenceReport:
+        car_photos = validated_data.pop("uploaded_car_photos", [])
+        for car_photo in car_photos:
+            CarPhoto.objects.create(report=instance, image=car_photo)
+
+        key_photos = validated_data.pop("uploaded_key_photos", [])
+        for key_photo in key_photos:
+            KeyPhoto.objects.create(report=instance, image=key_photo)
+
+        doc_photos = validated_data.pop("uploaded_document_photos", [])
+        for doc_photo in doc_photos:
+            DocumentPhoto.objects.create(report=instance, image=doc_photo)
+
+        return instance
