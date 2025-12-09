@@ -94,7 +94,7 @@ class VehicleTypeAdmin(admin.ModelAdmin):
 @admin.register(VehicleInfo)
 class VehicleInfoAdmin(admin.ModelAdmin):
     list_display = (
-        "brand_model_type",
+        "brand_model",
         "client_link",
         "vin",
         "arrival_date",
@@ -186,11 +186,11 @@ class VehicleInfoAdmin(admin.ModelAdmin):
         (_("System Information"), {"fields": ("creation_time",), "classes": ("collapse",)}),
     )
 
-    def brand_model_type(self, obj: models.Model) -> str:
-        return f"{obj.year_brand_model} ({obj.v_type})"
+    def brand_model(self, obj: models.Model) -> str:
+        return f"{obj.year_brand_model}"
 
-    brand_model_type.short_description = _("Vehicle")  # type: ignore[attr-defined]
-    brand_model_type.admin_order_field = "year_brand_model"  # type: ignore[attr-defined]
+    brand_model.short_description = _("Vehicle")  # type: ignore[attr-defined]
+    brand_model.admin_order_field = "year_brand_model"  # type: ignore[attr-defined]
 
     def client_link(self, obj: models.Model) -> Any:  # noqa: ANN401
         url = reverse("admin:accounts_user_change", args=[obj.client.id])
