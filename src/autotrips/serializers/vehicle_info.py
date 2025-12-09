@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from django.utils.translation import gettext_lazy as _
 
 from accounts.serializers.custom_image import HEIFImageField
 from accounts.serializers.user import ClientSerializer
