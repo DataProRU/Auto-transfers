@@ -3,7 +3,6 @@ from typing import Any
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
-from django.utils.translation import gettext_lazy as _
 
 from accounts.serializers.user import ClientSerializer
 from autotrips.models.vehicle_info import VehicleInfo, VehicleTransporter
