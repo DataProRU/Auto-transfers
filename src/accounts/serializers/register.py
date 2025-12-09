@@ -88,7 +88,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data: dict[str, Any]) -> User:
-        uploaded_images = validated_data.pop("uploaded_images")
+        uploaded_images = validated_data.pop("uploaded_images", [])
         password = validated_data.pop("password")
         user = User(**validated_data)
         user.set_password(password)

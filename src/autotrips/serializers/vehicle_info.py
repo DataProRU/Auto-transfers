@@ -3,6 +3,7 @@ from typing import Any
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from django.utils.translation import gettext_lazy as _
 
 from accounts.serializers.user import ClientSerializer
 from autotrips.models.vehicle_info import VehicleInfo, VehicleType
@@ -16,10 +17,10 @@ class VehicleInfoListSerializer(serializers.ListSerializer):
         vehicles_idxs = {vehicle.client_id for vehicle in vehicles}
         vehicles_vins = {vehicle.vin for vehicle in vehicles}
         if len(vehicles_idxs) > 1:
-            raise serializers.ValidationError({"non_field_error": "Can create multiply vehicles only for one client."})
+            raise serializers.ValidationError({"non_field_error": _("Can create multiply vehicles only for one client.")})
         if len(vehicles_vins) < len(vehicles):
             raise serializers.ValidationError(
-                {"vins_error": "It is not possible to create multiple vehicles with the same VINs."}
+                {"vins_error": _("It is not possible to create multiple vehicles with the same VINs.")}
             )
 
         return VehicleInfo.objects.bulk_create(vehicles)  # type: ignore[no-any-return]
@@ -61,12 +62,12 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
             "creation_time",
         ]
         extra_kwargs = {
-            "arrival_date": {"error_messages": {"invalid": "Enter a valid date in YYYY-MM-DD format."}},
+            "arrival_date": {"error_messages": {"invalid": _("Enter a valid date in YYYY-MM-DD format.")}},
             "vin": {
                 "validators": [
                     UniqueValidator(
                         queryset=VehicleInfo.objects.all(),
-                        message={"message": "Vehicle with this VIN already exists.", "error_type": "vin_exists"},
+                        message={"message": _("Vehicle with this VIN already exists."), "error_type": "vin_exists"},
                     ),
                 ]
             },

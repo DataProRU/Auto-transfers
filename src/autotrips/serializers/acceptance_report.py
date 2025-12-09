@@ -3,7 +3,7 @@ from typing import Any
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-
+from django.utils.translation import gettext_lazy as _
 from accounts.serializers.custom_image import HEIFImageField
 from accounts.validators import FileMaxSizeValidator
 from autotrips.models.acceptance_report import AcceptenceReport, CarPhoto, DocumentPhoto, KeyPhoto
@@ -106,7 +106,7 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
         try:
             vehicle = VehicleInfo.objects.get(vin=vin)
         except VehicleInfo.DoesNotExist as err:
-            raise serializers.ValidationError({"vin": "Vehicle with this VIN does not exist."}) from err
+            raise serializers.ValidationError({"vin": _("Vehicle with this VIN does not exist.")}) from err
 
         report = AcceptenceReport.objects.create(vehicle=vehicle, **validated_data)
 
