@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from django.utils.translation import gettext_lazy as _
 
 from accounts.serializers.user import ClientSerializer
 from autotrips.models.vehicle_info import VehicleInfo, VehicleType
