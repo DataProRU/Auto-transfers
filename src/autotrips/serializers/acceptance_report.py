@@ -2,6 +2,7 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from accounts.serializers.custom_image import HEIFImageField
@@ -106,7 +107,7 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
         try:
             vehicle = VehicleInfo.objects.get(vin=vin)
         except VehicleInfo.DoesNotExist as err:
-            raise serializers.ValidationError({"vin": "Vehicle with this VIN does not exist."}) from err
+            raise serializers.ValidationError({"vin": _("Vehicle with this VIN does not exist.")}) from err
 
         report = AcceptenceReport.objects.create(vehicle=vehicle, **validated_data)
 
@@ -124,5 +125,5 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
     def to_representation(self, instance: AcceptenceReport) -> Any:  # noqa: ANN401
         data = super().to_representation(instance)
         data["vin"] = instance.vehicle.vin
-        data["model"] = f"{instance.vehicle.brand} {instance.vehicle.model}"
+        data["year_brand_model"] = instance.vehicle.year_brand_model
         return data

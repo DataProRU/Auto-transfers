@@ -24,7 +24,7 @@ class AcceptenceReportAdmin(admin.ModelAdmin):
         "acceptance_date",
     )
     list_filter = ("status", "reporter", "acceptance_date")
-    search_fields = ("vehicle__vin", "vehicle__model")
+    search_fields = ("vehicle__vin", "vehicle__year_brand_model")
     readonly_fields = ("report_number", "report_time", "acceptance_date")
 
     def vehicle_vin(self, obj: AcceptenceReport) -> str:
@@ -35,10 +35,10 @@ class AcceptenceReportAdmin(admin.ModelAdmin):
     vehicle_vin.admin_order_field = "vehicle__vin"  # type: ignore[attr-defined]
 
     def vehicle_model(self, obj: AcceptenceReport) -> str:
-        return f"{obj.vehicle.brand} {obj.vehicle.model}"
+        return str(obj.vehicle.year_brand_model)
 
     vehicle_model.short_description = _("Model")  # type: ignore[attr-defined]
-    vehicle_model.admin_order_field = "vehicle__model"  # type: ignore[attr-defined]
+    vehicle_model.admin_order_field = "vehicle__year_brand_model"  # type: ignore[attr-defined]
 
 
 @admin.register(CarPhoto)
@@ -94,7 +94,7 @@ class VehicleTypeAdmin(admin.ModelAdmin):
 @admin.register(VehicleInfo)
 class VehicleInfoAdmin(admin.ModelAdmin):
     list_display = (
-        "brand_model_type",
+        "brand_model",
         "client_link",
         "vin",
         "arrival_date",
@@ -111,7 +111,7 @@ class VehicleInfoAdmin(admin.ModelAdmin):
         ("creation_time", admin.DateFieldListFilter),
         ("status_changed", admin.DateFieldListFilter),
     )
-    search_fields = ("brand", "model", "vin", "client__full_name", "client__phone")
+    search_fields = ("year_brand_model", "vin", "client__full_name", "client__phone")
     raw_id_fields = ("client",)
     date_hierarchy = "arrival_date"
     ordering = ("-arrival_date", "-creation_time")
@@ -121,8 +121,7 @@ class VehicleInfoAdmin(admin.ModelAdmin):
             _("Vehicle Information"),
             {
                 "fields": (
-                    "brand",
-                    "model",
+                    "year_brand_model",
                     "v_type",
                     "vin",
                 )
@@ -187,11 +186,11 @@ class VehicleInfoAdmin(admin.ModelAdmin):
         (_("System Information"), {"fields": ("creation_time",), "classes": ("collapse",)}),
     )
 
-    def brand_model_type(self, obj: models.Model) -> str:
-        return f"{obj.brand} {obj.model} ({obj.v_type})"
+    def brand_model(self, obj: models.Model) -> str:
+        return f"{obj.year_brand_model}"
 
-    brand_model_type.short_description = _("Vehicle")  # type: ignore[attr-defined]
-    brand_model_type.admin_order_field = "brand"  # type: ignore[attr-defined]
+    brand_model.short_description = _("Vehicle")  # type: ignore[attr-defined]
+    brand_model.admin_order_field = "year_brand_model"  # type: ignore[attr-defined]
 
     def client_link(self, obj: models.Model) -> Any:  # noqa: ANN401
         url = reverse("admin:accounts_user_change", args=[obj.client.id])

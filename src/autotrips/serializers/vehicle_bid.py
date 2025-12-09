@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
 
@@ -113,7 +114,7 @@ class BaseVehicleBidSerializer(serializers.ModelSerializer):
     client = ClientSerializer(read_only=True)
     v_type = VehicleTypeSerializer(read_only=True)
 
-    always_read_only_fields = ["id", "vin", "brand", "model", "client"]
+    always_read_only_fields = ["id", "vin", "year_brand_model", "client"]
 
     read_only_fields: list[str] = []
     required_fields: list[str] = []
@@ -187,7 +188,7 @@ class LogisticianInitialVehicleBidSerializer(BaseVehicleBidSerializer):
         transit_method = attrs.get("transit_method")
         if transit_method == VehicleInfo.TransitMethod.WITHOUT_OPENNING and not acceptance_type:
             raise serializers.ValidationError(
-                {"acceptance_type": "Required if 'transit_method' is 'without_openning'."}
+                {"acceptance_type": _("Required if 'transit_method' is 'without_openning'.")}
             )
 
         requested_title = attrs.get("requested_title")
@@ -196,7 +197,9 @@ class LogisticianInitialVehicleBidSerializer(BaseVehicleBidSerializer):
             and acceptance_type == VehicleInfo.AcceptanceType.WITH_RE_EXPORT
             and not requested_title
         ):
-            raise serializers.ValidationError({"requested_title": "Required if 'acceptance_type' is 'with_re_export'."})
+            raise serializers.ValidationError(
+                {"requested_title": _("Required if 'acceptance_type' is 'with_re_export'.")}
+            )
 
         return super().validate(attrs)
 
@@ -212,7 +215,7 @@ class LogisticianInitialVehicleBidSerializer(BaseVehicleBidSerializer):
             and not requested_title
         ):
             raise serializers.ValidationError(
-                {"requested_title": "Required if 'transit_method' is 't1' or 're_export' and container was opened."}
+                {"requested_title": _("Required if 'transit_method' is 't1' or 're_export' and container was opened.")}
             )
         return super().update(instance, validated_data)
 
@@ -241,7 +244,7 @@ class LogisticianLoadingVehicleBidSerializer(BaseVehicleBidSerializer):
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
         if instance.logistician_keys_number and instance.vehicle_transporter and instance.approved_by_receiver:
             raise serializers.ValidationError(
-                {"detail": "Cannot update a bid that has already been completed (approved by receiver)."}
+                {"detail": _("Cannot update a bid that has already been completed (approved by receiver).")}
             )
 
         if (instance.logistician_keys_number or validated_data.get("logistician_keys_number")) and (
@@ -288,7 +291,7 @@ class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
         title_collection_date = attrs.get("title_collection_date")
         if took_title in {VehicleInfo.TookTitle.YES, VehicleInfo.TookTitle.CONSIGNMENT} and not title_collection_date:
             raise serializers.ValidationError(
-                {"title_collection_date": "Required if 'took_title' in the request body."}
+                {"title_collection_date": _("Required if 'took_title' in the request body.")}
             )
 
         return super().validate(attrs)
@@ -296,7 +299,7 @@ class TitleVehicleBidSerializer(BaseVehicleBidSerializer):
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
         if instance.title_collection_date:
             raise serializers.ValidationError(
-                {"detail": "Cannot update a bid that has already been completed (title collected)."}
+                {"detail": _("Cannot update a bid that has already been completed (title collected).")}
             )
 
         title_collection_date = validated_data.get("title_collection_date")
@@ -323,12 +326,12 @@ class InspectorVehicleBidSerializer(BaseVehicleBidSerializer):
         inspection_done = attrs.get("inspection_done")
         inspection_date = attrs.get("inspection_date")
         if inspection_done == VehicleInfo.InspectionDone.YES and not inspection_date:
-            raise serializers.ValidationError({"inspection_date": "Required if 'inspection_done' is 'yes'."})
+            raise serializers.ValidationError({"inspection_date": _("Required if 'inspection_done' is 'yes'.")})
 
         number_sent = attrs.get("number_sent")
         number_sent_date = attrs.get("number_sent_date")
         if number_sent and not number_sent_date:
-            raise serializers.ValidationError({"number_sent_date": "Required if 'number_sent' is true."})
+            raise serializers.ValidationError({"number_sent_date": _("Required if 'number_sent' is true.")})
 
         return super().validate(attrs)
 
@@ -357,12 +360,12 @@ class ReExportVehicleBidSerializer(BaseVehicleBidSerializer):
         export = attrs.get("export")
         prepared_documents = attrs.get("prepared_documents")
         if export and not prepared_documents:
-            raise serializers.ValidationError({"prepared_documents": "Cannot export without prepared documents."})
+            raise serializers.ValidationError({"prepared_documents": _("Cannot export without prepared documents.")})
         return super().validate(attrs)
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
         if instance.export:
-            raise serializers.ValidationError({"detail": "Cannot update a vehicle that has already been exported."})
+            raise serializers.ValidationError({"detail": _("Cannot update a vehicle that has already been exported.")})
 
         export = validated_data.get("export")
         if export and not instance.export:
@@ -385,7 +388,7 @@ class ReceiverVehicleBidSerializer(BaseVehicleBidSerializer):
 
     def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
         if instance.full_acceptance:
-            raise serializers.ValidationError({"detail": "Cannot update a vehicle that has already been accepted."})
+            raise serializers.ValidationError({"detail": _("Cannot update a vehicle that has already been accepted.")})
 
         if self._should_set_full_acceptance(instance, validated_data):
             validated_data["full_acceptance"] = True

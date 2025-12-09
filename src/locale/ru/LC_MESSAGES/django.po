@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-26 11:46+0300\n"
+"POT-Creation-Date: 2025-12-09 11:07+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,7 +49,7 @@ msgstr "Администратор"
 msgid "Manager"
 msgstr "Менеджер"
 
-#: src/accounts/models/user.py:15 src/autotrips/admin.py:200
+#: src/accounts/models/user.py:15 src/autotrips/admin.py:199
 #: src/autotrips/models/vehicle_info.py:55
 msgid "Client"
 msgstr "Клиент"
@@ -147,7 +147,7 @@ msgid "Documents photos"
 msgstr "Фото документов"
 
 #: src/accounts/serializers/register.py:27
-#: src/accounts/serializers/register.py:114
+#: src/accounts/serializers/register.py:115
 msgid ""
 "Password must contain at least one uppercase letter, one lowercase letter, "
 "one digit, and one special character."
@@ -156,7 +156,7 @@ msgstr ""
 "букву, одну цифру и один специальный символ."
 
 #: src/accounts/serializers/register.py:39
-#: src/accounts/serializers/register.py:125
+#: src/accounts/serializers/register.py:126
 msgid "Number should be in format: '+79991234567'."
 msgstr "Номер должен быть в формате: '+79991234567'."
 
@@ -164,8 +164,8 @@ msgstr "Номер должен быть в формате: '+79991234567'."
 msgid "User with this phone already exists."
 msgstr "Пользователь с таким номером телефона уже существует."
 
-#: src/accounts/serializers/register.py:66
-#: src/accounts/serializers/register.py:140
+#: src/accounts/serializers/register.py:67
+#: src/accounts/serializers/register.py:141
 msgid ""
 "Telegram username must be 5-32 characters long, contain only letters, "
 "numbers and underscores."
@@ -173,29 +173,29 @@ msgstr ""
 "Имя пользователя в телеграм должно быть длиной от 5 до 32 символов и "
 "содержать только буквы, цифры и символы подчеркивания."
 
-#: src/accounts/serializers/register.py:72
+#: src/accounts/serializers/register.py:73
 msgid "User with this telegram already exists."
 msgstr "Пользователь с таким именем в телеграм уже существует."
 
-#: src/accounts/serializers/register.py:130
+#: src/accounts/serializers/register.py:131
 msgid "Client with this phone already exists."
 msgstr "Клиент с таким номером телефона уже существует."
 
-#: src/accounts/serializers/register.py:146
+#: src/accounts/serializers/register.py:147
 msgid "Client with this telegram already exists."
 msgstr "Клиент с таким именем в телеграм уже существует."
 
-#: src/accounts/serializers/register.py:156
+#: src/accounts/serializers/register.py:157
 msgid "Client with this email already exists."
 msgstr "Клиент с такой электронной почтой уже существует."
 
 #: src/autotrips/admin.py:34 src/autotrips/admin.py:55
 #: src/autotrips/admin.py:69 src/autotrips/admin.py:83
-#: src/autotrips/models/vehicle_info.py:67
+#: src/autotrips/models/vehicle_info.py:66
 msgid "VIN"
 msgstr "VIN"
 
-#: src/autotrips/admin.py:40 src/autotrips/models/vehicle_info.py:58
+#: src/autotrips/admin.py:40
 msgid "Model"
 msgstr "Модель"
 
@@ -203,23 +203,23 @@ msgstr "Модель"
 msgid "Vehicle Information"
 msgstr "Информация об автомобиле"
 
-#: src/autotrips/admin.py:132
+#: src/autotrips/admin.py:131
 msgid "Logistics"
 msgstr "Логистика"
 
-#: src/autotrips/admin.py:142
+#: src/autotrips/admin.py:141
 msgid "Client & Status"
 msgstr "Клиент и статус"
 
-#: src/autotrips/admin.py:144
+#: src/autotrips/admin.py:143
 msgid "CRM Information"
 msgstr "Информация CRM"
 
-#: src/autotrips/admin.py:187
+#: src/autotrips/admin.py:186
 msgid "System Information"
 msgstr "Системная информация"
 
-#: src/autotrips/admin.py:193 src/autotrips/models/acceptance_report.py:27
+#: src/autotrips/admin.py:192 src/autotrips/models/acceptance_report.py:27
 msgid "Vehicle"
 msgstr "Автомобиль"
 
@@ -244,7 +244,7 @@ msgid "Place"
 msgstr "Местонахождение"
 
 #: src/autotrips/models/acceptance_report.py:30
-#: src/autotrips/models/vehicle_info.py:73
+#: src/autotrips/models/vehicle_info.py:72
 msgid "Comment"
 msgstr "Комментарий"
 
@@ -261,7 +261,7 @@ msgid "Acceptance date"
 msgstr "Дата приёмки"
 
 #: src/autotrips/models/acceptance_report.py:34
-#: src/autotrips/models/vehicle_info.py:141
+#: src/autotrips/models/vehicle_info.py:140
 msgid "Status"
 msgstr "Статус"
 
@@ -305,7 +305,7 @@ msgstr "Фото документов автомобилей"
 
 #: src/autotrips/models/vehicle_info.py:15
 #: src/autotrips/models/vehicle_info.py:18
-#: src/autotrips/models/vehicle_info.py:65
+#: src/autotrips/models/vehicle_info.py:64
 msgid "Vehicle type"
 msgstr "Тип автомобиля"
 
@@ -372,197 +372,266 @@ msgid "Required expertise"
 msgstr "Требуется экспертиза"
 
 #: src/autotrips/models/vehicle_info.py:57
-msgid "Brand"
-msgstr "Марка"
+msgid "Year brand model"
+msgstr "Год Марка Модель"
 
-#: src/autotrips/models/vehicle_info.py:68
+#: src/autotrips/models/vehicle_info.py:67
 msgid "Price"
 msgstr "Цена"
 
-#: src/autotrips/models/vehicle_info.py:69
+#: src/autotrips/models/vehicle_info.py:68
 msgid "Container number"
 msgstr "Номер контейнера"
 
-#: src/autotrips/models/vehicle_info.py:70
+#: src/autotrips/models/vehicle_info.py:69
 msgid "Arrival date"
 msgstr "Дата прибытия контейнера"
 
-#: src/autotrips/models/vehicle_info.py:71
+#: src/autotrips/models/vehicle_info.py:70
 msgid "Transporter"
-msgstr "Перевозчик"
+msgstr "Морская линия"
 
-#: src/autotrips/models/vehicle_info.py:72
+#: src/autotrips/models/vehicle_info.py:71
 msgid "Recipient"
-msgstr "Получатель"
+msgstr "Получатель авто"
 
-#: src/autotrips/models/vehicle_info.py:77
+#: src/autotrips/models/vehicle_info.py:76
 msgid "Transit method"
 msgstr "Метод транзита"
 
-#: src/autotrips/models/vehicle_info.py:80
+#: src/autotrips/models/vehicle_info.py:79
 msgid "Acceptance type"
 msgstr "Тип приёмки"
 
-#: src/autotrips/models/vehicle_info.py:82
+#: src/autotrips/models/vehicle_info.py:81
 msgid "Location"
 msgstr "Местоположение"
 
-#: src/autotrips/models/vehicle_info.py:83
+#: src/autotrips/models/vehicle_info.py:82
 msgid "Requested title"
 msgstr "Запросил тайтл"
 
-#: src/autotrips/models/vehicle_info.py:84
+#: src/autotrips/models/vehicle_info.py:83
 msgid "Notified parking"
 msgstr "Уведомил стоянку"
 
-#: src/autotrips/models/vehicle_info.py:85
+#: src/autotrips/models/vehicle_info.py:84
 msgid "Notified inspector"
 msgstr "Уведомил осмотр"
 
-#: src/autotrips/models/vehicle_info.py:86
+#: src/autotrips/models/vehicle_info.py:85
 msgid "Logistician comment"
 msgstr "Комментарий логиста"
 
-#: src/autotrips/models/vehicle_info.py:93
-#: src/autotrips/models/vehicle_info.py:201
+#: src/autotrips/models/vehicle_info.py:92
+#: src/autotrips/models/vehicle_info.py:200
 msgid "Vehicle transporter"
 msgstr "Автовоз"
 
-#: src/autotrips/models/vehicle_info.py:96
+#: src/autotrips/models/vehicle_info.py:95
 msgid "Logistician keys number"
 msgstr "Количество ключей у логиста"
 
-#: src/autotrips/models/vehicle_info.py:100
+#: src/autotrips/models/vehicle_info.py:99
 msgid "Opening date"
 msgstr "Дата открытия"
 
-#: src/autotrips/models/vehicle_info.py:101
+#: src/autotrips/models/vehicle_info.py:100
 msgid "Opened"
 msgstr "Открыто"
 
-#: src/autotrips/models/vehicle_info.py:102
+#: src/autotrips/models/vehicle_info.py:101
 msgid "Manager comment"
 msgstr "Комментарий менеджера"
 
-#: src/autotrips/models/vehicle_info.py:105
+#: src/autotrips/models/vehicle_info.py:104
 msgid "Pickup address"
 msgstr "Адрес забора"
 
-#: src/autotrips/models/vehicle_info.py:106
+#: src/autotrips/models/vehicle_info.py:105
 msgid "Took title"
 msgstr "Забрал тайтл"
 
-#: src/autotrips/models/vehicle_info.py:107
+#: src/autotrips/models/vehicle_info.py:106
 msgid "Title collection date"
 msgstr "Дата забора тайтла"
 
-#: src/autotrips/models/vehicle_info.py:110
+#: src/autotrips/models/vehicle_info.py:109
 msgid "Transit number"
 msgstr "Транзитный номер"
 
-#: src/autotrips/models/vehicle_info.py:112
+#: src/autotrips/models/vehicle_info.py:111
 msgid "Inspection done"
 msgstr "Осмотр проведён"
 
-#: src/autotrips/models/vehicle_info.py:114
+#: src/autotrips/models/vehicle_info.py:113
 msgid "Inspection date"
 msgstr "Дата осмотра"
 
-#: src/autotrips/models/vehicle_info.py:115
+#: src/autotrips/models/vehicle_info.py:114
 msgid "Number sent"
 msgstr "Номер отправлен"
 
-#: src/autotrips/models/vehicle_info.py:116
+#: src/autotrips/models/vehicle_info.py:115
 msgid "Number sent date"
 msgstr "Дата отправки номера"
 
-#: src/autotrips/models/vehicle_info.py:117
+#: src/autotrips/models/vehicle_info.py:116
 msgid "Inspection paid"
 msgstr "Оплата осмотра"
 
-#: src/autotrips/models/vehicle_info.py:118
+#: src/autotrips/models/vehicle_info.py:117
 msgid "Inspector comment"
 msgstr "Комментарий инспектора"
 
-#: src/autotrips/models/vehicle_info.py:121
+#: src/autotrips/models/vehicle_info.py:120
 msgid "Export"
 msgstr "Экспорт"
 
-#: src/autotrips/models/vehicle_info.py:122
+#: src/autotrips/models/vehicle_info.py:121
 msgid "Prepared documents"
 msgstr "Документы подготовлены"
 
-#: src/autotrips/models/vehicle_info.py:125
+#: src/autotrips/models/vehicle_info.py:124
 msgid "Vehicle arrival date"
 msgstr "Дата прибытия автомобиля"
 
-#: src/autotrips/models/vehicle_info.py:126
+#: src/autotrips/models/vehicle_info.py:125
 msgid "Receive vehicle"
 msgstr "Автомобиль получен"
 
-#: src/autotrips/models/vehicle_info.py:127
+#: src/autotrips/models/vehicle_info.py:126
 msgid "Receive documents"
 msgstr "Документы получены"
 
-#: src/autotrips/models/vehicle_info.py:128
+#: src/autotrips/models/vehicle_info.py:127
 msgid "Full acceptance"
 msgstr "Полное принятие"
 
-#: src/autotrips/models/vehicle_info.py:130
+#: src/autotrips/models/vehicle_info.py:129
 msgid "Receiver keys number"
 msgstr "Количество ключей у приёмщика"
 
-#: src/autotrips/models/vehicle_info.py:134
+#: src/autotrips/models/vehicle_info.py:133
 msgid "Approved by logistician"
 msgstr "Одобрено логистом"
 
-#: src/autotrips/models/vehicle_info.py:135
+#: src/autotrips/models/vehicle_info.py:134
 msgid "Approved by manager"
 msgstr "Одобрено менеджером"
 
-#: src/autotrips/models/vehicle_info.py:136
+#: src/autotrips/models/vehicle_info.py:135
 msgid "Approved by inspector"
 msgstr "Одобрено осмотром"
 
-#: src/autotrips/models/vehicle_info.py:137
+#: src/autotrips/models/vehicle_info.py:136
 msgid "Approved by title"
 msgstr "Одобрено тайтлом"
 
-#: src/autotrips/models/vehicle_info.py:138
+#: src/autotrips/models/vehicle_info.py:137
 msgid "Approved by re-export"
 msgstr "Одобрено реэкспортом"
 
-#: src/autotrips/models/vehicle_info.py:139
+#: src/autotrips/models/vehicle_info.py:138
 msgid "Approved by receiver"
 msgstr "Одобрено приёмщиком"
 
-#: src/autotrips/models/vehicle_info.py:140
+#: src/autotrips/models/vehicle_info.py:139
 msgid "Ready for receiver"
 msgstr "Готово для приёмщика"
 
-#: src/autotrips/models/vehicle_info.py:142
+#: src/autotrips/models/vehicle_info.py:141
 msgid "Status changed"
 msgstr "Статус изменён"
 
-#: src/autotrips/models/vehicle_info.py:143
+#: src/autotrips/models/vehicle_info.py:142
 msgid "Creation time"
 msgstr "Время создания"
 
-#: src/autotrips/models/vehicle_info.py:148
+#: src/autotrips/models/vehicle_info.py:147
 msgid "Vehicle info"
 msgstr "Информация об автомобиле"
 
-#: src/autotrips/models/vehicle_info.py:149
+#: src/autotrips/models/vehicle_info.py:148
 msgid "Vehicle infos"
 msgstr "Информация об автомобилях"
 
-#: src/autotrips/models/vehicle_info.py:198
+#: src/autotrips/models/vehicle_info.py:197
 msgid "Number"
 msgstr "Номер"
 
-#: src/autotrips/models/vehicle_info.py:202
+#: src/autotrips/models/vehicle_info.py:201
 msgid "Vehicle transporters"
 msgstr "Автовозы"
+
+#: src/autotrips/serializers/acceptance_report.py:109
+msgid "Vehicle with this VIN does not exist."
+msgstr "ТС с таким VIN номером не существует."
+
+#: src/autotrips/serializers/vehicle_bid.py:191
+msgid "Required if 'transit_method' is 'without_openning'."
+msgstr "Обязательно, если метод транзита 'без открытия'."
+
+#: src/autotrips/serializers/vehicle_bid.py:200
+msgid "Required if 'acceptance_type' is 'with_re_export'."
+msgstr "Обязательно, если тип приемки 'с реэкспортом'."
+
+#: src/autotrips/serializers/vehicle_bid.py:216
+msgid ""
+"Required if 'transit_method' is 't1' or 're_export' and container was opened."
+msgstr "Обязательно, если метод транзита 'T1' или 'реэкспорт' и контейнер был открыт."
+
+#: src/autotrips/serializers/vehicle_bid.py:245
+msgid ""
+"Cannot update a bid that has already been completed (approved by receiver)."
+msgstr "Нельзя обновить заявку, которая уже была завершена (одобрена приемщиком)."
+
+#: src/autotrips/serializers/vehicle_bid.py:292
+msgid "Required if 'took_title' in the request body."
+msgstr "Обязательно, если 'took_title' присутствует в теле запроса."
+
+#: src/autotrips/serializers/vehicle_bid.py:300
+msgid "Cannot update a bid that has already been completed (title collected)."
+msgstr "Нельзя обновить заявку, которая уже была завершена (тайтл собран)." 
+
+#: src/autotrips/serializers/vehicle_bid.py:327
+msgid "Required if 'inspection_done' is 'yes'."
+msgstr "Обязательно, если 'был осмотр' равно 'да'."
+
+#: src/autotrips/serializers/vehicle_bid.py:332
+msgid "Required if 'number_sent' is true."
+msgstr "Обязательно, если 'отправлен номер' - 'да'."
+
+#: src/autotrips/serializers/vehicle_bid.py:361
+msgid "Cannot export without prepared documents."
+msgstr "Нельзя экспортировать без подготовленных документов."
+
+#: src/autotrips/serializers/vehicle_bid.py:366
+msgid "Cannot update a vehicle that has already been exported."
+msgstr "Нельзя обновить транспортное средство, которое уже было экспортировано."
+
+#: src/autotrips/serializers/vehicle_bid.py:389
+msgid "Cannot update a vehicle that has already been accepted."
+msgstr "Нельзя обновить транспортное средство, которое уже было принято."
+
+#: src/autotrips/serializers/vehicle_info.py:20
+msgid "Can create multiply vehicles only for one client."
+msgstr "Можно создать несколько транспортных средств только для одного клиента."
+
+#: src/autotrips/serializers/vehicle_info.py:23
+msgid "It is not possible to create multiple vehicles with the same VINs."
+msgstr "Невозможно создать несколько транспортных средств с одинаковыми VIN номерами."
+
+#: src/autotrips/serializers/vehicle_info.py:65
+msgid "Enter a valid date in YYYY-MM-DD format."
+msgstr "Введите корректную дату в формате ГГГГ-ММ-ДД."
+
+#: src/autotrips/serializers/vehicle_info.py:70
+msgid "Vehicle with this VIN already exists."
+msgstr "Транспортное средство с таким VIN уже существует."
+
+#~ msgid "Brand"
+#~ msgstr "Марка"
 
 #, fuzzy
 #~| msgid ""

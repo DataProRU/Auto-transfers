@@ -54,36 +54,35 @@ class VehicleInfo(models.Model):
     client = models.ForeignKey(
         User, on_delete=models.RESTRICT, related_name="vehicles", null=False, blank=False, verbose_name=_("Client")
     )
-    brand = models.CharField(_("Brand"), max_length=100, null=False, blank=False)
-    model = models.CharField(_("Model"), max_length=100, null=False, blank=False)
+    year_brand_model = models.CharField(_("Year brand model"), max_length=200, null=False, blank=False)
     v_type = models.ForeignKey(
         VehicleType,
         on_delete=models.RESTRICT,
         related_name="vehicles",
-        null=False,
-        blank=False,
+        null=True,
+        blank=True,
         verbose_name=_("Vehicle type"),
     )
     vin = models.CharField(_("VIN"), unique=True, null=False, blank=False)
-    price = models.DecimalField(_("Price"), max_digits=12, decimal_places=2, default=0, null=False, blank=False)
-    container_number = models.CharField(_("Container number"), max_length=100, null=False, blank=False)
-    arrival_date = models.DateField(_("Arrival date"), null=False, blank=False)
-    transporter = models.CharField(_("Transporter"), max_length=100, null=False, blank=False)
-    recipient = models.CharField(_("Recipient"), max_length=100, null=False, blank=False)
-    comment = models.CharField(_("Comment"), max_length=255, null=True, blank=True)  # noqa: DJ001
+    price = models.DecimalField(_("Price"), max_digits=12, decimal_places=2, default=0, null=True, blank=True)
+    container_number = models.CharField(_("Container number"), max_length=100, blank=True, default="")
+    arrival_date = models.DateField(_("Arrival date"), null=True, blank=True)
+    transporter = models.CharField(_("Transporter"), max_length=100, blank=True, default="")
+    recipient = models.CharField(_("Recipient"), max_length=100, blank=True, default="")
+    comment = models.CharField(_("Comment"), max_length=255, blank=True, default="")
 
     ################# LOGISTICIAN FIELDS #################
-    transit_method = models.CharField(  # noqa: DJ001
-        _("Transit method"), max_length=20, choices=TransitMethod.choices, null=True, blank=True
+    transit_method = models.CharField(
+        _("Transit method"), max_length=20, choices=TransitMethod.choices, blank=True, default=""
     )
-    acceptance_type = models.CharField(  # noqa: DJ001
-        _("Acceptance type"), max_length=20, choices=AcceptanceType.choices, null=True, blank=True
+    acceptance_type = models.CharField(
+        _("Acceptance type"), max_length=20, choices=AcceptanceType.choices, blank=True, default=""
     )
-    location = models.CharField(_("Location"), max_length=255, null=True, blank=True)  # noqa: DJ001
+    location = models.CharField(_("Location"), max_length=255, blank=True, default="")
     requested_title = models.BooleanField(_("Requested title"), default=False)
     notified_parking = models.BooleanField(_("Notified parking"), default=False)
     notified_inspector = models.BooleanField(_("Notified inspector"), default=False)
-    logistician_comment = models.CharField(_("Logistician comment"), max_length=255, null=True, blank=True)  # noqa: DJ001
+    logistician_comment = models.CharField(_("Logistician comment"), max_length=255, blank=True, default="")
     vehicle_transporter = models.ForeignKey(
         "VehicleTransporter",
         on_delete=models.SET_NULL,
@@ -99,15 +98,15 @@ class VehicleInfo(models.Model):
     ################# OPENNING MANAGER FIELDS #################
     openning_date = models.DateField(_("Opening date"), null=True, blank=True)
     opened = models.BooleanField(_("Opened"), default=False)
-    manager_comment = models.CharField(_("Manager comment"), max_length=255, null=True, blank=True)  # noqa: DJ001
+    manager_comment = models.CharField(_("Manager comment"), max_length=255, blank=True, default="")
 
     ################# TITLE FIELDS #################
-    pickup_address = models.CharField(_("Pickup address"), max_length=255, null=True, blank=True)  # noqa: DJ001
-    took_title = models.CharField(_("Took title"), max_length=20, choices=TookTitle.choices, null=True, blank=True)  # noqa: DJ001
+    pickup_address = models.CharField(_("Pickup address"), max_length=255, blank=True, default="")
+    took_title = models.CharField(_("Took title"), max_length=20, choices=TookTitle.choices, blank=True, default="")
     title_collection_date = models.DateField(_("Title collection date"), null=True, blank=True)
 
     ################# INSPECTOR FIELDS #################
-    transit_number = models.CharField(_("Transit number"), max_length=20, null=True, blank=True)  # noqa: DJ001
+    transit_number = models.CharField(_("Transit number"), max_length=20, blank=True, default="")
     inspection_done = models.CharField(  # noqa: DJ001
         _("Inspection done"), max_length=20, choices=InspectionDone.choices, null=True, blank=True
     )
@@ -115,7 +114,7 @@ class VehicleInfo(models.Model):
     number_sent = models.BooleanField(_("Number sent"), default=False)
     number_sent_date = models.DateField(_("Number sent date"), null=True, blank=True)
     inspection_paid = models.BooleanField(_("Inspection paid"), default=False)
-    inspector_comment = models.CharField(_("Inspector comment"), max_length=255, null=True, blank=True)  # noqa: DJ001
+    inspector_comment = models.CharField(_("Inspector comment"), max_length=255, blank=True, default="")
 
     ################# RE-EXPORT FIELDS #################
     export = models.BooleanField(_("Export"), default=False)
@@ -149,7 +148,7 @@ class VehicleInfo(models.Model):
         verbose_name_plural = _("Vehicle infos")
 
     def __str__(self) -> str:
-        return f"{self.client.full_name}_{self.model}_{self.v_type}"
+        return f"{self.client.full_name}_{self.year_brand_model}"
 
     def save(self, *args: tuple[Any], **kwargs: dict[str, Any]) -> None:
         base_cls = type(self)
