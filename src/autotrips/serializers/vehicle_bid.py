@@ -1,8 +1,8 @@
 from typing import Any
 
+from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import OpenApiExample, extend_schema_serializer
 from rest_framework import serializers
-from django.utils.translation import gettext_lazy as _
 
 from accounts.serializers.user import ClientSerializer
 from autotrips.models.vehicle_info import VehicleInfo, VehicleTransporter
@@ -197,7 +197,9 @@ class LogisticianInitialVehicleBidSerializer(BaseVehicleBidSerializer):
             and acceptance_type == VehicleInfo.AcceptanceType.WITH_RE_EXPORT
             and not requested_title
         ):
-            raise serializers.ValidationError({"requested_title": _("Required if 'acceptance_type' is 'with_re_export'.")})
+            raise serializers.ValidationError(
+                {"requested_title": _("Required if 'acceptance_type' is 'with_re_export'.")}
+            )
 
         return super().validate(attrs)
 

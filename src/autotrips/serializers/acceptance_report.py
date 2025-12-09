@@ -2,8 +2,9 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
+
 from accounts.serializers.custom_image import HEIFImageField
 from accounts.validators import FileMaxSizeValidator
 from autotrips.models.acceptance_report import AcceptenceReport, CarPhoto, DocumentPhoto, KeyPhoto
