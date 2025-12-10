@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-09 11:07+0300\n"
+"POT-Creation-Date: 2025-12-10 20:00+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,20 +20,20 @@ msgstr ""
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
 
-#: src/accounts/admin.py:26 src/accounts/models/user.py:14
+#: src/accounts/admin.py:29 src/accounts/models/user.py:14
 #: src/accounts/models/user.py:55 src/accounts/models/user.py:60
 msgid "User"
 msgstr "Пользователь"
 
-#: src/accounts/admin.py:27
+#: src/accounts/admin.py:30
 msgid "Personal info"
 msgstr "Личная информация"
 
-#: src/accounts/admin.py:29
+#: src/accounts/admin.py:32
 msgid "Permissions"
 msgstr "Права"
 
-#: src/accounts/admin.py:43
+#: src/accounts/admin.py:46
 msgid "Important dates"
 msgstr "Системные даты"
 
@@ -129,12 +129,14 @@ msgstr "Пользователи"
 #: src/accounts/models/user.py:61 src/autotrips/models/acceptance_report.py:56
 #: src/autotrips/models/acceptance_report.py:71
 #: src/autotrips/models/acceptance_report.py:86
+#: src/autotrips/models/vehicle_info.py:211
 msgid "Image"
 msgstr "Фото"
 
 #: src/accounts/models/user.py:62 src/autotrips/models/acceptance_report.py:57
 #: src/autotrips/models/acceptance_report.py:72
 #: src/autotrips/models/acceptance_report.py:87
+#: src/autotrips/models/vehicle_info.py:212
 msgid "Created"
 msgstr "Создано"
 
@@ -191,7 +193,7 @@ msgstr "Клиент с такой электронной почтой уже с
 
 #: src/autotrips/admin.py:34 src/autotrips/admin.py:55
 #: src/autotrips/admin.py:69 src/autotrips/admin.py:83
-#: src/autotrips/models/vehicle_info.py:66
+#: src/autotrips/admin.py:220 src/autotrips/models/vehicle_info.py:66
 msgid "VIN"
 msgstr "VIN"
 
@@ -219,7 +221,9 @@ msgstr "Информация CRM"
 msgid "System Information"
 msgstr "Системная информация"
 
-#: src/autotrips/admin.py:192 src/autotrips/models/acceptance_report.py:27
+#: src/autotrips/admin.py:192 src/autotrips/admin.py:214
+#: src/autotrips/models/acceptance_report.py:27
+#: src/autotrips/models/vehicle_info.py:209
 msgid "Vehicle"
 msgstr "Автомобиль"
 
@@ -564,7 +568,15 @@ msgstr "Номер"
 msgid "Vehicle transporters"
 msgstr "Автовозы"
 
-#: src/autotrips/serializers/acceptance_report.py:109
+#: src/autotrips/models/vehicle_info.py:215
+msgid "Vehicle info document photo"
+msgstr "Фото документа автомобиля (заявка)"
+
+#: src/autotrips/models/vehicle_info.py:216
+msgid "Vehicle info document photos"
+msgstr "Фото документов автомобилей (заявка)"
+
+#: src/autotrips/serializers/acceptance_report.py:110
 msgid "Vehicle with this VIN does not exist."
 msgstr "ТС с таким VIN номером не существует."
 
@@ -572,61 +584,66 @@ msgstr "ТС с таким VIN номером не существует."
 msgid "Required if 'transit_method' is 'without_openning'."
 msgstr "Обязательно, если метод транзита 'без открытия'."
 
-#: src/autotrips/serializers/vehicle_bid.py:200
+#: src/autotrips/serializers/vehicle_bid.py:201
 msgid "Required if 'acceptance_type' is 'with_re_export'."
 msgstr "Обязательно, если тип приемки 'с реэкспортом'."
 
-#: src/autotrips/serializers/vehicle_bid.py:216
+#: src/autotrips/serializers/vehicle_bid.py:218
 msgid ""
 "Required if 'transit_method' is 't1' or 're_export' and container was opened."
-msgstr "Обязательно, если метод транзита 'T1' или 'реэкспорт' и контейнер был открыт."
+msgstr ""
+"Обязательно, если метод транзита 'T1' или 'реэкспорт' и контейнер был открыт."
 
-#: src/autotrips/serializers/vehicle_bid.py:245
+#: src/autotrips/serializers/vehicle_bid.py:247
 msgid ""
 "Cannot update a bid that has already been completed (approved by receiver)."
-msgstr "Нельзя обновить заявку, которая уже была завершена (одобрена приемщиком)."
+msgstr ""
+"Нельзя обновить заявку, которая уже была завершена (одобрена приемщиком)."
 
-#: src/autotrips/serializers/vehicle_bid.py:292
+#: src/autotrips/serializers/vehicle_bid.py:294
 msgid "Required if 'took_title' in the request body."
 msgstr "Обязательно, если 'took_title' присутствует в теле запроса."
 
-#: src/autotrips/serializers/vehicle_bid.py:300
+#: src/autotrips/serializers/vehicle_bid.py:302
 msgid "Cannot update a bid that has already been completed (title collected)."
-msgstr "Нельзя обновить заявку, которая уже была завершена (тайтл собран)." 
+msgstr "Нельзя обновить заявку, которая уже была завершена (тайтл собран)."
 
-#: src/autotrips/serializers/vehicle_bid.py:327
+#: src/autotrips/serializers/vehicle_bid.py:329
 msgid "Required if 'inspection_done' is 'yes'."
 msgstr "Обязательно, если 'был осмотр' равно 'да'."
 
-#: src/autotrips/serializers/vehicle_bid.py:332
+#: src/autotrips/serializers/vehicle_bid.py:334
 msgid "Required if 'number_sent' is true."
 msgstr "Обязательно, если 'отправлен номер' - 'да'."
 
-#: src/autotrips/serializers/vehicle_bid.py:361
+#: src/autotrips/serializers/vehicle_bid.py:363
 msgid "Cannot export without prepared documents."
 msgstr "Нельзя экспортировать без подготовленных документов."
 
-#: src/autotrips/serializers/vehicle_bid.py:366
+#: src/autotrips/serializers/vehicle_bid.py:368
 msgid "Cannot update a vehicle that has already been exported."
-msgstr "Нельзя обновить транспортное средство, которое уже было экспортировано."
+msgstr ""
+"Нельзя обновить транспортное средство, которое уже было экспортировано."
 
-#: src/autotrips/serializers/vehicle_bid.py:389
+#: src/autotrips/serializers/vehicle_bid.py:391
 msgid "Cannot update a vehicle that has already been accepted."
 msgstr "Нельзя обновить транспортное средство, которое уже было принято."
 
-#: src/autotrips/serializers/vehicle_info.py:20
+#: src/autotrips/serializers/vehicle_info.py:29
 msgid "Can create multiply vehicles only for one client."
-msgstr "Можно создать несколько транспортных средств только для одного клиента."
+msgstr ""
+"Можно создать несколько транспортных средств только для одного клиента."
 
-#: src/autotrips/serializers/vehicle_info.py:23
+#: src/autotrips/serializers/vehicle_info.py:33
 msgid "It is not possible to create multiple vehicles with the same VINs."
-msgstr "Невозможно создать несколько транспортных средств с одинаковыми VIN номерами."
+msgstr ""
+"Невозможно создать несколько транспортных средств с одинаковыми VIN номерами."
 
-#: src/autotrips/serializers/vehicle_info.py:65
+#: src/autotrips/serializers/vehicle_info.py:113
 msgid "Enter a valid date in YYYY-MM-DD format."
 msgstr "Введите корректную дату в формате ГГГГ-ММ-ДД."
 
-#: src/autotrips/serializers/vehicle_info.py:70
+#: src/autotrips/serializers/vehicle_info.py:118
 msgid "Vehicle with this VIN already exists."
 msgstr "Транспортное средство с таким VIN уже существует."
 
