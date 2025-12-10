@@ -1,18 +1,26 @@
 from typing import Any
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
+from accounts.serializers.custom_image import HEIFImageField
 from accounts.serializers.user import ClientSerializer
-from autotrips.models.vehicle_info import VehicleInfo, VehicleType
+from accounts.validators import FileMaxSizeValidator
+from autotrips.models.vehicle_info import VehicleDocumentPhoto, VehicleInfo, VehicleType
 
 User = get_user_model()
 
 
 class VehicleInfoListSerializer(serializers.ListSerializer):
-    def create(self, validated_data: dict[str, Any]) -> list[VehicleInfo]:
+    def create(self, validated_data: list[dict[str, Any]]) -> list[VehicleInfo]:
+        vehicle_photos_data = []
+        for vehicle in validated_data:
+            photos = vehicle.pop("uploaded_document_photos", [])
+            vehicle_photos_data.append(photos)
+
         vehicles = [VehicleInfo(**item) for item in validated_data]
         vehicles_idxs = {vehicle.client_id for vehicle in vehicles}
         vehicles_vins = {vehicle.vin for vehicle in vehicles}
@@ -25,10 +33,27 @@ class VehicleInfoListSerializer(serializers.ListSerializer):
                 {"vins_error": _("It is not possible to create multiple vehicles with the same VINs.")}
             )
 
-        return VehicleInfo.objects.bulk_create(vehicles)  # type: ignore[no-any-return]
+        created_vehicles = VehicleInfo.objects.bulk_create(vehicles)
+
+        vehicle_photos_to_create = [
+            VehicleDocumentPhoto(vehicle=vehicle, image=photo)
+            for vehicle, photos in zip(created_vehicles, vehicle_photos_data, strict=False)
+            for photo in photos
+        ]
+
+        if vehicle_photos_to_create:
+            VehicleDocumentPhoto.objects.bulk_create(vehicle_photos_to_create)
+
+        return created_vehicles  # type: ignore[no-any-return]
 
     def update(self, _: VehicleInfo, __: dict[str, Any]) -> None:
         pass
+
+
+class VehicleDocumentPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehicleDocumentPhoto
+        fields = ["id", "image", "created"]
 
 
 class VehicleInfoSerializer(serializers.ModelSerializer):
@@ -39,6 +64,23 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
         queryset=VehicleType.objects.all(), write_only=False, required=False, allow_null=True
     )
     price = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True)
+    document_photos = VehicleDocumentPhotoSerializer(many=True, read_only=True)
+    uploaded_document_photos = serializers.ListField(
+        child=HEIFImageField(
+            allow_empty_file=False,
+            use_url=False,
+            validators=[
+                FileMaxSizeValidator(settings.MAX_UPLOAD_SIZE),
+            ],
+        ),
+        write_only=True,
+        required=False,
+    )
+    remove_document_photo_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=False,
+        write_only=True,
+    )
 
     class Meta:
         model = VehicleInfo
@@ -53,12 +95,16 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
             "transporter",
             "recipient",
             "comment",
+            "document_photos",
+            "uploaded_document_photos",
+            "remove_document_photo_ids",
             "status",
             "status_changed",
             "creation_time",
             "price",
         ]
         read_only_fields = [
+            "id",
             "status",
             "status_changed",
             "creation_time",
@@ -86,6 +132,26 @@ class VehicleInfoSerializer(serializers.ModelSerializer):
         representation["client"] = ClientSerializer(instance.client).data
         representation["v_type"] = VehicleTypeSerializer(instance.v_type).data if instance.v_type else None
         return representation
+
+    def create(self, validated_data: dict[str, Any]) -> VehicleInfo:
+        document_photos = validated_data.pop("uploaded_document_photos", [])
+        vehicle = super().create(validated_data)
+
+        for document_photo in document_photos:
+            VehicleDocumentPhoto.objects.create(vehicle=vehicle, image=document_photo)
+
+        return vehicle
+
+    def update(self, instance: VehicleInfo, validated_data: dict[str, Any]) -> VehicleInfo:
+        remove_photo_ids = validated_data.pop("remove_document_photo_ids", [])
+        if remove_photo_ids:
+            VehicleDocumentPhoto.objects.filter(id__in=remove_photo_ids, vehicle=instance).delete()
+
+        document_photos = validated_data.pop("uploaded_document_photos", [])
+        for document_photo in document_photos:
+            VehicleDocumentPhoto.objects.create(vehicle=instance, image=document_photo)
+
+        return super().update(instance, validated_data)
 
 
 class VehicleTypeSerializer(serializers.ModelSerializer):
