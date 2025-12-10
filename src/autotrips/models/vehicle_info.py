@@ -202,3 +202,18 @@ class VehicleTransporter(models.Model):
 
     def __str__(self) -> str:
         return str(self.number)
+
+
+class VehicleDocumentPhoto(models.Model):
+    vehicle = models.ForeignKey(
+        VehicleInfo, on_delete=models.CASCADE, related_name="document_photos", verbose_name=_("Vehicle")
+    )
+    image = models.ImageField(_("Image"), upload_to="vehicle-docs/%Y/%m/%d/")
+    created = models.DateTimeField(_("Created"), default=timezone.now)
+
+    class Meta:
+        verbose_name = _("Vehicle document photo")
+        verbose_name_plural = _("Vehicle document photos")
+
+    def __str__(self) -> str:
+        return f"{self.vehicle.year_brand_model}_document_{self.created}"
