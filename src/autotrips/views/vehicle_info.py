@@ -422,149 +422,147 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Upload Excel file to create vehicles",
-        description="""Upload an Excel file with Russian column headers to create multiple vehicles for a client.
-
-        Excel file requirements:
-        - Columns: Марка Модель Год, VIN
-        - All rows must have both values
-        - VINs must be unique within the file
-        - File format: .xlsx or .xls""",
-        request={
-            "multipart/form-data": {
-                "type": "object",
-                "properties": {
-                    "client": {"type": "integer", "description": "Client ID to associate vehicles with"},
-                    "excel_file": {"type": "string", "format": "binary", "description": "Excel file (.xlsx or .xls)"},
-                },
-                "required": ["client", "excel_file"],
-            }
-        },
+        description=(
+            "Upload an Excel file with Russian column headers to create multiple vehicles for a client.\n\n"
+            "Excel file requirements:\n"
+            "- Columns: Год Марка Модель, VIN\n"
+            "- All rows must have both values\n"
+            "- VINs must be unique within the file\n"
+            "- File format: .xlsx or .xls"
+        ),
+        request=OpenApiRequest(
+            request=dict,
+            examples=[
+                OpenApiExample(
+                    "Valid upload request",
+                    value={"client": 1, "excel_file": "(binary Excel file with Год Марка Модель & VIN columns)"},
+                    request_only=True,
+                ),
+            ],
+        ),
         responses={
-            status.HTTP_201_CREATED: {
-                "type": "object",
-                "properties": {
-                    "created_count": {"type": "integer", "description": "Number of vehicles successfully created"},
-                    "errors": {
-                        "type": "array",
-                        "description": "List of errors for failed vehicle creations",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "row": {"type": "integer", "description": "Excel row number"},
-                                "vin": {"type": "string", "description": "VIN that failed"},
-                                "error": {"type": "string", "description": "Error message"},
-                            },
+            status.HTTP_201_CREATED: OpenApiResponse(
+                response=dict,
+                description="Successfully uploaded vehicles from Excel",
+                examples=[
+                    OpenApiExample(
+                        "Upload success",
+                        value={
+                            "created_count": 2,
+                            "errors": [],
+                            "vehicles": [
+                                {
+                                    "id": 10,
+                                    "client": 1,
+                                    "year_brand_model": "2020 Toyota Camry",
+                                    "v_type": None,
+                                    "vin": "4T1BF1FKXEU123456",
+                                    "container_number": "",
+                                    "arrival_date": None,
+                                    "transporter": "",
+                                    "recipient": "",
+                                    "comment": "",
+                                    "document_photos": [],
+                                    "status": "initial",
+                                    "status_changed": "2024-05-30T12:00:00Z",
+                                    "creation_time": "2024-05-30T12:00:00Z",
+                                    "price": None,
+                                },
+                                {
+                                    "id": 11,
+                                    "client": 1,
+                                    "year_brand_model": "2019 Ford Focus",
+                                    "v_type": None,
+                                    "vin": "1FADP3F29JL123456",
+                                    "container_number": "",
+                                    "arrival_date": None,
+                                    "transporter": "",
+                                    "recipient": "",
+                                    "comment": "",
+                                    "document_photos": [],
+                                    "status": "initial",
+                                    "status_changed": "2024-05-30T12:00:01Z",
+                                    "creation_time": "2024-05-30T12:00:01Z",
+                                    "price": None,
+                                },
+                            ],
                         },
-                    },
-                    "vehicles": {
-                        "type": "array",
-                        "description": "Successfully created vehicles",
-                        "items": VehicleInfoSerializer(),
-                    },
-                },
-            },
-            status.HTTP_400_BAD_REQUEST: {
-                "type": "object",
-                "properties": {
-                    "excel_file": {"type": "array", "items": {"type": "string"}},
-                    "client": {"type": "array", "items": {"type": "string"}},
-                },
-            },
+                        response_only=True,
+                        status_codes=[str(status.HTTP_201_CREATED)],
+                    ),
+                ],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=dict,
+                description="Validation error or bad file encountered during Excel upload.",
+                examples=[
+                    OpenApiExample(
+                        "Duplicate VINs in file (error)",
+                        value={
+                            "errors": [
+                                {
+                                    "row": 3,
+                                    "vin": "4T1BF1FKXEU123456",
+                                    "error": "Duplicate VIN within file: 4T1BF1FKXEU123456",
+                                }
+                            ]
+                        },
+                        response_only=True,
+                        status_codes=[str(status.HTTP_400_BAD_REQUEST)],
+                    ),
+                    OpenApiExample(
+                        "VIN exists in database (error)",
+                        value={
+                            "errors": [
+                                {
+                                    "row": "N/A",
+                                    "vin": "1HGCM82633A123456",
+                                    "error": "VIN already exists in database: 1HGCM82633A123456",
+                                }
+                            ]
+                        },
+                        response_only=True,
+                        status_codes=[str(status.HTTP_400_BAD_REQUEST)],
+                    ),
+                    OpenApiExample(
+                        "Missing required columns (error)",
+                        value={
+                            "excel_file": ["Excel file is missing required columns: Год Марка Модель"]
+                        },
+                        response_only=True,
+                        status_codes=[str(status.HTTP_400_BAD_REQUEST)],
+                    ),
+                    OpenApiExample(
+                        "Empty year_brand_model cell (error)",
+                        value={
+                            "errors": [
+                                {
+                                    "row": 2,
+                                    "vin": "N/A",
+                                    "error": "year_brand_model cannot be empty",
+                                }
+                            ]
+                        },
+                        response_only=True,
+                        status_codes=[str(status.HTTP_400_BAD_REQUEST)],
+                    ),
+                    OpenApiExample(
+                        "Empty VIN cell (error)",
+                        value={
+                            "errors": [
+                                {
+                                    "row": 2,
+                                    "vin": "N/A",
+                                    "error": "VIN cannot be empty",
+                                }
+                            ]
+                        },
+                        response_only=True,
+                        status_codes=[str(status.HTTP_400_BAD_REQUEST)],
+                    ),
+                ],
+            ),
         },
-        examples=[
-            OpenApiExample(
-                "Valid upload request",
-                value={"client": 1, "excel_file": "(binary Excel file with Год Марка Модель & VIN columns)"},
-                request_only=True,
-            ),
-            OpenApiExample(
-                "Upload success",
-                value={
-                    "created_count": 2,
-                    "errors": [],
-                    "vehicles": [
-                        {
-                            "id": 10,
-                            "client": 1,
-                            "year_brand_model": "2020 Toyota Camry",
-                            "v_type": None,
-                            "vin": "4T1BF1FKXEU123456",
-                            "container_number": "",
-                            "arrival_date": None,
-                            "transporter": "",
-                            "recipient": "",
-                            "comment": "",
-                            "document_photos": [],
-                            "status": "initial",
-                            "status_changed": "2024-05-30T12:00:00Z",
-                            "creation_time": "2024-05-30T12:00:00Z",
-                            "price": None,
-                        },
-                        {
-                            "id": 11,
-                            "client": 1,
-                            "year_brand_model": "2019 Ford Focus",
-                            "v_type": None,
-                            "vin": "1FADP3F29JL123456",
-                            "container_number": "",
-                            "arrival_date": None,
-                            "transporter": "",
-                            "recipient": "",
-                            "comment": "",
-                            "document_photos": [],
-                            "status": "initial",
-                            "status_changed": "2024-05-30T12:00:01Z",
-                            "creation_time": "2024-05-30T12:00:01Z",
-                            "price": None,
-                        },
-                    ],
-                },
-                response_only=True,
-                status_codes=[str(status.HTTP_201_CREATED)],
-            ),
-            OpenApiExample(
-                "Duplicate VINs in file (error)",
-                value={
-                    "errors": [
-                        {"row": 3, "vin": "4T1BF1FKXEU123456", "error": "Duplicate VIN within file: 4T1BF1FKXEU123456"}
-                    ]
-                },
-                response_only=True,
-                status_codes=[str(status.HTTP_400_BAD_REQUEST)],
-            ),
-            OpenApiExample(
-                "VIN exists in database (error)",
-                value={
-                    "errors": [
-                        {
-                            "row": "N/A",
-                            "vin": "1HGCM82633A123456",
-                            "error": "VIN already exists in database: 1HGCM82633A123456",
-                        }
-                    ]
-                },
-                response_only=True,
-                status_codes=[str(status.HTTP_400_BAD_REQUEST)],
-            ),
-            OpenApiExample(
-                "Missing required columns (error)",
-                value={"excel_file": ["Excel file is missing required columns: Год Марка Модель"]},
-                response_only=True,
-                status_codes=[str(status.HTTP_400_BAD_REQUEST)],
-            ),
-            OpenApiExample(
-                "Empty year_brand_model cell (error)",
-                value={"errors": [{"row": 2, "vin": "N/A", "error": "year_brand_model cannot be empty"}]},
-                response_only=True,
-                status_codes=[str(status.HTTP_400_BAD_REQUEST)],
-            ),
-            OpenApiExample(
-                "Empty VIN cell (error)",
-                value={"errors": [{"row": 2, "vin": "N/A", "error": "VIN cannot be empty"}]},
-                response_only=True,
-                status_codes=[str(status.HTTP_400_BAD_REQUEST)],
-            ),
-        ],
     )
     @action(detail=False, methods=["post"], url_path="upload-excel", url_name="upload-excel")
     def upload_excel(self, request: Request) -> Response:
