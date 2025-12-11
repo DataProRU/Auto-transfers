@@ -26,7 +26,7 @@ class PostReportSaveSignalReciever:
         reporter = report.reporter
         vehicle = report.vehicle
 
-        vehicle_model = f"{vehicle.brand} {vehicle.model}"
+        vehicle_model = vehicle.year_brand_model
         car_photos = f"{self.URL}reports/{report.id}/car-photos"
         key_photos = f"{self.URL}reports/{report.id}/key-photos"
         doc_photos = f"{self.URL}reports/{report.id}/doc-photos"
@@ -163,22 +163,21 @@ class PostVehicleSaveSignalReciever:
     def build_data_to_table(self, info: VehicleInfo) -> list[str]:
         info_time_local = timezone.localtime(info.creation_time)
         info_time = info_time_local.strftime("%d.%m.%Y %H:%M:%S")
-        arrival_date = info.arrival_date.strftime("%d.%m.%Y")
+        arrival_date = info.arrival_date.strftime("%d.%m.%Y") if info.arrival_date else ""
         return [
             info_time,
             info.client.full_name,
-            info.brand,
-            info.model,
-            info.v_type.v_type,
+            info.year_brand_model,
+            info.v_type.v_type if info.v_type else "",
             info.vin,
-            info.container_number,
+            info.container_number or "",
             arrival_date,
-            info.transporter,
-            info.recipient,
-            info.comment,
+            info.transporter or "",
+            info.recipient or "",
+            info.comment or "",
         ]
 
-    def __call__(
+    def handle_bulk_save(
         self,
         sender: VehicleInfo,
         instances: list[VehicleInfo],
@@ -189,9 +188,22 @@ class PostVehicleSaveSignalReciever:
             crm_table_manager.append_row(self.WORKSHEET, row)
         self.send_telegram_notification(instances)
 
+    def handle_single_save(
+        self,
+        sender: VehicleInfo,
+        instance: VehicleInfo,
+        created: bool,  # noqa: FBT001
+        **kwargs: dict[str, Any],
+    ) -> None:
+        if created:
+            row = self.build_data_to_table(instance)
+            crm_table_manager.append_row(self.WORKSHEET, row)
+            self.send_telegram_notification([instance])
+
 
 report_reciever = PostReportSaveSignalReciever()
 post_save.connect(receiver=report_reciever, sender=AcceptenceReport)
 
 vehicle_reciever = PostVehicleSaveSignalReciever()
-vehicle_info_save.connect(receiver=vehicle_reciever, sender=VehicleInfo)
+vehicle_info_save.connect(receiver=vehicle_reciever.handle_bulk_save, sender=VehicleInfo)
+post_save.connect(receiver=vehicle_reciever.handle_single_save, sender=VehicleInfo)

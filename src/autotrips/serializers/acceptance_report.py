@@ -2,6 +2,7 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from accounts.serializers.custom_image import HEIFImageField
@@ -106,7 +107,7 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
         try:
             vehicle = VehicleInfo.objects.get(vin=vin)
         except VehicleInfo.DoesNotExist as err:
-            raise serializers.ValidationError({"vin": "Vehicle with this VIN does not exist."}) from err
+            raise serializers.ValidationError({"vin": _("Vehicle with this VIN does not exist.")}) from err
 
         report = AcceptenceReport.objects.create(vehicle=vehicle, **validated_data)
 
@@ -124,5 +125,56 @@ class AcceptanceReportSerializer(serializers.ModelSerializer):
     def to_representation(self, instance: AcceptenceReport) -> Any:  # noqa: ANN401
         data = super().to_representation(instance)
         data["vin"] = instance.vehicle.vin
-        data["model"] = f"{instance.vehicle.brand} {instance.vehicle.model}"
+        data["year_brand_model"] = instance.vehicle.year_brand_model
         return data
+
+
+class AcceptanceReportPartialUpdateSerializer(serializers.Serializer):
+    uploaded_car_photos = serializers.ListField(
+        child=HEIFImageField(
+            allow_empty_file=False,
+            use_url=False,
+            validators=[
+                FileMaxSizeValidator(settings.MAX_UPLOAD_SIZE),
+            ],
+        ),
+        write_only=True,
+        required=False,
+    )
+    uploaded_key_photos = serializers.ListField(
+        child=HEIFImageField(
+            allow_empty_file=False,
+            use_url=False,
+            validators=[
+                FileMaxSizeValidator(settings.MAX_UPLOAD_SIZE),
+            ],
+        ),
+        write_only=True,
+        required=False,
+    )
+    uploaded_document_photos = serializers.ListField(
+        child=HEIFImageField(
+            allow_empty_file=False,
+            use_url=False,
+            validators=[
+                FileMaxSizeValidator(settings.MAX_UPLOAD_SIZE),
+            ],
+        ),
+        write_only=True,
+        required=False,
+    )
+
+    def update(self, instance: AcceptenceReport, validated_data: dict[str, Any]) -> AcceptenceReport:
+        car_photos = validated_data.pop("uploaded_car_photos", [])
+        for car_photo in car_photos:
+            CarPhoto.objects.create(report=instance, image=car_photo)
+
+        key_photos = validated_data.pop("uploaded_key_photos", [])
+        for key_photo in key_photos:
+            KeyPhoto.objects.create(report=instance, image=key_photo)
+
+        doc_photos = validated_data.pop("uploaded_document_photos", [])
+        for doc_photo in doc_photos:
+            DocumentPhoto.objects.create(report=instance, image=doc_photo)
+
+        return instance

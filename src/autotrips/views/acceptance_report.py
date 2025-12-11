@@ -14,6 +14,7 @@ from rest_framework.serializers import ModelSerializer
 from autotrips.models.acceptance_report import AcceptenceReport, CarPhoto, DocumentPhoto, KeyPhoto
 from autotrips.models.vehicle_info import VehicleInfo
 from autotrips.serializers.acceptance_report import (
+    AcceptanceReportPartialUpdateSerializer,
     AcceptanceReportSerializer,
     CarPhotoSerializer,
     DocumentPhotoSerializer,
@@ -30,7 +31,7 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
     queryset = AcceptenceReport.objects.all()
     serializer_class = AcceptanceReportSerializer
     permission_classes = [IsApproved]
-    http_method_names = ["get", "post"]
+    http_method_names = ["get", "post", "patch"]
 
     @extend_schema(
         summary="List all acceptance reports",
@@ -60,7 +61,7 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
                                     "phone": "+79991234567",
                                     "telegram": "@johndoe",
                                 },
-                                "model": "Model X",
+                                "year_brand_model": "2023 Tesla Model X",
                                 "place": "Factory A",
                                 "comment": "First report",
                                 "report_number": 1,
@@ -125,7 +126,7 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
                                 "phone": "+79991234567",
                                 "telegram": "@johndoe",
                             },
-                            "model": "Model X",
+                            "year_brand_model": "2023 Tesla Model X",
                             "place": "Factory A",
                             "comment": "First report",
                             "report_number": 1,
@@ -164,6 +165,79 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
     def create(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
         return super().create(request, *args, **kwargs)
 
+    @extend_schema(
+        summary="Add photos to existing acceptance report",
+        description="Add additional car photos, key photos, and/or document photos to an existing acceptance report."
+        "All approved reporters can add photos to any report.",
+        request=AcceptanceReportPartialUpdateSerializer,
+        responses={
+            200: OpenApiResponse(
+                description="Photos added successfully",
+                response=AcceptanceReportSerializer,
+                examples=[
+                    OpenApiExample(
+                        name="Successful photo addition",
+                        value={
+                            "id": 1,
+                            "vin": "1HGCM82633A123456",
+                            "reporter": {
+                                "id": 1,
+                                "full_name": "John Doe",
+                                "phone": "+79991234567",
+                                "telegram": "@johndoe",
+                            },
+                            "year_brand_model": "2023 Tesla Model X",
+                            "place": "Factory A",
+                            "comment": "Additional photos added",
+                            "report_number": 1,
+                            "report_time": "2025-03-15T13:57:11.953964+03:00",
+                            "acceptance_date": "2025-03-15",
+                            "status": "Принят",
+                            "car_photos": [
+                                {
+                                    "id": 1,
+                                    "image": "http://example.com/media/cars/2025/03/15/car1.jpg",
+                                    "created": "2025-03-15T13:57:11.953964+03:00",
+                                },
+                                {
+                                    "id": 2,
+                                    "image": "http://example.com/media/cars/2025/03/15/car2.jpg",
+                                    "created": "2025-03-15T14:00:00.000000+03:00",
+                                },
+                            ],
+                            "key_photos": [
+                                {
+                                    "id": 1,
+                                    "image": "http://example.com/media/keys/2025/03/15/key1.jpg",
+                                    "created": "2025-03-15T13:57:11.953964+03:00",
+                                }
+                            ],
+                            "document_photos": [
+                                {
+                                    "id": 1,
+                                    "image": "http://example.com/media/car-docs/2025/03/15/doc1.jpg",
+                                    "created": "2025-03-15T13:57:11.953964+03:00",
+                                }
+                            ],
+                        },
+                    ),
+                ],
+            ),
+            400: OpenApiResponse(description="Invalid input"),
+            403: OpenApiResponse(description="Forbidden - user not approved"),
+            404: OpenApiResponse(description="Report not found"),
+        },
+    )
+    def partial_update(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+        instance = self.get_object()
+
+        serializer = AcceptanceReportPartialUpdateSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        response_serializer = AcceptanceReportSerializer(instance)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+
     def perform_create(self, serializer: ModelSerializer) -> None:
         serializer.save(reporter=self.request.user)
 
@@ -197,8 +271,8 @@ class AcceptanceReportViewSet(viewsets.ModelViewSet):
     )
     @action(methods=["GET"], detail=False, url_path="cars", url_name="get_cars")
     def get_vins(self, request: Request) -> Response:
-        vehicles = VehicleInfo.objects.values("vin", "brand", "model").all()
-        vins_mapping = {vehicle["vin"]: f"{vehicle['brand']} {vehicle['model']}" for vehicle in vehicles}
+        vehicles = VehicleInfo.objects.values("vin", "year_brand_model").all()
+        vins_mapping = {vehicle["vin"]: vehicle["year_brand_model"] for vehicle in vehicles}
 
         return Response({"vins": vins_mapping})
 
