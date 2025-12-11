@@ -1,7 +1,10 @@
 from typing import Any
 
+import pandas as pd
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
+from django.core.files.uploadedfile import UploadedFile
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -158,3 +161,152 @@ class VehicleTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleType
         fields = ["id", "v_type"]
+
+
+class VehicleExcelUploadSerializer(serializers.Serializer):
+    COLUMN_YEAR_BRAND_MODEL = "Год Марка Модель"
+    COLUMN_VIN = "VIN"
+
+    client = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role=User.Roles.CLIENT), required=True)
+    excel_file = serializers.FileField(
+        required=True,
+        validators=[
+            FileMaxSizeValidator(settings.MAX_UPLOAD_SIZE),
+        ],
+    )
+
+    def validate_excel_file(self, value: UploadedFile) -> UploadedFile:
+        if not value.name.lower().endswith((".xlsx", ".xls")):
+            raise serializers.ValidationError(_("File must be an Excel file (.xlsx or .xls)"))
+
+        try:
+            excel_df = pd.read_excel(value, engine="openpyxl" if value.name.endswith(".xlsx") else None)
+        except pd.errors.EmptyDataError as exc:
+            raise serializers.ValidationError(_("Excel file is empty")) from exc
+        except Exception as exc:
+            raise serializers.ValidationError(_("Error reading Excel file: %(error)s") % {"error": str(exc)}) from exc
+
+        required_columns = [self.COLUMN_YEAR_BRAND_MODEL, self.COLUMN_VIN]
+        missing_columns = [col for col in required_columns if col not in excel_df.columns]
+
+        if missing_columns:
+            raise serializers.ValidationError(
+                _("Excel file is missing required columns: %(columns)s") % {"columns": ", ".join(missing_columns)}
+            )
+
+        if excel_df.empty:
+            raise serializers.ValidationError(_("Excel file contains no data"))
+
+        return value
+
+    def create(self, validated_data: dict[str, Any]) -> dict[str, Any]:
+        client = validated_data["client"]
+        excel_file = validated_data["excel_file"]
+
+        excel_df = self._read_excel(excel_file)
+
+        vehicles_to_create, validation_errors = self._prepare_vehicles(excel_df, client)
+        if validation_errors:
+            raise serializers.ValidationError({"errors": validation_errors})
+
+        db_errors = self._check_existing_vins(vehicles_to_create)
+        if db_errors:
+            raise serializers.ValidationError({"errors": db_errors})
+
+        return self._bulk_create_vehicles(vehicles_to_create)
+
+    def _read_excel(self, excel_file: UploadedFile) -> pd.DataFrame:
+        return pd.read_excel(excel_file, engine="openpyxl" if excel_file.name.endswith(".xlsx") else None)
+
+    def _prepare_vehicles(
+        self, df: pd.DataFrame, client: AbstractUser
+    ) -> tuple[list[VehicleInfo], list[dict[str, Any]]]:
+        vehicles_to_create: list[VehicleInfo] = []
+        vins_in_file: set[str] = set()
+        validation_errors: list[dict[str, Any]] = []
+
+        for index, row in df.iterrows():
+            row_num = index + 2  # +2 because Excel rows start at 1 and have header
+            try:
+                raw_year_brand_model = row[self.COLUMN_YEAR_BRAND_MODEL]
+                raw_vin = row[self.COLUMN_VIN]
+
+                year_brand_model = "" if pd.isna(raw_year_brand_model) else str(raw_year_brand_model).strip()
+                vin = "" if pd.isna(raw_vin) else str(raw_vin).strip()
+
+                if not year_brand_model:
+                    validation_errors.append(
+                        {
+                            "row": row_num,
+                            "vin": vin or "N/A",
+                            "error": _("year_brand_model cannot be empty"),
+                        }
+                    )
+                    continue
+
+                if not vin:
+                    validation_errors.append(
+                        {
+                            "row": row_num,
+                            "vin": "N/A",
+                            "error": _("VIN cannot be empty"),
+                        }
+                    )
+                    continue
+
+                if vin in vins_in_file:
+                    validation_errors.append(
+                        {
+                            "row": row_num,
+                            "vin": vin,
+                            "error": _("Duplicate VIN within file: %s") % vin,
+                        }
+                    )
+                    continue
+
+                vins_in_file.add(vin)
+                vehicles_to_create.append(
+                    VehicleInfo(
+                        client=client,
+                        year_brand_model=year_brand_model,
+                        vin=vin,
+                    )
+                )
+
+            except Exception as e:  # noqa: BLE001
+                validation_errors.append(
+                    {"row": row_num, "vin": str(row.get("vin", "N/A")), "error": _("Data processing error: %s") % e}
+                )
+
+        return vehicles_to_create, validation_errors
+
+    def _check_existing_vins(self, vehicles_to_create: list[VehicleInfo]) -> list[dict[str, Any]]:
+        existing_vins = set(
+            VehicleInfo.objects.filter(vin__in=[v.vin for v in vehicles_to_create]).values_list("vin", flat=True)
+        )
+
+        if not existing_vins:
+            return []
+
+        db_errors: list[dict[str, Any]] = [
+            {"row": "N/A", "vin": vehicle.vin, "error": _("VIN already exists in database: %s") % vehicle.vin}
+            for vehicle in vehicles_to_create
+            if vehicle.vin in existing_vins
+        ]
+
+        return db_errors
+
+    def _bulk_create_vehicles(self, vehicles_to_create: list[VehicleInfo]) -> dict[str, Any]:
+        try:
+            created_vehicles = VehicleInfo.objects.bulk_create(vehicles_to_create)
+
+            return {
+                "created_count": len(created_vehicles),
+                "errors": [],
+                "vehicles": VehicleInfoSerializer(created_vehicles, many=True).data,
+            }
+
+        except Exception as e:
+            raise serializers.ValidationError(
+                {"errors": [{"row": "N/A", "vin": "N/A", "error": _("Bulk create failed: %s") % e}]}
+            ) from e
