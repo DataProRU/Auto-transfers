@@ -526,9 +526,7 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
                     ),
                     OpenApiExample(
                         "Missing required columns (error)",
-                        value={
-                            "excel_file": ["Excel file is missing required columns: Год Марка Модель"]
-                        },
+                        value={"excel_file": ["Excel file is missing required columns: Год Марка Модель"]},
                         response_only=True,
                         status_codes=[str(status.HTTP_400_BAD_REQUEST)],
                     ),
