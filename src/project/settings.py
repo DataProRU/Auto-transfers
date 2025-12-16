@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
     "drf_spectacular",
+    "storages",
     "accounts",
     "autotrips",
     "telegram_bot",
@@ -130,12 +131,42 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+
+if DEBUG:
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+else:
+    MEDIA_URL = f"https://s3.regru.cloud/{os.getenv('S3_STORAGE_BUCKET_NAME')}/"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage"
+        if DEBUG
+        else "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            **(
+                {}
+                if DEBUG
+                else {
+                    "access_key": os.getenv("S3_ACCESS_KEY_ID"),
+                    "secret_key": os.getenv("S3_SECRET_ACCESS_KEY"),
+                    "bucket_name": os.getenv("S3_STORAGE_BUCKET_NAME"),
+                    "endpoint_url": "https://s3.regru.cloud",
+                    "addressing_style": "path",
+                    "signature_version": "s3v4",
+                    "default_acl": "private",
+                    "querystring_auth": True,
+                    "file_overwrite": False,
+                    "location": "media",
+                }
+            )
+        },
+    },
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage", "OPTIONS": {}},
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MAX_UPLOAD_SIZE = 5242880  # 5 MB
-DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=55),
