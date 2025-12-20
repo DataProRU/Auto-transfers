@@ -177,7 +177,7 @@ class PostVehicleSaveSignalReciever:
             info.comment or "",
         ]
 
-    def __call__(
+    def handle_bulk_save(
         self,
         sender: VehicleInfo,
         instances: list[VehicleInfo],
@@ -188,9 +188,22 @@ class PostVehicleSaveSignalReciever:
             crm_table_manager.append_row(self.WORKSHEET, row)
         self.send_telegram_notification(instances)
 
+    def handle_single_save(
+        self,
+        sender: VehicleInfo,
+        instance: VehicleInfo,
+        created: bool,  # noqa: FBT001
+        **kwargs: dict[str, Any],
+    ) -> None:
+        if created:
+            row = self.build_data_to_table(instance)
+            crm_table_manager.append_row(self.WORKSHEET, row)
+            self.send_telegram_notification([instance])
+
 
 report_reciever = PostReportSaveSignalReciever()
 post_save.connect(receiver=report_reciever, sender=AcceptenceReport)
 
 vehicle_reciever = PostVehicleSaveSignalReciever()
-vehicle_info_save.connect(receiver=vehicle_reciever, sender=VehicleInfo)
+vehicle_info_save.connect(receiver=vehicle_reciever.handle_bulk_save, sender=VehicleInfo)
+post_save.connect(receiver=vehicle_reciever.handle_single_save, sender=VehicleInfo)
