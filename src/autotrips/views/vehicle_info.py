@@ -25,6 +25,7 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
     queryset = VehicleInfo.objects.select_related("client", "v_type").order_by("-id")
     serializer_class = VehicleInfoSerializer
     permission_classes = (VehicleAccessPermission,)
+    http_method_names = ["get", "post", "patch"]
 
     def get_queryset(self) -> QuerySet:
         queryset = super().get_queryset()
@@ -45,6 +46,8 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
         description="""Create one or multiple vehicles.
         For single creation, send a JSON object.
         For bulk creation, send a JSON array of objects.
+        Can optionally upload document photos during creation using
+        'uploaded_document_photos' field.
         All operations are atomic.""",
         request=OpenApiRequest(
             request=VehicleInfoSerializer,
@@ -52,9 +55,9 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
                 OpenApiExample(
                     "Single vehicle creation",
                     value={
-                        "client_id": 1,
+                        "client": 1,
                         "year_brand_model": "2021 Toyota Camry",
-                        "v_type_id": 1,
+                        "v_type": 1,
                         "vin": "4T1BF1FKXEU123456",
                         "price": 12000.00,
                         "container_number": "CNTR001",
@@ -69,9 +72,9 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
                     "Bulk vehicle creation",
                     value=[
                         {
-                            "client_id": 1,
+                            "client": 1,
                             "year_brand_model": "2021 Toyota Camry",
-                            "v_type_id": 1,
+                            "v_type": 1,
                             "vin": "4T1BF1FKXEU123456",
                             "price": 12000.00,
                             "container_number": "CNTR001",
@@ -80,15 +83,48 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
                             "recipient": "XYZ Dealership",
                         },
                         {
-                            "client_id": 1,
+                            "client": 1,
                             "year_brand_model": "2020 Honda Accord",
-                            "v_type_id": 2,
+                            "v_type": 2,
                             "vin": "1HGCM82633A123456",
                             "price": 12000.00,
                             "container_number": "CNTR002",
                             "arrival_date": "2023-12-16",
                             "transporter": "DEF Logistics",
                             "recipient": "UVW Dealership",
+                        },
+                    ],
+                    request_only=True,
+                ),
+                OpenApiExample(
+                    "Single vehicle with document photos",
+                    value={
+                        "client": 1,
+                        "year_brand_model": "2021 Toyota Camry",
+                        "v_type": 1,
+                        "vin": "4T1BF1FKXEU123456",
+                        "price": 12000.00,
+                        "container_number": "CNTR001",
+                        "uploaded_document_photos": ["<file1>", "<file2>"],
+                    },
+                    request_only=True,
+                ),
+                OpenApiExample(
+                    "Bulk vehicles with document photos",
+                    value=[
+                        {
+                            "client": 1,
+                            "year_brand_model": "2021 Toyota Camry",
+                            "v_type": 1,
+                            "vin": "4T1BF1FKXEU123456",
+                            "uploaded_document_photos": ["<title_doc>", "<registration_doc>"],
+                        },
+                        {
+                            "client": 1,
+                            "year_brand_model": "2020 Honda Accord",
+                            "v_type": 2,
+                            "vin": "1HGCM82633A123456",
+                            "uploaded_document_photos": ["<insurance_doc>"],
                         },
                     ],
                     request_only=True,
@@ -104,11 +140,9 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
                         "Single vehicle response",
                         value={
                             "id": 1,
-                            "client_id": 1,
-                            "client_name": "John Doe",
+                            "client": {"id": 1, "full_name": "John Doe", "phone": "+1234567890"},
                             "year_brand_model": "2021 Toyota Camry",
-                            "v_type_id": 1,
-                            "v_type_name": "SUV",
+                            "v_type": {"id": 1, "v_type": "SUV"},
                             "vin": "4T1BF1FKXEU123456",
                             "price": 12000.00,
                             "container_number": "CNTR001",
@@ -116,6 +150,34 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
                             "transporter": "ABC Logistics",
                             "recipient": "XYZ Dealership",
                             "comment": "New shipment",
+                            "document_photos": [],
+                            "status": "Новый",
+                            "status_changed": "2023-10-01T12:34:56Z",
+                            "creation_time": "2023-10-01T12:34:56Z",
+                        },
+                    ),
+                    OpenApiExample(
+                        "Single vehicle with photos response",
+                        value={
+                            "id": 1,
+                            "client": {"id": 1, "full_name": "John Doe", "phone": "+1234567890"},
+                            "year_brand_model": "2021 Toyota Camry",
+                            "v_type": {"id": 1, "v_type": "SUV"},
+                            "vin": "4T1BF1FKXEU123456",
+                            "price": 12000.00,
+                            "container_number": "CNTR001",
+                            "document_photos": [
+                                {
+                                    "id": 1,
+                                    "image": "/media/vehicle-docs/2023/12/15/file1.jpg",
+                                    "created": "2023-12-15T10:00:00Z",
+                                },
+                                {
+                                    "id": 2,
+                                    "image": "/media/vehicle-docs/2023/12/15/file2.jpg",
+                                    "created": "2023-12-15T10:01:00Z",
+                                },
+                            ],
                             "status": "Новый",
                             "status_changed": "2023-10-01T12:34:56Z",
                             "creation_time": "2023-10-01T12:34:56Z",
@@ -126,34 +188,76 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
                         value=[
                             {
                                 "id": 1,
-                                "client_id": 1,
-                                "client_name": "John Doe",
+                                "client": {"id": 1, "full_name": "John Doe", "phone": "+1234567890"},
                                 "year_brand_model": "2021 Toyota Camry",
-                                "v_type_id": 1,
-                                "v_type_name": "SUV",
+                                "v_type": {"id": 1, "v_type": "SUV"},
                                 "vin": "4T1BF1FKXEU123456",
                                 "price": 12000.00,
                                 "container_number": "CNTR001",
                                 "arrival_date": "2023-12-15",
                                 "transporter": "ABC Logistics",
                                 "recipient": "XYZ Dealership",
+                                "document_photos": [],
                                 "status": "Новый",
                                 "status_changed": "2023-10-01T12:34:56Z",
                                 "creation_time": "2023-10-01T12:34:56Z",
                             },
                             {
                                 "id": 2,
-                                "client_id": 1,
-                                "client_name": "Jane Smith",
+                                "client": {"id": 1, "full_name": "John Doe", "phone": "+1234567890"},
                                 "year_brand_model": "2020 Honda Accord",
-                                "v_type_id": 2,
-                                "v_type_name": "Sedan",
+                                "v_type": {"id": 2, "v_type": "Sedan"},
                                 "vin": "1HGCM82633A123456",
                                 "price": 12000.00,
                                 "container_number": "CNTR002",
                                 "arrival_date": "2023-12-16",
                                 "transporter": "DEF Logistics",
                                 "recipient": "UVW Dealership",
+                                "document_photos": [],
+                                "status": "Новый",
+                                "status_changed": "2023-10-01T12:34:56Z",
+                                "creation_time": "2023-10-01T12:34:56Z",
+                            },
+                        ],
+                    ),
+                    OpenApiExample(
+                        "Bulk vehicles with photos response",
+                        value=[
+                            {
+                                "id": 1,
+                                "client": {"id": 1, "full_name": "John Doe", "phone": "+1234567890"},
+                                "year_brand_model": "2021 Toyota Camry",
+                                "v_type": {"id": 1, "v_type": "SUV"},
+                                "vin": "4T1BF1FKXEU123456",
+                                "document_photos": [
+                                    {
+                                        "id": 1,
+                                        "image": "/media/vehicle-docs/2023/12/15/title_doc.jpg",
+                                        "created": "2023-12-15T10:00:00Z",
+                                    },
+                                    {
+                                        "id": 2,
+                                        "image": "/media/vehicle-docs/2023/12/15/registration_doc.jpg",
+                                        "created": "2023-12-15T10:01:00Z",
+                                    },
+                                ],
+                                "status": "Новый",
+                                "status_changed": "2023-10-01T12:34:56Z",
+                                "creation_time": "2023-10-01T12:34:56Z",
+                            },
+                            {
+                                "id": 2,
+                                "client": {"id": 1, "full_name": "John Doe", "phone": "+1234567890"},
+                                "year_brand_model": "2020 Honda Accord",
+                                "v_type": {"id": 2, "v_type": "Sedan"},
+                                "vin": "1HGCM82633A123456",
+                                "document_photos": [
+                                    {
+                                        "id": 3,
+                                        "image": "/media/vehicle-docs/2023/12/15/insurance_doc.jpg",
+                                        "created": "2023-12-15T10:02:00Z",
+                                    }
+                                ],
                                 "status": "Новый",
                                 "status_changed": "2023-10-01T12:34:56Z",
                                 "creation_time": "2023-10-01T12:34:56Z",
@@ -222,6 +326,94 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @extend_schema(
+        summary="Update vehicle information and manage document photos",
+        description="Update vehicle information, add new document photos, and remove existing document photos."
+        "All operations can be performed in a single request. Read-only fields: id, year_brand_model, status,"
+        "status_changed, creation_time.",
+        request=OpenApiRequest(
+            request=dict,
+            examples=[
+                OpenApiExample(
+                    "Add document photos",
+                    value={"uploaded_document_photos": ["<file1>", "<file2>"]},
+                    request_only=True,
+                ),
+                OpenApiExample(
+                    "Remove document photos",
+                    value={"remove_document_photo_ids": [1, 2, 3]},
+                    request_only=True,
+                ),
+                OpenApiExample(
+                    "Add and remove document photos",
+                    value={"uploaded_document_photos": ["<file1>"], "remove_document_photo_ids": [2, 3]},
+                    request_only=True,
+                ),
+                OpenApiExample(
+                    "Update vehicle info and photos",
+                    value={
+                        "price": 15000.00,
+                        "comment": "Updated comment",
+                        "transporter": "New Logistics Company",
+                        "uploaded_document_photos": ["<new_doc>"],
+                        "remove_document_photo_ids": [1],
+                    },
+                    request_only=True,
+                ),
+            ],
+        ),
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=VehicleInfoSerializer,
+                description="Document photos updated successfully",
+                examples=[
+                    OpenApiExample(
+                        "Success response",
+                        value={
+                            "id": 1,
+                            "client": {"id": 1, "full_name": "John Doe", "phone": "+1234567890"},
+                            "year_brand_model": "2021 Toyota Camry",
+                            "v_type": {"id": 1, "v_type": "SUV"},
+                            "vin": "4T1BF1FKXEU123456",
+                            "price": 12000.00,
+                            "container_number": "CNTR001",
+                            "arrival_date": "2023-12-15",
+                            "transporter": "ABC Logistics",
+                            "recipient": "XYZ Dealership",
+                            "comment": "New shipment",
+                            "document_photos": [
+                                {
+                                    "id": 1,
+                                    "image": "/media/vehicle-docs/2023/12/15/doc1.jpg",
+                                    "created": "2023-12-15T10:00:00Z",
+                                },
+                                {
+                                    "id": 2,
+                                    "image": "/media/vehicle-docs/2023/12/15/doc2.jpg",
+                                    "created": "2023-12-15T10:05:00Z",
+                                },
+                            ],
+                            "status": "Новый",
+                            "status_changed": "2023-10-01T12:34:56Z",
+                            "creation_time": "2023-10-01T12:34:56Z",
+                        },
+                    ),
+                ],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(description="Not authorized to modify this vehicle"),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(description="Vehicle not found"),
+        },
+    )
+    def partial_update(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
+        instance = self.get_object()
+
+        serializer = VehicleInfoSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        updated_instance = serializer.save()
+
+        response_serializer = VehicleInfoSerializer(updated_instance)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
 class VehicleTypeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):

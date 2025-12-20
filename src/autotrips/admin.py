@@ -7,7 +7,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from autotrips.models.acceptance_report import AcceptenceReport, CarPhoto, DocumentPhoto, KeyPhoto
-from autotrips.models.vehicle_info import VehicleInfo, VehicleTransporter, VehicleType
+from autotrips.models.vehicle_info import VehicleDocumentPhoto, VehicleInfo, VehicleTransporter, VehicleType
 
 
 @admin.register(AcceptenceReport)
@@ -198,6 +198,27 @@ class VehicleInfoAdmin(admin.ModelAdmin):
 
     client_link.short_description = _("Client")  # type: ignore[attr-defined]
     client_link.admin_order_field = "client__full_name"  # type: ignore[attr-defined]
+
+
+@admin.register(VehicleDocumentPhoto)
+class VehicleDocumentPhotoAdmin(admin.ModelAdmin):
+    list_display = ("id", "vehicle_info", "vehicle_vin", "image", "created")
+    list_filter = ("vehicle", "created")
+    search_fields = ("vehicle__vin", "vehicle__year_brand_model")
+    readonly_fields = ("created",)
+    raw_id_fields = ("vehicle",)
+
+    def vehicle_info(self, obj: VehicleDocumentPhoto) -> str:
+        return str(obj.vehicle.year_brand_model)
+
+    vehicle_info.short_description = _("Vehicle")  # type: ignore[attr-defined]
+    vehicle_info.admin_order_field = "vehicle__year_brand_model"  # type: ignore[attr-defined]
+
+    def vehicle_vin(self, obj: VehicleDocumentPhoto) -> str:
+        return str(obj.vehicle.vin)
+
+    vehicle_vin.short_description = _("VIN")  # type: ignore[attr-defined]
+    vehicle_vin.admin_order_field = "vehicle__vin"  # type: ignore[attr-defined]
 
 
 @admin.register(VehicleTransporter)
