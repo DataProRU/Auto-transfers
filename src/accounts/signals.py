@@ -34,7 +34,7 @@ def _build_user_register_keyboard(user_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[[accept_button, reject_button]])
 
 
-def _build_client_register_keyboard() -> InlineKeyboardMarkup:
+def _build_register_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[[InlineKeyboardButton(text="Обработать", callback_data="process_report:")]]
     )
@@ -46,9 +46,21 @@ def _get_register_user_text(user: User) -> str:
     return f"Зарегистрирован новый приемщик:\n👤 {user.full_name}\n📱 {user.phone}\n{documents_url}"
 
 
-def _get_register_client_text(user: User) -> str:
-    """Generate client registration notification text."""
-    return f"Зарегистрирован новый клиент:\n👤 {user.full_name}\n📱 {user.phone}\n✉️ @{user.telegram}"
+def _get_register_text(user: User) -> str:
+    """Generate registration notification text."""
+    roles = {
+        User.Roles.ADMIN: "администратор",
+        User.Roles.CLIENT: "клиент",
+        User.Roles.MANAGER: "менеджер",
+        User.Roles.LOGISTICIAN: "логист",
+        User.Roles.OPENING_MANAGER: "менеджер по открытию",
+        User.Roles.TITLE: "тайтл",
+        User.Roles.INSPECTOR: "осмотр",
+        User.Roles.RE_EXPORT: "реэкспорт",
+    }
+    role = roles.get(user.role, user.role)
+    telegram = f"@{user.telegram}" if user.telegram else ""
+    return f"Зарегистрирован новый {role}:\n👤 {user.full_name}\n📱 {user.phone}\n✉️ {telegram}"
 
 
 async def _send_telegram_notification(bot: Bot, chat_id: str, text: str, keyboard: InlineKeyboardMarkup) -> None:
@@ -94,8 +106,8 @@ def _prepare_notification_content(instance: User) -> tuple[str, InlineKeyboardMa
         text = _get_register_user_text(instance)
         keyboard = _build_user_register_keyboard(instance.id)
     else:
-        text = _get_register_client_text(instance)
-        keyboard = _build_client_register_keyboard()
+        text = _get_register_text(instance)
+        keyboard = _build_register_keyboard()
 
     return text, keyboard
 
