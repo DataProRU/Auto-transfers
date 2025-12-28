@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-10 20:00+0300\n"
+"POT-Creation-Date: 2025-12-11 14:48+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -629,23 +629,73 @@ msgstr ""
 msgid "Cannot update a vehicle that has already been accepted."
 msgstr "Нельзя обновить транспортное средство, которое уже было принято."
 
-#: src/autotrips/serializers/vehicle_info.py:29
+#: src/autotrips/serializers/vehicle_info.py:32
 msgid "Can create multiply vehicles only for one client."
 msgstr ""
 "Можно создать несколько транспортных средств только для одного клиента."
 
-#: src/autotrips/serializers/vehicle_info.py:33
+#: src/autotrips/serializers/vehicle_info.py:36
 msgid "It is not possible to create multiple vehicles with the same VINs."
 msgstr ""
 "Невозможно создать несколько транспортных средств с одинаковыми VIN номерами."
 
-#: src/autotrips/serializers/vehicle_info.py:113
+#: src/autotrips/serializers/vehicle_info.py:116
 msgid "Enter a valid date in YYYY-MM-DD format."
 msgstr "Введите корректную дату в формате ГГГГ-ММ-ДД."
 
-#: src/autotrips/serializers/vehicle_info.py:118
+#: src/autotrips/serializers/vehicle_info.py:121
 msgid "Vehicle with this VIN already exists."
 msgstr "Транспортное средство с таким VIN уже существует."
+
+#: src/autotrips/serializers/vehicle_info.py:180
+msgid "File must be an Excel file (.xlsx or .xls)"
+msgstr "Файл должен быть Excel формата (.xlsx или .xls)"
+
+#: src/autotrips/serializers/vehicle_info.py:185
+msgid "Excel file is empty"
+msgstr "Excel файл пустой"
+
+#: src/autotrips/serializers/vehicle_info.py:187
+#, python-format
+msgid "Error reading Excel file: %(error)s"
+msgstr "Ошибка чтения Excel файла: %(error)s"
+
+#: src/autotrips/serializers/vehicle_info.py:194
+#, python-format
+msgid "Excel file is missing required columns: %(columns)s"
+msgstr "В Excel файле отсутствуют необходимые колонки: %(columns)s"
+
+#: src/autotrips/serializers/vehicle_info.py:198
+msgid "Excel file contains no data"
+msgstr "Excel файл не содержит данных"
+
+#: src/autotrips/serializers/vehicle_info.py:242
+msgid "year_brand_model cannot be empty"
+msgstr "Поле 'Год Марка Модель' не может быть пустым"
+
+#: src/autotrips/serializers/vehicle_info.py:252
+msgid "VIN cannot be empty"
+msgstr "VIN не может быть пустым"
+
+#: src/autotrips/serializers/vehicle_info.py:262
+#, python-format
+msgid "Duplicate VIN within file: %s"
+msgstr "Дублирующийся VIN в файле: %s"
+
+#: src/autotrips/serializers/vehicle_info.py:278
+#, python-format
+msgid "Data processing error: %s"
+msgstr "Ошибка обработки данных: %s"
+
+#: src/autotrips/serializers/vehicle_info.py:292
+#, python-format
+msgid "VIN already exists in database: %s"
+msgstr "VIN уже существует в базе данных: %s"
+
+#: src/autotrips/serializers/vehicle_info.py:311
+#, python-format
+msgid "Bulk create failed: %s"
+msgstr "Не удалось создать записи: %s"
 
 #~ msgid "Brand"
 #~ msgstr "Марка"
