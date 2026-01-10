@@ -132,26 +132,33 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-if DEBUG:
+S3_SETTINGS_CONFIGURED = all(
+    [
+        os.getenv("S3_ACCESS_KEY_ID"),
+        os.getenv("S3_SECRET_ACCESS_KEY"),
+        os.getenv("S3_STORAGE_BUCKET_NAME"),
+        os.getenv("S3_ENDPOINT_URL"),
+    ]
+)
+
+if S3_SETTINGS_CONFIGURED:
+    MEDIA_URL = f"{os.getenv('S3_ENDPOINT_URL')}/{os.getenv('S3_STORAGE_BUCKET_NAME')}/"
+else:
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
-else:
-    MEDIA_URL = f"https://s3.regru.cloud/{os.getenv('S3_STORAGE_BUCKET_NAME')}/"
 
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage"
-        if DEBUG
-        else "storages.backends.s3boto3.S3Boto3Storage",
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage"
+        if S3_SETTINGS_CONFIGURED
+        else "django.core.files.storage.FileSystemStorage",
         "OPTIONS": {
             **(
-                {}
-                if DEBUG
-                else {
+                {
                     "access_key": os.getenv("S3_ACCESS_KEY_ID"),
                     "secret_key": os.getenv("S3_SECRET_ACCESS_KEY"),
                     "bucket_name": os.getenv("S3_STORAGE_BUCKET_NAME"),
-                    "endpoint_url": "https://s3.regru.cloud",
+                    "endpoint_url": os.getenv("S3_ENDPOINT_URL"),
                     "addressing_style": "path",
                     "signature_version": "s3v4",
                     "default_acl": "private",
@@ -159,6 +166,8 @@ STORAGES = {
                     "file_overwrite": False,
                     "location": "media",
                 }
+                if S3_SETTINGS_CONFIGURED
+                else {}
             )
         },
     },
