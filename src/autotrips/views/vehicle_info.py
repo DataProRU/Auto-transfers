@@ -299,10 +299,9 @@ class VehicleInfoViewSet(viewsets.ModelViewSet):
     )
     @transaction.atomic
     def create(self, request: Request, *args: tuple[Any], **kwargs: dict[str, Any]) -> Response:
-        if isinstance(request.data, dict):
-            return super().create(request, *args, **kwargs)
+        data = [request.data] if not isinstance(request.data, list) else request.data
 
-        serializer = self.get_serializer(data=request.data, many=True)
+        serializer = self.get_serializer(data=data, many=True)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
