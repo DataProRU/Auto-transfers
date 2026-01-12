@@ -18,6 +18,24 @@ User = get_user_model()
 
 
 class VehicleInfoListSerializer(serializers.ListSerializer):
+    def validate(self, attrs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        if not attrs:
+            return attrs
+
+        client_ids = {vehicle_data.get("client") for vehicle_data in attrs}
+        if len(client_ids) > 1:
+            raise serializers.ValidationError(
+                {"non_field_error": _("Can create multiply vehicles only for one client.")}
+            )
+
+        vins = [vehicle_data.get("vin") for vehicle_data in attrs]
+        if len(vins) != len(set(vins)):
+            raise serializers.ValidationError(
+                {"vins_error": _("It is not possible to create multiple vehicles with the same VINs.")}
+            )
+
+        return attrs
+
     def create(self, validated_data: list[dict[str, Any]]) -> list[VehicleInfo]:
         vehicle_photos_data = []
         for vehicle in validated_data:
@@ -25,17 +43,6 @@ class VehicleInfoListSerializer(serializers.ListSerializer):
             vehicle_photos_data.append(photos)
 
         vehicles = [VehicleInfo(**item) for item in validated_data]
-        vehicles_idxs = {vehicle.client_id for vehicle in vehicles}
-        vehicles_vins = {vehicle.vin for vehicle in vehicles}
-        if len(vehicles_idxs) > 1:
-            raise serializers.ValidationError(
-                {"non_field_error": _("Can create multiply vehicles only for one client.")}
-            )
-        if len(vehicles_vins) < len(vehicles):
-            raise serializers.ValidationError(
-                {"vins_error": _("It is not possible to create multiple vehicles with the same VINs.")}
-            )
-
         created_vehicles = VehicleInfo.objects.bulk_create(vehicles)
 
         vehicle_photos_to_create = [
